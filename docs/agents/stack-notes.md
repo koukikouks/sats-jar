@@ -16,7 +16,7 @@ Short link names used below:
 | Contract SDK | near-sdk, features `["unstable"]` (only for `env::ecrecover`) | `near-sdk = "=5.30.1"`, `rust-toolchain.toml` channel `1.95.0` |
 | Reproducible build | cargo-near Docker build, image from the `cargo near new` template | `sourcescan/cargo-near:0.22.0-rust-1.99.1` @ `sha256:c9655eaf7436b90c87ea8b25739f91063032c5c30ba24cfeafe72c142943b5bb` |
 | Contract tests | near-workspaces (sandbox 2.14.0 downloaded automatically) | `near-workspaces = "=0.24.0"` |
-| Bitcoin tx building in the contract | Hand-rolled serialisation + BIP-143, hashing via `env::sha256_array` / `env::ripemd160_array` | no crate needed |
+| Bitcoin tx building in the contract | Hand-rolled serialisation + BIP-143, hashing via `env::sha256_array` / `env::ripemd160_array` | `near-sdk-env = "=0.1.9"` in `btc/` (the leaf crate behind `near_sdk::env`; near-sdk itself will not build as a plain native dependency) |
 | Bitcoin oracle in native tests | `bitcoin` crate as a dev-dependency only | `bitcoin = "=0.32.11"` |
 | Jar key derivation in the contract | `k256` point arithmetic + `env::sha3_256` | `k256 = { version = "=0.13.4", default-features = false, features = ["arithmetic"] }` (same as MPC) |
 | Signature check | `env::ecrecover(.., malleability_flag = true)` vs the stored derived key | (needs near-sdk `unstable`) |
