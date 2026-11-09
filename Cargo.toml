@@ -1,0 +1,17 @@
+[workspace]
+members = ["btc", "test-support"]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+repository = "https://github.com/koukikouks/sats-jar"
+publish = false
+
+# The cargo-near template's release profile (stack notes §1).
+[profile.release]
+codegen-units = 1
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+overflow-checks = true
