@@ -79,8 +79,12 @@ pub struct Jar {
     pub handover: Handover,
     /// How many coins have been proven; the next coin's index.
     pub coin_count: u32,
-    /// Sats in the jar's confirmed coins.
+    /// Sats in the jar's proven coins not yet spent by a confirmed payment (reserved coins are
+    /// still the jar's on Bitcoin until their payment is proven).
     pub proven_balance: u64,
+    /// The period of the last allowance requested. Set when it is requested, so a second
+    /// request in that period is refused even while the first is unconfirmed.
+    pub paid_period: Option<u64>,
 }
 
 #[near(serializers = [json])]
@@ -100,7 +104,7 @@ pub struct JarView {
     pub demo_timing: bool,
     pub clock: Clock,
     pub handover: Handover,
-    /// Sats in the jar's proven, unspent coins.
+    /// Sats in the jar's proven coins not yet spent by a confirmed payment.
     pub proven_balance: U64,
 }
 
@@ -208,12 +212,21 @@ impl Jar {
             handover: Handover::default(),
             coin_count: 0,
             proven_balance: 0,
+            paid_period: None,
         }
     }
 
     /// The jar address on `network`.
     pub fn address(&self, network: Network) -> String {
         SegwitAddress::p2wsh(&self.address.witness_script).encode(network.into())
+    }
+
+    /// The scriptPubKey of the child's address.
+    pub fn child_script_pubkey(&self, network: Network) -> Vec<u8> {
+        // Checked at creation, so it always decodes.
+        SegwitAddress::decode(&self.args.child_address, network.into())
+            .map(|address| address.script_pubkey())
+            .unwrap_or_else(|_| env_abort())
     }
 
     /// The scriptPubKey a top-up to the jar address pays.

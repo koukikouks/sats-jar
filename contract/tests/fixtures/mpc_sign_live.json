@@ -1,0 +1,36 @@
+{
+  "source": "NEAR testnet RPC (test.rpc.fastnear.com, keyless), recorded 2026-11-09: EXPERIMENTAL_tx_status of a public sign transaction to v1.signer-prod.testnet (MPC 3.18.0), and the derived_public_key and config views at final block 276949899. The response is the transaction's final value (the yield callback's return).",
+  "tx_hash": "8SQq67Bw7TksKDAPYqb5Hqemsp5T2pU2eJvdkBgYLCAT",
+  "predecessor": "creator.solidon.testnet",
+  "attached_gas": 300000000000000,
+  "attached_deposit_yocto": "1",
+  "args": {
+    "request": {
+      "domain_id": 0,
+      "path": "evm-treasury",
+      "payload_v2": {
+        "Ecdsa": "3c367012deb0aada7a5dcfebafc2c1261a4daad127e64dcdf8ea4c85bfe348b8"
+      }
+    }
+  },
+  "response": {
+    "scheme": "Secp256k1",
+    "big_r": {
+      "affine_point": "028680d5bf425f03bbf759df1afd551bd46a0537daf2ef6a52e35cddbf04f6d478"
+    },
+    "s": {
+      "scalar": "65b52d20a29f377ba49acdabb06c6ca954b0b14bbfada7fb804a443d6607c111"
+    },
+    "recovery_id": 1
+  },
+  "sign_receipt_gas_burnt": 4270776086680,
+  "derived_public_key": "secp256k1:52uAZWBcxtUHmCKFPfXZwjAtngTcY35g1GxukmpbgLUPVm7kyt5Nw2j1zdEmZHwyPjS4Dfs7uLd9sAEAz34RuXWQ",
+  "config_sign_call_gas_attachment_requirement_tera_gas": 15,
+  "rules_from_source": {
+    "source": "near/mpc 3.18.0 crates/contract/src/api/common.rs check_request_preconditions and require_deposit; errors.rs InvalidParameters. Checked in this order: domain, gas, deposit (excess refunded).",
+    "unknown_domain": "The provided domain ID, {provided}, was not found.",
+    "insufficient_gas": "Provided gas is lower than required. Provided: {provided}, required: {required}",
+    "insufficient_deposit": "Attached deposit is lower than required. Attached: {attached}, required: {required}",
+    "required_deposit_yocto": 1
+  }
+}

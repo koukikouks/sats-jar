@@ -15,6 +15,44 @@ pub enum SatsJarEvent {
         vout: u32,
         value: U64,
     },
+    /// The contract built the period's allowance and asked the signer for each input.
+    /// `txid` in display hex; amounts in sats.
+    #[event_version("1.0.0")]
+    AllowanceRequested {
+        jar_id: String,
+        payment_id: U64,
+        period: U64,
+        amount: U64,
+        fee: U64,
+        txid: String,
+    },
+    /// Every input's signature checked; `tx` is the signed transaction, hex, ready to broadcast.
+    #[event_version("1.0.0")]
+    PaymentSigned {
+        jar_id: String,
+        payment_id: U64,
+        txid: String,
+        tx: String,
+    },
+    /// Signing failed; the inputs stay reserved for a retry of the same transaction.
+    #[event_version("1.0.0")]
+    PaymentSigningFailed {
+        jar_id: String,
+        payment_id: U64,
+        reason: String,
+    },
+    /// Proven on Bitcoin: its inputs are spent and its change (sats, 0 for none) is a coin.
+    #[event_version("1.0.0")]
+    PaymentConfirmed {
+        jar_id: String,
+        payment_id: U64,
+        txid: String,
+        change: U64,
+    },
+    /// The dev-only escape released the payment's inputs.
+    #[cfg_attr(not(feature = "dev-escape"), allow(dead_code))]
+    #[event_version("1.0.0")]
+    PaymentCancelled { jar_id: String, payment_id: U64 },
 }
 
 #[near(serializers = [json])]

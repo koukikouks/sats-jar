@@ -17,12 +17,25 @@ pub struct Coin {
     pub status: CoinStatus,
 }
 
-#[near(serializers = [borsh, json])]
+/// Each input is reserved by exactly one payment until that payment is confirmed (ADR 0006).
+#[near(serializers = [borsh])]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CoinStatus {
+    /// Proven and free to spend.
+    Confirmed,
+    /// An input of this payment, which is not yet proven on Bitcoin.
+    Reserved(u64),
+    /// Spent by this payment, proven on Bitcoin.
+    Spent(u64),
+}
+
+#[near(serializers = [json])]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
-pub enum CoinStatus {
-    /// Proven and free to spend. Payments (T04) add reserved and spent.
+pub enum CoinStatusView {
     Confirmed,
+    Reserved,
+    Spent,
 }
 
 /// The key of a coin in the seen set: txid (internal order) then vout, little-endian.
@@ -43,16 +56,24 @@ pub struct CoinView {
     pub vout: u32,
     /// Sats.
     pub value: U64,
-    pub status: CoinStatus,
+    pub status: CoinStatusView,
+    /// The payment that reserved or spent the coin.
+    pub payment_id: Option<U64>,
 }
 
 impl Coin {
     pub fn view(&self) -> CoinView {
+        let (status, payment_id) = match self.status {
+            CoinStatus::Confirmed => (CoinStatusView::Confirmed, None),
+            CoinStatus::Reserved(id) => (CoinStatusView::Reserved, Some(U64(id))),
+            CoinStatus::Spent(id) => (CoinStatusView::Spent, Some(U64(id))),
+        };
         CoinView {
             txid: crate::hex::display(&self.txid),
             vout: self.vout,
             value: U64(self.value),
-            status: self.status,
+            status,
+            payment_id,
         }
     }
 }

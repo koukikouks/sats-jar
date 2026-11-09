@@ -2,7 +2,10 @@
 //! `jar.<root>`, the account the live `derived_public_key` vectors were recorded for.
 #![allow(dead_code)]
 
+mod payment;
 mod topup;
+#[allow(unused_imports)]
+pub use payment::*;
 #[allow(unused_imports)]
 pub use topup::*;
 
@@ -21,6 +24,8 @@ pub const LIVE_MPC_ROOT_KEY: &str = "secp256k1:4NfTiv3UsGahebgTaHyD9vF8KYKMBnfd6
 pub const MPC_CONTRACT: &str = "v1.signer-prod.testnet";
 /// Where the light-client stand-in is deployed in every sandbox.
 pub const LIGHT_CLIENT: &str = "light-client.test.near";
+/// Where the signer stand-in is deployed in every sandbox.
+pub const SIGNER: &str = "signer.test.near";
 
 pub const DAY: u64 = 86_400;
 
@@ -33,6 +38,8 @@ pub enum Build {
     Dev,
     /// The light-client stand-in (`tests/stand-ins/light-client`).
     LightClient,
+    /// The MPC signer stand-in (`tests/stand-ins/signer`).
+    Signer,
 }
 
 static WASM: Mutex<Option<HashMap<Build, Vec<u8>>>> = Mutex::new(None);
@@ -52,6 +59,10 @@ pub fn wasm(build: Build) -> Vec<u8> {
         Build::LightClient => (
             "light-client",
             format!("{root}/tests/stand-ins/light-client/Cargo.toml"),
+        ),
+        Build::Signer => (
+            "signer",
+            format!("{root}/tests/stand-ins/signer/Cargo.toml"),
         ),
     };
     let opts = cargo_near_build::BuildOpts {
@@ -73,6 +84,7 @@ pub struct Jars {
     pub contract: Contract,
     pub giver: Account,
     pub light_client: Contract,
+    pub signer: Contract,
 }
 
 /// A sandbox with the jar contract deployed at `jar.<root>` (not yet initialised).
@@ -107,11 +119,13 @@ pub async fn deploy(build: Build) -> Jars {
         .expect("deploy light client")
         .into_result()
         .expect("light client deployed");
+    let signer = stand_in(&root, "signer", Build::Signer).await;
     Jars {
         worker,
         contract,
         giver,
         light_client,
+        signer,
     }
 }
 
@@ -123,6 +137,49 @@ pub async fn start(network: &str) -> Jars {
         .into_result()
         .expect("init");
     sandbox
+}
+
+/// A deployed `build` initialised for `network` with the signer stand-in as its MPC network, so
+/// its payments are really signed. Key derivation itself is pinned to the live vectors elsewhere.
+pub async fn start_paying(build: Build, network: &str) -> Jars {
+    let sandbox = deploy(build).await;
+    let root_key: String = sandbox
+        .signer
+        .view("public_key")
+        .await
+        .expect("public_key")
+        .json()
+        .expect("json");
+    sandbox
+        .contract
+        .call("new")
+        .args_json(json!({
+            "mpc_contract": SIGNER,
+            "mpc_root_public_key": root_key,
+            "light_client": LIGHT_CLIENT,
+            "network": network,
+        }))
+        .transact()
+        .await
+        .expect("send init")
+        .into_result()
+        .expect("init");
+    sandbox
+}
+
+async fn stand_in(root: &Account, name: &str, build: Build) -> Contract {
+    root.create_subaccount(name)
+        .initial_balance(NearToken::from_near(10))
+        .transact()
+        .await
+        .expect("create stand-in account")
+        .into_result()
+        .expect("stand-in account created")
+        .deploy(&wasm(build))
+        .await
+        .expect("deploy stand-in")
+        .into_result()
+        .expect("stand-in deployed")
 }
 
 pub async fn init(contract: &Contract, network: &str) -> ExecutionFinalResult {

@@ -9,8 +9,12 @@ mod hex;
 mod jar;
 mod light_client;
 mod mpc_key;
+mod payment;
+mod rule;
+mod signer;
 mod topup;
 
+use btc::{OutPoint, Transaction, TxOut};
 use coins::{Coin, CoinStatus, CoinView, OutPointKey};
 use error::refuse;
 use events::{Nep171Event, NftMintData, SatsJarEvent};
@@ -20,8 +24,12 @@ use mpc_key::PointBytes;
 use near_sdk::json_types::U64;
 use near_sdk::store::{LookupMap, LookupSet};
 use near_sdk::{
-    env, near, AccountId, BorshStorageKey, NearToken, PanicOnDefault, Promise, PromiseError,
+    env, near, AccountId, BorshStorageKey, Gas, NearToken, PanicOnDefault, Promise, PromiseError,
     PublicKey,
+};
+use payment::{
+    FreeCoin, InputView, Output, Payment, PaymentKind, PaymentStatus, PaymentView, RawSignature,
+    Shortfall,
 };
 use topup::TopupProof;
 
@@ -54,6 +62,9 @@ enum StorageKey {
     Jars,
     Coins,
     SeenOutpoints,
+    Payments,
+    PaymentTxids,
+    FreeCoins,
 }
 
 #[near(contract_state)]
@@ -69,6 +80,13 @@ pub struct SatsJar {
     coins: LookupMap<(String, u32), Coin>,
     /// Every outpoint ever counted, by any jar. Never shrinks.
     seen_outpoints: LookupSet<OutPointKey>,
+    payments: LookupMap<u64, Payment>,
+    next_payment_id: u64,
+    /// Every payment's txid (internal order), so its transaction is never proven as a top-up.
+    payment_txids: LookupMap<[u8; 32], u64>,
+    /// Each jar's confirmed coins not reserved by a payment, largest first. Coin selection reads
+    /// only this list, never the whole coin history.
+    free_coins: LookupMap<String, Vec<FreeCoin>>,
 }
 
 #[near]
@@ -96,6 +114,10 @@ impl SatsJar {
             next_jar_id: 1,
             coins: LookupMap::new(StorageKey::Coins),
             seen_outpoints: LookupSet::new(StorageKey::SeenOutpoints),
+            payments: LookupMap::new(StorageKey::Payments),
+            next_payment_id: 1,
+            payment_txids: LookupMap::new(StorageKey::PaymentTxids),
+            free_coins: LookupMap::new(StorageKey::FreeCoins),
         }
     }
 
@@ -158,7 +180,9 @@ impl SatsJar {
             .jars
             .get(&jar_id)
             .unwrap_or_else(|| refuse(error::UNKNOWN_JAR, &format!("there is no jar {jar_id}")));
-        let (topup, args) = topup::check(&tx, vout, &proof, &jar.script_pubkey());
+        let (topup, args) = topup::check(&tx, vout, &proof, &jar.script_pubkey(), |txid| {
+            self.payment_txids.contains_key(txid)
+        });
         self.refuse_known_coin(&topup.txid, topup.vout);
         if env::prepaid_gas() < light_client::PROVE_TOPUP_GAS {
             refuse(
@@ -194,29 +218,10 @@ impl SatsJar {
         value: U64,
         #[callback_result] inclusion: Result<Option<TxInclusionInfo>, PromiseError>,
     ) {
-        match inclusion {
-            Err(_) => refuse(
-                error::NOT_IN_CHAIN,
-                "the light client refused the proof (unknown or side-chain block, bad coinbase \
-                 proof, or paused)",
-            ),
-            Ok(None) => refuse(
-                error::NOT_IN_CHAIN,
-                "the merkle proof does not lead to the block's merkle root",
-            ),
-            Ok(Some(info)) => {
-                // Another proof of the same coin may have landed while this one waited.
-                self.refuse_known_coin(&txid, vout);
-                let required = topup::required_confirmations(self.network);
-                let confirmations = info.confirmations();
-                if confirmations < required {
-                    refuse(
-                        error::NOT_CONFIRMED,
-                        &format!("{confirmations} of {required} confirmations; wait for more"),
-                    );
-                }
-            }
-        }
+        let info = included(inclusion);
+        // Another proof of the same coin may have landed while this one waited.
+        self.refuse_known_coin(&txid, vout);
+        self.refuse_unconfirmed(&info);
         let mut jar = self
             .jars
             .get(&jar_id)
@@ -233,17 +238,7 @@ impl SatsJar {
         jar.clock
             .started_at
             .get_or_insert(U64(env::block_timestamp_ms() / 1_000));
-        self.coins.insert(
-            (jar_id.clone(), index),
-            Coin {
-                txid,
-                vout,
-                value: value.0,
-                address: 0,
-                status: CoinStatus::Confirmed,
-            },
-        );
-        self.seen_outpoints.insert(coins::outpoint_key(&txid, vout));
+        self.add_coin(&jar_id, index, txid, vout, value.0);
         self.jars.insert(jar_id.clone(), jar);
         SatsJarEvent::TopupProven {
             jar_id,
@@ -274,6 +269,338 @@ impl SatsJar {
             .collect()
     }
 
+    /// Builds the period's allowance from the jar's own coins and asks the MPC signer to sign
+    /// each input; anyone may call it. The contract picks the coins, the payee (the child's
+    /// address), the amount (up to the cap) and the change; the caller proposes only the fee
+    /// rate in sat/vB. The result is the payment id.
+    pub fn request_allowance(&mut self, jar_id: String, fee_rate: U64) -> Promise {
+        let mut jar =
+            self.jars.get(&jar_id).cloned().unwrap_or_else(|| {
+                refuse(error::UNKNOWN_JAR, &format!("there is no jar {jar_id}"))
+            });
+        let started_at = jar.clock.started_at.map(|t| t.0).unwrap_or_else(|| {
+            refuse(
+                error::NOT_FUNDED,
+                "the jar has no proven top-up yet, so it has no allowance",
+            )
+        });
+        let now = env::block_timestamp_ms() / 1_000;
+        let period_length = jar.args.period.0;
+        let period = rule::period_index(started_at, period_length, now);
+        if jar.paid_period == Some(period) {
+            let wait = rule::until_next_period(started_at, period_length, period, now);
+            refuse(
+                error::ALREADY_PAID,
+                &format!(
+                    "the allowance for this period was already paid; next one in {}",
+                    rule::wait(wait)
+                ),
+            );
+        }
+        if fee_rate.0 < 1 {
+            refuse(error::FEE_TOO_LOW, "the fee rate must be at least 1 sat/vB");
+        }
+        let child_script = jar.child_script_pubkey(self.network);
+        let change_script = jar.script_pubkey();
+        let free = self.free_coins.get(&jar_id).cloned().unwrap_or_default();
+        let shape = payment::Shape {
+            payee_script_len: child_script.len() as u64,
+            change_script_len: change_script.len() as u64,
+            witness_script_len: jar.address.witness_script.len() as u64,
+        };
+        let plan =
+            payment::plan(&free, jar.args.cap.0, fee_rate.0, &shape).unwrap_or_else(|shortfall| {
+                match shortfall {
+                    Shortfall::InsufficientBalance => refuse(
+                        error::INSUFFICIENT_BALANCE,
+                        "the jar's coins cannot pay the fee and a payment above the dust floor",
+                    ),
+                    Shortfall::FeeOverBudget { fee, budget } => refuse(
+                        error::FEE_OVER_BUDGET,
+                        &format!(
+                            "the fee would be {fee} sats, over the jar's {budget}-sat fee budget; \
+                         wait for lower fees"
+                        ),
+                    ),
+                    Shortfall::ChangeBelowDust { change } => refuse(
+                        error::CHANGE_BELOW_DUST,
+                        &format!(
+                            "the change would be {change} sats, below the {}-sat dust floor; wait \
+                         for another top-up",
+                            topup::DUST_FLOOR
+                        ),
+                    ),
+                }
+            });
+        let signatures = plan.inputs.len() as u64;
+        let required = Gas::from_gas(
+            signer::SIGN_GAS
+                .as_gas()
+                .saturating_mul(signatures)
+                .saturating_add(signer::SIGNED_CALLBACK_GAS.as_gas())
+                .saturating_add(signer::REQUEST_GAS.as_gas()),
+        );
+        if env::prepaid_gas() < required {
+            refuse(
+                error::NOT_ENOUGH_GAS,
+                &format!(
+                    "attach at least {} Tgas for {signatures} signature{} and the callback",
+                    required.as_tgas(),
+                    if signatures == 1 { "" } else { "s" }
+                ),
+            );
+        }
+
+        let inputs: Vec<Coin> = plan
+            .inputs
+            .iter()
+            .map(|free| self.coin(&jar_id, free.index))
+            .collect();
+        let mut outputs = vec![Output {
+            value: plan.amount,
+            script_pubkey: child_script,
+        }];
+        if plan.change > 0 {
+            outputs.push(Output {
+                value: plan.change,
+                script_pubkey: change_script,
+            });
+        }
+        let tx = unsigned_tx(&inputs, &outputs);
+        let txid = tx.txid();
+        let sighashes: Vec<[u8; 32]> = inputs
+            .iter()
+            .enumerate()
+            .map(|(i, coin)| {
+                tx.sighash_all(i, &jar.address.witness_script, coin.value)
+                    .unwrap_or_else(|_| env::abort())
+            })
+            .collect();
+
+        // The guard goes in before the calls: other transactions run before the callback, and
+        // the reservation and the paid period are what stop them.
+        let payment_id = self.next_payment_id;
+        self.next_payment_id += 1;
+        for (free, mut coin) in plan.inputs.iter().zip(inputs) {
+            coin.status = CoinStatus::Reserved(payment_id);
+            self.coins.insert((jar_id.clone(), free.index), coin);
+        }
+        self.free_coins
+            .insert(jar_id.clone(), free[plan.inputs.len()..].to_vec());
+        jar.paid_period = Some(period);
+        self.jars.insert(jar_id.clone(), jar);
+        self.payments.insert(
+            payment_id,
+            Payment {
+                jar_id: jar_id.clone(),
+                kind: PaymentKind::Allowance { period },
+                inputs: plan.inputs.iter().map(|free| free.index).collect(),
+                outputs,
+                txid,
+                sighashes: sighashes.clone(),
+                fee: plan.fee,
+                attempt: 0,
+                status: PaymentStatus::Signing,
+                signatures: Vec::new(),
+            },
+        );
+        self.payment_txids.insert(txid, payment_id);
+        SatsJarEvent::AllowanceRequested {
+            jar_id: jar_id.clone(),
+            payment_id: U64(payment_id),
+            period: U64(period),
+            amount: U64(plan.amount),
+            fee: U64(plan.fee),
+            txid: hex::display(&txid),
+        }
+        .emit();
+
+        let requests = sighashes
+            .iter()
+            .map(|sighash| signer::sign(&self.mpc_contract, &jar_id, sighash))
+            .reduce(Promise::and)
+            .unwrap_or_else(|| env::abort());
+        requests.then(
+            Self::ext(env::current_account_id())
+                .with_static_gas(signer::SIGNED_CALLBACK_GAS)
+                .with_unused_gas_weight(0)
+                .on_payment_signed(U64(payment_id), 0),
+        )
+    }
+
+    /// Reads the joined `sign` answers one by one. The inputs are reserved, so this never
+    /// panics: anything wrong is recorded as a retryable signing failure. It acts only on the
+    /// signing round it belongs to, so a late answer can never move a payment backwards.
+    #[private]
+    pub fn on_payment_signed(&mut self, payment_id: U64, attempt: u32) -> U64 {
+        let Some(mut payment) = self.payments.get(&payment_id.0).cloned() else {
+            return payment_id;
+        };
+        if payment.status != PaymentStatus::Signing || payment.attempt != attempt {
+            return payment_id;
+        }
+        let Some(jar) = self.jars.get(&payment.jar_id) else {
+            return payment_id;
+        };
+        let signed = self
+            .read_signatures(&payment, &jar.mpc_key)
+            .and_then(|signatures| {
+                let tx = self.signed_tx(&payment, &signatures)?;
+                Ok((signatures, tx))
+            });
+        let jar_id = payment.jar_id.clone();
+        match signed {
+            Ok((signatures, tx)) => {
+                payment.signatures = signatures;
+                payment.status = PaymentStatus::Signed;
+                SatsJarEvent::PaymentSigned {
+                    jar_id,
+                    payment_id,
+                    txid: hex::display(&payment.txid),
+                    tx: hex::encode(&tx),
+                }
+                .emit();
+            }
+            Err(reason) => {
+                payment.status = PaymentStatus::SigningFailed {
+                    reason: reason.clone(),
+                };
+                SatsJarEvent::PaymentSigningFailed {
+                    jar_id,
+                    payment_id,
+                    reason,
+                }
+                .emit();
+            }
+        }
+        self.payments.insert(payment_id.0, payment);
+        payment_id
+    }
+
+    /// Proves a payment confirmed on Bitcoin through the light client; anyone may call it, for
+    /// a payment in any status but confirmed. The contract knows the payment's txid, so only
+    /// the proof is sent.
+    pub fn confirm_payment(&self, payment_id: U64, proof: TopupProof) -> Promise {
+        let payment = self.payment(payment_id.0);
+        refuse_unconfirmable(&payment.status);
+        let args = topup::inclusion_args(&proof);
+        if args.tx_id != payment.txid {
+            refuse(
+                error::PROOF_TX_MISMATCH,
+                "the proof is for another transaction than this payment's",
+            );
+        }
+        topup::check_index(&args);
+        if env::prepaid_gas() < light_client::PROVE_TOPUP_GAS {
+            refuse(
+                error::NOT_ENOUGH_GAS,
+                &format!(
+                    "attach at least {} Tgas for the light client and its callback",
+                    light_client::PROVE_TOPUP_GAS.as_tgas()
+                ),
+            );
+        }
+        Promise::new(self.light_client.clone())
+            .function_call(
+                light_client::METHOD.to_owned(),
+                near_sdk::borsh::to_vec(&args).unwrap_or_else(|_| env::abort()),
+                NearToken::from_yoctonear(0),
+                light_client::CALL_GAS,
+            )
+            .then(
+                Self::ext(env::current_account_id())
+                    .with_static_gas(light_client::CALLBACK_GAS)
+                    .on_payment_confirmed(payment_id),
+            )
+    }
+
+    /// Reads the light client's answer to `confirm_payment`. Nothing was reserved before the
+    /// call, so a refusal here simply fails the transaction.
+    #[private]
+    pub fn on_payment_confirmed(
+        &mut self,
+        payment_id: U64,
+        #[callback_result] inclusion: Result<Option<TxInclusionInfo>, PromiseError>,
+    ) {
+        let info = included(inclusion);
+        let mut payment = self.payment(payment_id.0);
+        // Another proof of the same payment may have landed while this one waited.
+        refuse_unconfirmable(&payment.status);
+        self.refuse_unconfirmed(&info);
+        let jar_id = payment.jar_id.clone();
+        let mut jar = self
+            .jars
+            .get(&jar_id)
+            .cloned()
+            .unwrap_or_else(|| env::abort());
+        for &index in &payment.inputs {
+            let mut coin = self.coin(&jar_id, index);
+            coin.status = CoinStatus::Spent(payment_id.0);
+            jar.proven_balance = jar
+                .proven_balance
+                .checked_sub(coin.value)
+                .unwrap_or_else(|| env::abort());
+            self.coins.insert((jar_id.clone(), index), coin);
+        }
+        let change = payment.change().map_or(0, |output| output.value);
+        if change > 0 {
+            let index = jar.coin_count;
+            jar.coin_count = index.checked_add(1).unwrap_or_else(|| env::abort());
+            jar.proven_balance = jar
+                .proven_balance
+                .checked_add(change)
+                .unwrap_or_else(|| env::abort());
+            // The change is always output 1.
+            self.add_coin(&jar_id, index, payment.txid, 1, change);
+        }
+        self.jars.insert(jar_id.clone(), jar);
+        payment.status = PaymentStatus::Confirmed;
+        let txid = hex::display(&payment.txid);
+        self.payments.insert(payment_id.0, payment);
+        SatsJarEvent::PaymentConfirmed {
+            jar_id,
+            payment_id,
+            txid,
+            change: U64(change),
+        }
+        .emit();
+    }
+
+    pub fn get_payment(&self, payment_id: U64) -> Option<PaymentView> {
+        let payment = self.payments.get(&payment_id.0)?;
+        let (status, failure) = payment.status.view();
+        let PaymentKind::Allowance { period } = payment.kind;
+        let signed_tx = (!payment.signatures.is_empty())
+            .then(|| self.signed_tx(payment, &payment.signatures).ok())
+            .flatten()
+            .map(|tx| hex::encode(&tx));
+        Some(PaymentView {
+            payment_id,
+            jar_id: payment.jar_id.clone(),
+            kind: "allowance".to_owned(),
+            period: U64(period),
+            status,
+            failure,
+            txid: hex::display(&payment.txid),
+            amount: U64(payment.outputs[0].value),
+            fee: U64(payment.fee),
+            change: U64(payment.change().map_or(0, |output| output.value)),
+            inputs: payment
+                .inputs
+                .iter()
+                .map(|&index| {
+                    let coin = self.coin(&payment.jar_id, index);
+                    InputView {
+                        txid: hex::display(&coin.txid),
+                        vout: coin.vout,
+                        value: U64(coin.value),
+                    }
+                })
+                .collect(),
+            signed_tx,
+        })
+    }
+
     pub fn get_jar(&self, jar_id: String) -> Option<JarView> {
         self.jars
             .get(&jar_id)
@@ -282,6 +609,91 @@ impl SatsJar {
 }
 
 impl SatsJar {
+    fn payment(&self, payment_id: u64) -> Payment {
+        self.payments.get(&payment_id).cloned().unwrap_or_else(|| {
+            refuse(
+                error::UNKNOWN_PAYMENT,
+                &format!("there is no payment {payment_id}"),
+            )
+        })
+    }
+
+    /// A coin the contract recorded; its absence would be a broken invariant.
+    fn coin(&self, jar_id: &str, index: u32) -> Coin {
+        self.coins
+            .get(&(jar_id.to_owned(), index))
+            .cloned()
+            .unwrap_or_else(|| env::abort())
+    }
+
+    /// Records a newly proven coin as confirmed and free, and its outpoint as seen for good.
+    fn add_coin(&mut self, jar_id: &str, index: u32, txid: [u8; 32], vout: u32, value: u64) {
+        self.coins.insert(
+            (jar_id.to_owned(), index),
+            Coin {
+                txid,
+                vout,
+                value,
+                address: 0,
+                status: CoinStatus::Confirmed,
+            },
+        );
+        self.seen_outpoints.insert(coins::outpoint_key(&txid, vout));
+        let mut free = self.free_coins.get(jar_id).cloned().unwrap_or_default();
+        payment::insert_free(&mut free, FreeCoin { value, index });
+        self.free_coins.insert(jar_id.to_owned(), free);
+    }
+
+    fn refuse_unconfirmed(&self, info: &TxInclusionInfo) {
+        let required = topup::required_confirmations(self.network);
+        let confirmations = info.confirmations();
+        if confirmations < required {
+            refuse(
+                error::NOT_CONFIRMED,
+                &format!("{confirmations} of {required} confirmations; wait for more"),
+            );
+        }
+    }
+
+    /// The signer's answers for `payment`, each checked against the jar's key.
+    fn read_signatures(
+        &self,
+        payment: &Payment,
+        key: &PointBytes,
+    ) -> Result<Vec<RawSignature>, String> {
+        let expected = payment.sighashes.len() as u64;
+        let answered = env::promise_results_count();
+        if answered != expected {
+            return Err(format!("{answered} answers for {expected} sign requests"));
+        }
+        payment
+            .sighashes
+            .iter()
+            .enumerate()
+            .map(|(i, sighash)| {
+                signer::read_signature(i as u64, sighash, key).map(|(r, s)| RawSignature { r, s })
+            })
+            .collect()
+    }
+
+    /// The payment's transaction with each input's witness built from its signature.
+    fn signed_tx(&self, payment: &Payment, signatures: &[RawSignature]) -> Result<Vec<u8>, String> {
+        let jar = self.jars.get(&payment.jar_id).ok_or("unknown jar")?;
+        let inputs: Vec<Coin> = payment
+            .inputs
+            .iter()
+            .map(|&index| self.coin(&payment.jar_id, index))
+            .collect();
+        let witnesses = signatures
+            .iter()
+            .map(|sig| btc::jar_witness(&sig.r, &sig.s, &jar.address.witness_script))
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|_| "a signature is not a valid secp256k1 signature".to_owned())?;
+        unsigned_tx(&inputs, &payment.outputs)
+            .to_signed_bytes(&witnesses)
+            .map_err(|_| "one signature per input is needed".to_owned())
+    }
+
     fn refuse_known_coin(&self, txid: &[u8; 32], vout: u32) {
         if self
             .seen_outpoints
@@ -316,4 +728,55 @@ impl SatsJar {
                 .detach();
         }
     }
+}
+
+/// The light client's inclusion answer, refusing when it did not find the transaction.
+fn included(inclusion: Result<Option<TxInclusionInfo>, PromiseError>) -> TxInclusionInfo {
+    match inclusion {
+        Err(_) => refuse(
+            error::NOT_IN_CHAIN,
+            "the light client refused the proof (unknown or side-chain block, bad coinbase \
+             proof, or paused)",
+        ),
+        Ok(None) => refuse(
+            error::NOT_IN_CHAIN,
+            "the merkle proof does not lead to the block's merkle root",
+        ),
+        Ok(Some(info)) => info,
+    }
+}
+
+fn refuse_unconfirmable(status: &PaymentStatus) {
+    match status {
+        PaymentStatus::Confirmed => refuse(
+            error::PAYMENT_ALREADY_CONFIRMED,
+            "this payment is already confirmed",
+        ),
+        PaymentStatus::Cancelled => refuse(
+            error::PAYMENT_CANCELLED,
+            "this payment was cancelled and can never be confirmed",
+        ),
+        _ => {}
+    }
+}
+
+/// The unsigned payment spending `inputs` to `outputs`.
+fn unsigned_tx(inputs: &[Coin], outputs: &[Output]) -> Transaction {
+    let outpoints: Vec<OutPoint> = inputs
+        .iter()
+        .map(|coin| OutPoint {
+            txid: coin.txid,
+            vout: coin.vout,
+        })
+        .collect();
+    Transaction::payment(
+        &outpoints,
+        outputs
+            .iter()
+            .map(|output| TxOut {
+                value: output.value,
+                script_pubkey: output.script_pubkey.clone(),
+            })
+            .collect(),
+    )
 }

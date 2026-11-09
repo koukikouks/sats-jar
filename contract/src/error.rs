@@ -35,7 +35,6 @@ pub const LOCKTIME_OUT_OF_RANGE: &str = "LOCKTIME_OUT_OF_RANGE";
 /// The attached deposit does not cover the new jar's storage.
 pub const STORAGE_DEPOSIT_TOO_LOW: &str = "STORAGE_DEPOSIT_TOO_LOW";
 /// No payment has this id.
-#[cfg_attr(not(feature = "dev-escape"), allow(dead_code))]
 pub const UNKNOWN_PAYMENT: &str = "UNKNOWN_PAYMENT";
 /// No jar has this id.
 pub const UNKNOWN_JAR: &str = "UNKNOWN_JAR";
@@ -63,3 +62,23 @@ pub const BELOW_DUST: &str = "BELOW_DUST";
 pub const COIN_ALREADY_KNOWN: &str = "COIN_ALREADY_KNOWN";
 /// The attached gas cannot cover the light client's call and the callback.
 pub const NOT_ENOUGH_GAS: &str = "NOT_ENOUGH_GAS";
+/// The transaction is one of the contract's own payments; its change counts through
+/// `confirm_payment`.
+pub const OWN_PAYMENT_TX: &str = "OWN_PAYMENT_TX";
+/// The jar has no proven top-up yet, so its allowance clock has not started.
+pub const NOT_FUNDED: &str = "NOT_FUNDED";
+/// An allowance was already requested in this period (even if it is not yet confirmed); the
+/// message says when the next period starts.
+pub const ALREADY_PAID: &str = "ALREADY_PAID";
+/// The fee rate is below 1 sat/vB, which Bitcoin nodes do not relay.
+pub const FEE_TOO_LOW: &str = "FEE_TOO_LOW";
+/// The jar's free coins (its 10 largest) cannot pay the fee plus a payment at the dust floor.
+pub const INSUFFICIENT_BALANCE: &str = "INSUFFICIENT_BALANCE";
+/// The payment's fee would be over the jar's fee budget (cap / 10).
+pub const FEE_OVER_BUDGET: &str = "FEE_OVER_BUDGET";
+/// Paying the cap would leave change below the dust floor, which would go to miners.
+pub const CHANGE_BELOW_DUST: &str = "CHANGE_BELOW_DUST";
+/// The payment is already proven confirmed.
+pub const PAYMENT_ALREADY_CONFIRMED: &str = "PAYMENT_ALREADY_CONFIRMED";
+/// The payment was cancelled (development builds only), so it can never be confirmed.
+pub const PAYMENT_CANCELLED: &str = "PAYMENT_CANCELLED";

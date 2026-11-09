@@ -23,8 +23,9 @@ pub const DUST_FLOOR: u64 = 1_000;
 /// The deepest merkle proof a block can need.
 const MAX_PROOF_DEPTH: usize = 32;
 
-/// A top-up's proof as a caller sends it. Hashes are display hex, the order explorers and
-/// Bitcoin Core print them (the light client's own JSON form of its argument).
+/// A transaction's inclusion proof as a caller sends it, for a top-up or a payment. Hashes are
+/// display hex, the order explorers and Bitcoin Core print them (the light client's own JSON
+/// form of its argument).
 #[near(serializers = [json])]
 pub struct TopupProof {
     pub tx_id: String,
@@ -44,28 +45,19 @@ pub struct Topup {
 }
 
 /// Checks a top-up of the jar whose scriptPubKey is `jar_script_pubkey`, refusing in the
-/// spec's order, and returns the output and the light client's argument.
+/// spec's order, and returns the output and the light client's argument. `is_payment` says
+/// whether a txid is one of the contract's own payments.
 pub fn check(
     tx_hex: &str,
     vout: u32,
     proof: &TopupProof,
     jar_script_pubkey: &[u8],
+    is_payment: impl Fn(&[u8; 32]) -> bool,
 ) -> (Topup, TxInclusionProof) {
     let tx = crate::hex::decode(tx_hex)
         .and_then(|bytes| Transaction::parse(&bytes).ok())
         .unwrap_or_else(|| refuse(error::INVALID_TX, "the transaction could not be read"));
-    let args = TxInclusionProof {
-        tx_id: hash(&proof.tx_id),
-        tx_block_blockhash: hash(&proof.tx_block_blockhash),
-        tx_index: proof.tx_index,
-        merkle_proof: proof.merkle_proof.iter().map(|h| hash(h)).collect(),
-        coinbase_tx_id: hash(&proof.coinbase_tx_id),
-        coinbase_merkle_proof: proof
-            .coinbase_merkle_proof
-            .iter()
-            .map(|h| hash(h))
-            .collect(),
-    };
+    let args = inclusion_args(proof);
     let txid = tx.txid();
     if args.tx_id != txid {
         refuse(
@@ -76,13 +68,12 @@ pub fn check(
     if tx.is_coinbase() {
         refuse(error::COINBASE, "a coinbase transaction is not a top-up");
     }
-    // Index 0 is the coinbase's place, and a proof of `n` hashes holds 2^n places. No block
-    // holds 2^32 transactions, which also keeps the shift in range.
-    let depth = args.merkle_proof.len();
-    if args.tx_index == 0 || depth > MAX_PROOF_DEPTH || args.tx_index >> depth != 0 {
+    check_index(&args);
+    // Its change is counted by `confirm_payment`, once, with the payment's own record.
+    if is_payment(&txid) {
         refuse(
-            error::BAD_TX_INDEX,
-            "the transaction's index does not fit its merkle proof",
+            error::OWN_PAYMENT_TX,
+            "this is a jar payment; prove it with confirm_payment",
         );
     }
     let output = tx.outputs.get(vout as usize).unwrap_or_else(|| {
@@ -114,6 +105,35 @@ pub fn check(
         },
         args,
     )
+}
+
+/// The light client's argument for `proof`, refusing a hash that is not 32 bytes of hex.
+pub fn inclusion_args(proof: &TopupProof) -> TxInclusionProof {
+    TxInclusionProof {
+        tx_id: hash(&proof.tx_id),
+        tx_block_blockhash: hash(&proof.tx_block_blockhash),
+        tx_index: proof.tx_index,
+        merkle_proof: proof.merkle_proof.iter().map(|h| hash(h)).collect(),
+        coinbase_tx_id: hash(&proof.coinbase_tx_id),
+        coinbase_merkle_proof: proof
+            .coinbase_merkle_proof
+            .iter()
+            .map(|h| hash(h))
+            .collect(),
+    }
+}
+
+/// Refuses a transaction index that does not fit its merkle proof.
+pub fn check_index(args: &TxInclusionProof) {
+    // Index 0 is the coinbase's place, and a proof of `n` hashes holds 2^n places. No block
+    // holds 2^32 transactions, which also keeps the shift in range.
+    let depth = args.merkle_proof.len();
+    if args.tx_index == 0 || depth > MAX_PROOF_DEPTH || args.tx_index >> depth != 0 {
+        refuse(
+            error::BAD_TX_INDEX,
+            "the transaction's index does not fit its merkle proof",
+        );
+    }
 }
 
 /// A display-hex hash in internal byte order.

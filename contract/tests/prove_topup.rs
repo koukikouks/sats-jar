@@ -44,6 +44,7 @@ async fn a_confirmed_top_up_proven_by_anyone_is_counted_as_a_coin() {
             "vout": funding.vout,
             "value": core_value.to_string(),
             "status": "confirmed",
+            "payment_id": null,
         }])
     );
     assert_eq!(
