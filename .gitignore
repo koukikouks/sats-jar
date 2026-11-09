@@ -3,3 +3,4 @@ project-brief.md
 .env
 docs/plans/
 target/
+node_modules/
