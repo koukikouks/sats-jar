@@ -37,3 +37,29 @@ pub const STORAGE_DEPOSIT_TOO_LOW: &str = "STORAGE_DEPOSIT_TOO_LOW";
 /// No payment has this id.
 #[cfg_attr(not(feature = "dev-escape"), allow(dead_code))]
 pub const UNKNOWN_PAYMENT: &str = "UNKNOWN_PAYMENT";
+/// No jar has this id.
+pub const UNKNOWN_JAR: &str = "UNKNOWN_JAR";
+/// The top-up's transaction is not hex or does not parse as a Bitcoin transaction.
+pub const INVALID_TX: &str = "INVALID_TX";
+/// A hash in the top-up's proof is not 32 bytes of hex.
+pub const INVALID_PROOF: &str = "INVALID_PROOF";
+/// The output is past the transaction's last output or does not pay the jar's address.
+pub const NOT_TO_JAR: &str = "NOT_TO_JAR";
+/// The light client did not find the transaction in its main chain (unknown or side-chain
+/// block, a merkle proof that does not lead to the block's root, or the client is paused).
+pub const NOT_IN_CHAIN: &str = "NOT_IN_CHAIN";
+/// The top-up's block is not yet deep enough; the message says how many confirmations it has.
+pub const NOT_CONFIRMED: &str = "NOT_CONFIRMED";
+/// The proof's `tx_id` is not the txid of the transaction sent (SHA256d of its bytes without
+/// witnesses).
+pub const PROOF_TX_MISMATCH: &str = "PROOF_TX_MISMATCH";
+/// A coinbase transaction cannot be a top-up.
+pub const COINBASE: &str = "COINBASE";
+/// The proof's transaction index is 0 (the coinbase's place) or does not fit the proof's depth.
+pub const BAD_TX_INDEX: &str = "BAD_TX_INDEX";
+/// The output is below the dust floor (1,000 sats), so it does not count.
+pub const BELOW_DUST: &str = "BELOW_DUST";
+/// This outpoint has already been counted, by this jar or another.
+pub const COIN_ALREADY_KNOWN: &str = "COIN_ALREADY_KNOWN";
+/// The attached gas cannot cover the light client's call and the callback.
+pub const NOT_ENOUGH_GAS: &str = "NOT_ENOUGH_GAS";

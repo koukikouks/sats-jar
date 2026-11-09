@@ -77,6 +77,10 @@ pub struct Jar {
     pub address: JarAddress,
     pub clock: Clock,
     pub handover: Handover,
+    /// How many coins have been proven; the next coin's index.
+    pub coin_count: u32,
+    /// Sats in the jar's confirmed coins.
+    pub proven_balance: u64,
 }
 
 #[near(serializers = [json])]
@@ -96,6 +100,8 @@ pub struct JarView {
     pub demo_timing: bool,
     pub clock: Clock,
     pub handover: Handover,
+    /// Sats in the jar's proven, unspent coins.
+    pub proven_balance: U64,
 }
 
 /// Whether a jar runs on shortened time; derived from its period, never set by the caller.
@@ -200,12 +206,19 @@ impl Jar {
             },
             clock: Clock::default(),
             handover: Handover::default(),
+            coin_count: 0,
+            proven_balance: 0,
         }
     }
 
     /// The jar address on `network`.
     pub fn address(&self, network: Network) -> String {
         SegwitAddress::p2wsh(&self.address.witness_script).encode(network.into())
+    }
+
+    /// The scriptPubKey a top-up to the jar address pays.
+    pub fn script_pubkey(&self) -> Vec<u8> {
+        SegwitAddress::p2wsh(&self.address.witness_script).script_pubkey()
     }
 
     pub fn view(&self, jar_id: &str, network: Network) -> JarView {
@@ -221,6 +234,7 @@ impl Jar {
             demo_timing: demo_timing(self.args.period.0),
             clock: self.clock.clone(),
             handover: self.handover.clone(),
+            proven_balance: U64(self.proven_balance),
         }
     }
 }

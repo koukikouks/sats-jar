@@ -2,6 +2,10 @@
 //! `jar.<root>`, the account the live `derived_public_key` vectors were recorded for.
 #![allow(dead_code)]
 
+mod topup;
+#[allow(unused_imports)]
+pub use topup::*;
+
 use bitcoin::hashes::Hash;
 use near_workspaces::network::Sandbox;
 use near_workspaces::result::ExecutionFinalResult;
@@ -15,17 +19,20 @@ use test_support::serde_json::{json, Value};
 pub const LIVE_MPC_ROOT_KEY: &str = "secp256k1:4NfTiv3UsGahebgTaHyD9vF8KYKMBnfd6kh94mK6xv8fGBiJB8TBtFMP5WWXz6B89Ac1fbpzPwAvoyQebemHFwx3";
 
 pub const MPC_CONTRACT: &str = "v1.signer-prod.testnet";
-pub const LIGHT_CLIENT: &str = "btc-client-v4.testnet";
+/// Where the light-client stand-in is deployed in every sandbox.
+pub const LIGHT_CLIENT: &str = "light-client.test.near";
 
 pub const DAY: u64 = 86_400;
 
-/// Which features the wasm is built with.
+/// Which wasm to build.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Build {
-    /// Default features: what the reproducible (locked) build compiles.
+    /// The jar contract with default features: what the reproducible (locked) build compiles.
     Locked,
-    /// With the `dev-escape` feature.
+    /// The jar contract with the `dev-escape` feature.
     Dev,
+    /// The light-client stand-in (`tests/stand-ins/light-client`).
+    LightClient,
 }
 
 static WASM: Mutex<Option<HashMap<Build, Vec<u8>>>> = Mutex::new(None);
@@ -39,12 +46,16 @@ pub fn wasm(build: Build) -> Vec<u8> {
         return wasm.clone();
     }
     let root = env!("CARGO_MANIFEST_DIR");
-    let name = match build {
-        Build::Locked => "locked",
-        Build::Dev => "dev",
+    let (name, manifest) = match build {
+        Build::Locked => ("locked", format!("{root}/Cargo.toml")),
+        Build::Dev => ("dev", format!("{root}/Cargo.toml")),
+        Build::LightClient => (
+            "light-client",
+            format!("{root}/tests/stand-ins/light-client/Cargo.toml"),
+        ),
     };
     let opts = cargo_near_build::BuildOpts {
-        manifest_path: Some(format!("{root}/Cargo.toml").into()),
+        manifest_path: Some(manifest.into()),
         features: (build == Build::Dev).then(|| "dev-escape".to_owned()),
         no_abi: true,
         out_dir: Some(format!("{root}/../target/near-test/{name}/out").into()),
@@ -61,6 +72,7 @@ pub struct Jars {
     pub worker: Worker<Sandbox>,
     pub contract: Contract,
     pub giver: Account,
+    pub light_client: Contract,
 }
 
 /// A sandbox with the jar contract deployed at `jar.<root>` (not yet initialised).
@@ -82,10 +94,24 @@ pub async fn deploy(build: Build) -> Jars {
         .into_result()
         .expect("deployed");
     let giver = new_account(&worker, "giver").await;
+    let light_client = root
+        .create_subaccount("light-client")
+        .initial_balance(NearToken::from_near(10))
+        .transact()
+        .await
+        .expect("create light-client account")
+        .into_result()
+        .expect("light-client account created")
+        .deploy(&wasm(Build::LightClient))
+        .await
+        .expect("deploy light client")
+        .into_result()
+        .expect("light client deployed");
     Jars {
         worker,
         contract,
         giver,
+        light_client,
     }
 }
 
