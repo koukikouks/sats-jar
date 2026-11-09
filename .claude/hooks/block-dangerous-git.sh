@@ -32,6 +32,10 @@ for pattern in "${DANGEROUS_PATTERNS[@]}"; do
 done
 
 if echo "$COMMAND" | grep -qE "git( -C [^ ]+)? push"; then
+  # Force, all-branch and mirror pushes, in any argument position.
+  if echo "$COMMAND" | grep -qE "(^| )(--force[^ ]*|-[a-zA-Z]*f[a-zA-Z]*|--all|--mirror)( |=|$)"; then
+    block "is a force, all-branch or mirror push"
+  fi
   # An explicit main or master ref anywhere in the push.
   if echo "$COMMAND" | grep -qE "push.*([ :+]|refs/heads/)(main|master)( |$|:)"; then
     block "pushes to main"
