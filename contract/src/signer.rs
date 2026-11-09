@@ -14,8 +14,21 @@ pub const SIGN_WEIGHT: GasWeight = GasWeight(1);
 pub const SIGN_DEPOSIT: NearToken = NearToken::from_yoctonear(1);
 /// The callback that checks and stores up to 10 signatures.
 pub const SIGNED_CALLBACK_GAS: Gas = Gas::from_tgas(30);
-/// `request_allowance`'s own work before the calls: coin reads, sighashes, state writes.
+/// The caller's own work before the calls (`request_allowance`: coin reads, sighashes, state
+/// writes; `retry_signing` does less).
 pub const REQUEST_GAS: Gas = Gas::from_tgas(20);
+/// What a call must attach to sign `signatures` inputs: each request's floor, the callback
+/// and the caller's own work.
+pub fn required_gas(signatures: u64) -> Gas {
+    Gas::from_gas(
+        SIGN_GAS
+            .as_gas()
+            .saturating_mul(signatures)
+            .saturating_add(SIGNED_CALLBACK_GAS.as_gas())
+            .saturating_add(REQUEST_GAS.as_gas()),
+    )
+}
+
 /// The secp256k1 ECDSA domain on the live signer.
 const ECDSA_DOMAIN: u64 = 0;
 /// A `SignatureResponse` is about 200 bytes; anything longer is not one.

@@ -180,3 +180,65 @@ pub fn paid(payment: &Value) -> (u64, u64) {
     let change = tx.output.get(1).map_or(0, |o| o.value.to_sat());
     (tx.output[0].value.to_sat(), change)
 }
+
+impl Jars {
+    /// `retry_signing` from the giver with 300 Tgas.
+    pub async fn retry_signing(&self, payment_id: &str) -> ExecutionFinalResult {
+        self.retry_signing_with_gas(payment_id, Gas::from_tgas(300))
+            .await
+    }
+
+    pub async fn retry_signing_with_gas(&self, payment_id: &str, gas: Gas) -> ExecutionFinalResult {
+        self.giver
+            .call(self.contract.id(), "retry_signing")
+            .args_json(json!({ "payment_id": payment_id }))
+            .gas(gas)
+            .transact()
+            .await
+            .expect("send retry_signing")
+    }
+}
+
+impl Jars {
+    /// Sends `request_allowance` (300 Tgas) without waiting for its signing to finish, and
+    /// returns the payment id once the request has reserved its inputs.
+    pub async fn request_allowance_in_flight(
+        &self,
+        jar_id: &str,
+        fee_rate: u64,
+    ) -> (String, near_workspaces::operations::TransactionStatus) {
+        let status = self
+            .giver
+            .call(self.contract.id(), "request_allowance")
+            .args_json(json!({ "jar_id": jar_id, "fee_rate": fee_rate.to_string() }))
+            .gas(Gas::from_tgas(300))
+            .transact_async()
+            .await
+            .expect("send request_allowance");
+        loop {
+            let coins = self.get_coins(jar_id).await;
+            let reserved = coins
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|c| c["status"] == "reserved")
+                .map(|c| c["payment_id"].as_str().unwrap().to_owned());
+            if let Some(id) = reserved {
+                return (id, status);
+            }
+            self.worker.fast_forward(1).await.expect("fast_forward");
+        }
+    }
+
+    /// The signer stand-in's test control: answers the oldest `slow` request.
+    pub async fn signer_respond(&self, ok: bool) {
+        self.signer
+            .call("respond")
+            .args_json(json!({ "ok": ok }))
+            .transact()
+            .await
+            .unwrap()
+            .into_result()
+            .expect("respond");
+    }
+}

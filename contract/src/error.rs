@@ -88,3 +88,10 @@ pub const CHANGE_BELOW_DUST: &str = "CHANGE_BELOW_DUST";
 pub const PAYMENT_ALREADY_CONFIRMED: &str = "PAYMENT_ALREADY_CONFIRMED";
 /// The payment was cancelled (development builds only), so it can never be confirmed.
 pub const PAYMENT_CANCELLED: &str = "PAYMENT_CANCELLED";
+/// The payment is already signed, so it is not signed again.
+pub const PAYMENT_ALREADY_SIGNED: &str = "PAYMENT_ALREADY_SIGNED";
+/// The payment's current signing round may still be answered; the message says from which
+/// block it can be retried.
+pub const SIGNING_IN_PROGRESS: &str = "SIGNING_IN_PROGRESS";
+/// The payment has no stored signatures, so there is nothing to rebuild.
+pub const PAYMENT_NOT_SIGNED: &str = "PAYMENT_NOT_SIGNED";

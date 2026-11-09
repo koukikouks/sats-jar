@@ -24,7 +24,7 @@ use mpc_key::PointBytes;
 use near_sdk::json_types::U64;
 use near_sdk::store::{LookupMap, LookupSet};
 use near_sdk::{
-    env, near, AccountId, BorshStorageKey, Gas, NearToken, PanicOnDefault, Promise, PromiseError,
+    env, near, AccountId, BorshStorageKey, NearToken, PanicOnDefault, Promise, PromiseError,
     PublicKey,
 };
 use payment::{
@@ -358,24 +358,7 @@ impl SatsJar {
                 ),
             ),
         });
-        let signatures = plan.inputs.len() as u64;
-        let required = Gas::from_gas(
-            signer::SIGN_GAS
-                .as_gas()
-                .saturating_mul(signatures)
-                .saturating_add(signer::SIGNED_CALLBACK_GAS.as_gas())
-                .saturating_add(signer::REQUEST_GAS.as_gas()),
-        );
-        if env::prepaid_gas() < required {
-            refuse(
-                error::NOT_ENOUGH_GAS,
-                &format!(
-                    "attach at least {} Tgas for {signatures} signature{} and the callback",
-                    required.as_tgas(),
-                    if signatures == 1 { "" } else { "s" }
-                ),
-            );
-        }
+        refuse_short_gas(plan.inputs.len());
 
         let inputs: Vec<Coin> = plan
             .inputs
@@ -427,6 +410,7 @@ impl SatsJar {
                 sighashes: sighashes.clone(),
                 fee: plan.fee,
                 attempt: 0,
+                signing_started_at: env::block_height(),
                 status: PaymentStatus::Signing,
                 signatures: Vec::new(),
             },
@@ -442,17 +426,63 @@ impl SatsJar {
         }
         .emit();
 
-        let requests = sighashes
-            .iter()
-            .map(|sighash| signer::sign(&self.mpc_contract, &jar_id, sighash))
-            .reduce(Promise::and)
-            .unwrap_or_else(|| env::abort());
-        requests.then(
-            Self::ext(env::current_account_id())
-                .with_static_gas(signer::SIGNED_CALLBACK_GAS)
-                .with_unused_gas_weight(0)
-                .on_payment_signed(U64(payment_id), 0),
-        )
+        self.sign_round(&jar_id, payment_id, &sighashes, 0)
+    }
+
+    /// Signs a payment again whose signing failed, or stalled with no request in flight (its
+    /// callback never came), with the identical stored transaction; anyone may call it. The
+    /// result is the payment id.
+    pub fn retry_signing(&mut self, payment_id: U64) -> Promise {
+        let mut payment = self.payment(payment_id.0);
+        let now = env::block_height();
+        match payment.status {
+            PaymentStatus::Signed => refuse(
+                error::PAYMENT_ALREADY_SIGNED,
+                "this payment is already signed; rebuild_witness returns its transaction",
+            ),
+            PaymentStatus::Confirmed => refuse(
+                error::PAYMENT_ALREADY_CONFIRMED,
+                "this payment is already confirmed",
+            ),
+            PaymentStatus::Cancelled => refuse(
+                error::PAYMENT_CANCELLED,
+                "this payment was cancelled and can never be signed",
+            ),
+            PaymentStatus::Signing if rule::signing_in_flight(payment.signing_started_at, now) => {
+                refuse(
+                    error::SIGNING_IN_PROGRESS,
+                    &format!(
+                        "a signing request for this payment may still be answered; retry from \
+                         block {}",
+                        rule::signing_stalled_at(payment.signing_started_at)
+                    ),
+                )
+            }
+            PaymentStatus::Signing | PaymentStatus::SigningFailed { .. } => {}
+        }
+        refuse_short_gas(payment.sighashes.len());
+        // A new round: the callback of any earlier one no longer matches and is ignored.
+        payment.attempt = payment.attempt.checked_add(1).unwrap_or_else(|| {
+            refuse(
+                error::SIGNING_IN_PROGRESS,
+                "this payment has been retried too often",
+            )
+        });
+        payment.status = PaymentStatus::Signing;
+        payment.signing_started_at = now;
+        let (jar_id, attempt, sighashes) = (
+            payment.jar_id.clone(),
+            payment.attempt,
+            payment.sighashes.clone(),
+        );
+        self.payments.insert(payment_id.0, payment);
+        SatsJarEvent::PaymentSigningRetried {
+            jar_id: jar_id.clone(),
+            payment_id,
+            attempt,
+        }
+        .emit();
+        self.sign_round(&jar_id, payment_id.0, &sighashes, attempt)
     }
 
     /// Reads the joined `sign` answers one by one. The inputs are reserved, so this never
@@ -593,6 +623,23 @@ impl SatsJar {
         .emit();
     }
 
+    /// The payment's signed transaction (hex), re-encoded from its stored signatures with no
+    /// new signing; anyone may call it.
+    pub fn rebuild_witness(&self, payment_id: U64) -> String {
+        let payment = self.payment(payment_id.0);
+        if payment.signatures.is_empty() {
+            refuse(
+                error::PAYMENT_NOT_SIGNED,
+                "this payment has no signatures yet; retry_signing asks for them",
+            );
+        }
+        // The signatures were checked and the transaction built once already; this cannot fail.
+        let tx = self
+            .signed_tx(&payment, &payment.signatures)
+            .unwrap_or_else(|_| env::abort());
+        hex::encode(&tx)
+    }
+
     pub fn get_payment(&self, payment_id: U64) -> Option<PaymentView> {
         let payment = self.payments.get(&payment_id.0)?;
         let (status, failure) = payment.status.view();
@@ -636,6 +683,28 @@ impl SatsJar {
 }
 
 impl SatsJar {
+    /// One signing round: a `sign` request per sighash, joined, then the checking callback,
+    /// which acts only if the payment is still in round `attempt`.
+    fn sign_round(
+        &self,
+        jar_id: &str,
+        payment_id: u64,
+        sighashes: &[[u8; 32]],
+        attempt: u32,
+    ) -> Promise {
+        let requests = sighashes
+            .iter()
+            .map(|sighash| signer::sign(&self.mpc_contract, jar_id, sighash))
+            .reduce(Promise::and)
+            .unwrap_or_else(|| env::abort());
+        requests.then(
+            Self::ext(env::current_account_id())
+                .with_static_gas(signer::SIGNED_CALLBACK_GAS)
+                .with_unused_gas_weight(0)
+                .on_payment_signed(U64(payment_id), attempt),
+        )
+    }
+
     fn payment(&self, payment_id: u64) -> Payment {
         self.payments.get(&payment_id).cloned().unwrap_or_else(|| {
             refuse(
@@ -770,6 +839,22 @@ fn included(inclusion: Result<Option<TxInclusionInfo>, PromiseError>) -> TxInclu
             "the merkle proof does not lead to the block's merkle root",
         ),
         Ok(Some(info)) => info,
+    }
+}
+
+/// Refuses unless the attached gas covers `signatures` sign requests, the callback and the
+/// caller's own work.
+fn refuse_short_gas(signatures: usize) {
+    let required = signer::required_gas(signatures as u64);
+    if env::prepaid_gas() < required {
+        refuse(
+            error::NOT_ENOUGH_GAS,
+            &format!(
+                "attach at least {} Tgas for {signatures} signature{} and the callback",
+                required.as_tgas(),
+                if signatures == 1 { "" } else { "s" }
+            ),
+        );
     }
 }
 

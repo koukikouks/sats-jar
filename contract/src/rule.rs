@@ -30,6 +30,25 @@ pub fn wait(seconds: u64) -> String {
     }
 }
 
+/// The live `yield_timeout_length_in_blocks`: an MPC `sign` request fails after this many
+/// blocks unanswered (stack notes §1, §4).
+const SIGN_TIMEOUT_BLOCKS: u64 = 200;
+/// Blocks for the request to reach the signer and its answer to reach the callback.
+const SIGN_MARGIN_BLOCKS: u64 = 50;
+
+/// Whether a signing round begun at block `started_at` may still be answered at block `now`.
+/// After that its callback is lost (it ran out of gas, say), so the payment may be retried.
+pub fn signing_in_flight(started_at: u64, now: u64) -> bool {
+    now < signing_stalled_at(started_at)
+}
+
+/// The first block at which a round begun at `started_at` counts as stalled.
+pub fn signing_stalled_at(started_at: u64) -> u64 {
+    started_at
+        .saturating_add(SIGN_TIMEOUT_BLOCKS)
+        .saturating_add(SIGN_MARGIN_BLOCKS)
+}
+
 /// At most three periods' allowance can wait at once, the current period included (ADR 0005).
 const MAX_PERIODS_WAITING: u64 = 3;
 

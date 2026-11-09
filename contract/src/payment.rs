@@ -190,6 +190,8 @@ pub struct Payment {
     pub fee: u64,
     /// Which signing round a callback belongs to; a callback from another round is ignored.
     pub attempt: u32,
+    /// The block height the current signing round began at.
+    pub signing_started_at: u64,
     pub status: PaymentStatus,
     /// One per input once signed, checked against the jar's key.
     pub signatures: Vec<RawSignature>,
@@ -201,8 +203,9 @@ pub enum PaymentKind {
     Allowance { period: u64 },
 }
 
-/// Moves only forward: signing → signed or signing failed, signed → confirmed. A signing
-/// failure is retryable (T05's `retry_signing`); confirmed and cancelled are final.
+/// Moves only forward: signing → signed or signing failed, signed → confirmed. A failed or
+/// stalled signing goes back to signing only through `retry_signing`, in a new round with the
+/// same transaction; confirmed and cancelled are final.
 #[near(serializers = [borsh])]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PaymentStatus {

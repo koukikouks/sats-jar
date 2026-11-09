@@ -41,6 +41,13 @@ pub enum SatsJarEvent {
         payment_id: U64,
         reason: String,
     },
+    /// A failed or stalled signing asked again, as round `attempt`, for the same transaction.
+    #[event_version("1.0.0")]
+    PaymentSigningRetried {
+        jar_id: String,
+        payment_id: U64,
+        attempt: u32,
+    },
     /// Proven on Bitcoin: its inputs are spent and its change (sats, 0 for none) is a coin.
     #[event_version("1.0.0")]
     PaymentConfirmed {
