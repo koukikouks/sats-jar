@@ -54,6 +54,12 @@ async fn what_a_short_jar_could_not_pay_is_paid_the_next_period() {
     let paid_at = now(&jars.worker).await;
     let (short, _) = paid(&first);
     assert!(short < CAP);
+    let id = first["payment_id"].as_str().unwrap();
+    let proof = jars.mine_payment(&regtest, &first).await;
+    jars.confirm_payment(id, &proof)
+        .await
+        .into_result()
+        .unwrap();
     let topup = jars.confirmed_topup(&regtest, &jar.address, 50_000).await;
     jars.prove(&jars.giver, &jar.id, &topup)
         .await

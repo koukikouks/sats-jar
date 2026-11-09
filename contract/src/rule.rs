@@ -1,5 +1,6 @@
-//! The rule's period clock: pure arithmetic on unix seconds, no I/O. Periods are numbered from
-//! the jar's first proven top-up (ADR 0005): period 0 starts then, period n `n × period` later.
+//! The rule: the period clock, the allowance ledger (carry-over and the fee budget) and the
+//! signing window, as pure arithmetic with no I/O. Periods are numbered from the jar's first
+//! proven top-up (ADR 0005): period 0 starts then, period n `n × period` later.
 
 use near_sdk::near;
 
