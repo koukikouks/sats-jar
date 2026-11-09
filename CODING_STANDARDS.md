@@ -71,9 +71,11 @@ TypeScript packages share one pnpm workspace at the root.
 - Test names read as behaviour in glossary words: `second_allowance_in_a_period_is_refused_as_already_paid`.
 - `cargo test` from the root runs the Rust suites; `pnpm test` runs the TypeScript ones (vitest).
 
-## Commits and review
+## Git, commits and review
 
-- One commit per ticket, on its own branch, message `T04: Pay one allowance, signed and accepted by Bitcoin (#N)` with the issue number, ending with the co-author line. No secrets, no `project-brief.md`, nothing from `docs/plans/`.
+- Nothing is committed or pushed to `main` directly. Each ticket is built on its own branch (`t04-pay-allowance`) and merged into the integration branch (`integration/spec-1`) after its review passes; both may be pushed. `main` changes only through a pull request the maintainer merges. A project hook (`.claude/hooks/block-dangerous-git.sh`) blocks pushes to `main`, force pushes, merging pull requests and destructive resets; it matches on command text, so describe those commands in files rather than in shell strings.
+- Commit messages follow the `commit` skill: `area: summary`, a short why, `Closes #N`, no attribution trailers. Pull request bodies follow the `pr` skill, also with no attribution footer.
+- A ticket lands as one or a few commits, each a coherent step that builds and passes its tests. No secrets, no `project-brief.md`, nothing from `docs/plans/`.
 - Before committing: `cargo fmt`, `cargo clippy -- -D warnings`, the TypeScript type check, and the full test suite pass.
 - Each ticket closes with `/code-review` (see `CLAUDE.md`). Contract tickets also run the `near-contract-audit` skill's checklist over their diff.
-- Pushes, PRs to `main`, deploys of the locked contract and anything public wait for the maintainer's yes. Testnet transactions do not.
+- Deploying the locked contract, hosting the site, making anything public and the submission wait for the maintainer's sign-off. Testnet transactions do not.
