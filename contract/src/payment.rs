@@ -28,10 +28,13 @@ pub fn insert_free(list: &mut Vec<FreeCoin>, coin: FreeCoin) {
 /// Why a payment cannot be built, in the spec's refusal order.
 #[derive(Debug, PartialEq, Eq)]
 pub enum Shortfall {
-    /// The coins cannot pay the fee plus a payment at the dust floor.
+    /// The coins cannot pay the fee (or, if less, the fee budget) plus a payment at the dust
+    /// floor.
     InsufficientBalance,
     /// The fee would be over the cap's fee budget (cap / 10).
     FeeOverBudget { fee: u64, budget: u64 },
+    /// The payment would be under half the cap (ADR 0005's size floor).
+    PaymentTooSmall { amount: u64 },
     /// Paying the cap would leave a change too small to keep (it would go to miners).
     ChangeBelowDust { change: u64 },
 }
@@ -54,12 +57,19 @@ pub struct Shape {
     pub witness_script_len: u64,
 }
 
-/// Plans a payment of up to `cap` sats at `fee_rate` sat/vB from `free` (largest first). Coins
-/// are added, at most 10, until they pay the cap, the fee and a change worth keeping; a jar
-/// holding less pays what it has after the fee. The real fee (inputs − outputs) never exceeds
-/// cap / 10, and is at least the rate times the largest size the signed transaction can have.
-pub fn plan(free: &[FreeCoin], cap: u64, fee_rate: u64, shape: &Shape) -> Result<Plan, Shortfall> {
-    let budget = cap / 10;
+/// Plans a payment of up to `target` sats (never under half of `cap`) at `fee_rate` sat/vB from `free` (largest first).
+/// Coins are added, at most 10, until they pay the target, the fee and a change worth keeping;
+/// a jar holding less pays what it has after the fee. The real fee (inputs − outputs) never
+/// exceeds `budget`, and is at least the rate times the largest size the signed transaction can
+/// have.
+pub fn plan(
+    free: &[FreeCoin],
+    target: u64,
+    cap: u64,
+    budget: u64,
+    fee_rate: u64,
+    shape: &Shape,
+) -> Result<Plan, Shortfall> {
     let fees = |inputs: usize| {
         (
             fee_rate.saturating_mul(vsize(inputs, &[shape.payee_script_len], shape)),
@@ -77,17 +87,34 @@ pub fn plan(free: &[FreeCoin], cap: u64, fee_rate: u64, shape: &Shape) -> Result
         total = total.saturating_add(coin.value);
         taken += 1;
         let (_, with_change) = fees(taken);
-        if total >= cap.saturating_add(with_change).saturating_add(DUST_FLOOR) {
+        if total
+            >= target
+                .saturating_add(with_change)
+                .saturating_add(DUST_FLOOR)
+        {
             break;
         }
     }
     let (without_change, with_change) = fees(taken);
-    if total < without_change.saturating_add(DUST_FLOOR) {
+    // Measured against the budget too, so a jar that could pay its budget hears that the
+    // rate is too high rather than that it is short.
+    if total < without_change.min(budget).saturating_add(DUST_FLOOR) {
         return Err(Shortfall::InsufficientBalance);
     }
-    let (amount, change) = if total >= cap.saturating_add(with_change).saturating_add(DUST_FLOOR) {
-        (cap, total - cap - with_change)
-    } else if total - without_change <= cap {
+    // Every payment from these coins costs at least this; checked before any `total − fee`.
+    if without_change > budget {
+        return Err(Shortfall::FeeOverBudget {
+            fee: without_change,
+            budget,
+        });
+    }
+    let (amount, change) = if total
+        >= target
+            .saturating_add(with_change)
+            .saturating_add(DUST_FLOOR)
+    {
+        (target, total - target - with_change)
+    } else if total - without_change <= target {
         (total - without_change, 0)
     } else {
         // Keeping the change would cost `with_change`; it is the fee this payment would need.
@@ -98,12 +125,16 @@ pub fn plan(free: &[FreeCoin], cap: u64, fee_rate: u64, shape: &Shape) -> Result
             });
         }
         return Err(Shortfall::ChangeBelowDust {
-            change: total.saturating_sub(cap).saturating_sub(with_change),
+            change: total.saturating_sub(target).saturating_sub(with_change),
         });
     };
     let fee = total - amount - change;
     if fee > budget {
         return Err(Shortfall::FeeOverBudget { fee, budget });
+    }
+    // Doubling rather than halving, so an odd cap's floor does not round down.
+    if amount.saturating_mul(2) < cap {
+        return Err(Shortfall::PaymentTooSmall { amount });
     }
     Ok(Plan {
         inputs: free[..taken].to_vec(),
@@ -201,6 +232,14 @@ pub struct RawSignature {
 }
 
 impl Payment {
+    /// Neither confirmed nor cancelled: its inputs are still reserved.
+    pub fn is_pending(&self) -> bool {
+        !matches!(
+            self.status,
+            PaymentStatus::Confirmed | PaymentStatus::Cancelled
+        )
+    }
+
     /// The change back to the jar, if the payment has one (always the second output).
     pub fn change(&self) -> Option<&Output> {
         self.outputs.get(1)

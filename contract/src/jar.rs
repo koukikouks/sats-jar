@@ -2,6 +2,7 @@
 
 use crate::error::{self, refuse};
 use crate::mpc_key::{self, PointBytes};
+use crate::rule::{self, Ledger};
 use crate::Network;
 use btc::{BtcError, SegwitAddress};
 use near_sdk::json_types::U64;
@@ -82,9 +83,8 @@ pub struct Jar {
     /// Sats in the jar's proven coins not yet spent by a confirmed payment (reserved coins are
     /// still the jar's on Bitcoin until their payment is proven).
     pub proven_balance: u64,
-    /// The period of the last allowance requested. Set when it is requested, so a second
-    /// request in that period is refused even while the first is unconfirmed.
-    pub paid_period: Option<u64>,
+    /// Carry-over, the fee budget and the last allowance (the rule's ledger).
+    pub allowance: Ledger,
 }
 
 #[near(serializers = [json])]
@@ -106,6 +106,14 @@ pub struct JarView {
     pub handover: Handover,
     /// Sats in the jar's proven coins not yet spent by a confirmed payment.
     pub proven_balance: U64,
+    /// Sats an allowance requested now may pay (carry-over included); 0 before the first
+    /// top-up and once this period is paid.
+    pub available_allowance: U64,
+    /// Sats of this period's fee budget (cap / 10) not yet spent on allowance fees.
+    pub fee_budget_left: U64,
+    /// Unix seconds from which the next allowance may be requested (in the past when one is
+    /// due now); null before the first top-up.
+    pub next_allowance_at: Option<U64>,
 }
 
 /// Whether a jar runs on shortened time; derived from its period, never set by the caller.
@@ -212,7 +220,7 @@ impl Jar {
             handover: Handover::default(),
             coin_count: 0,
             proven_balance: 0,
-            paid_period: None,
+            allowance: Ledger::default(),
         }
     }
 
@@ -234,7 +242,26 @@ impl Jar {
         SegwitAddress::p2wsh(&self.address.witness_script).script_pubkey()
     }
 
-    pub fn view(&self, jar_id: &str, network: Network) -> JarView {
+    /// The jar as `get_jar` shows it at `now` (unix seconds).
+    pub fn view(&self, jar_id: &str, network: Network, now: u64) -> JarView {
+        let cap = self.args.cap.0;
+        let (available_allowance, fee_budget_left, next_allowance_at) = match self.clock.started_at
+        {
+            None => (0, cap / 10, None),
+            Some(started_at) => {
+                let length = self.args.period.0;
+                let period = rule::period_index(started_at.0, length, now);
+                (
+                    self.allowance.available(cap, period),
+                    self.allowance.fee_budget_left(cap, period),
+                    Some(U64(self.allowance.next_allowance_at(
+                        started_at.0,
+                        length,
+                        period,
+                    ))),
+                )
+            }
+        };
         JarView {
             jar_id: jar_id.to_owned(),
             giver: self.giver.clone(),
@@ -248,6 +275,9 @@ impl Jar {
             clock: self.clock.clone(),
             handover: self.handover.clone(),
             proven_balance: U64(self.proven_balance),
+            available_allowance: U64(available_allowance),
+            fee_budget_left: U64(fee_budget_left),
+            next_allowance_at,
         }
     }
 }

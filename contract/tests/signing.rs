@@ -7,19 +7,6 @@ use common::*;
 use test_support::serde_json::json;
 use test_support::Regtest;
 
-impl Jars {
-    async fn signer_mode(&self, mode: &str) {
-        self.signer
-            .call("set_mode")
-            .args_json(json!({ "mode": mode }))
-            .transact()
-            .await
-            .unwrap()
-            .into_result()
-            .expect("set_mode");
-    }
-}
-
 #[tokio::test]
 async fn a_failed_signing_keeps_the_inputs_reserved_and_the_period_paid() {
     let regtest = Regtest::start();

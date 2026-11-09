@@ -70,12 +70,18 @@ pub const NOT_FUNDED: &str = "NOT_FUNDED";
 /// An allowance was already requested in this period (even if it is not yet confirmed); the
 /// message says when the next period starts.
 pub const ALREADY_PAID: &str = "ALREADY_PAID";
+/// The jar's last allowance, from an earlier period, is not yet confirmed (or cancelled); its
+/// inputs are still reserved.
+pub const PAYMENT_PENDING: &str = "PAYMENT_PENDING";
 /// The fee rate is below 1 sat/vB, which Bitcoin nodes do not relay.
 pub const FEE_TOO_LOW: &str = "FEE_TOO_LOW";
 /// The jar's free coins (its 10 largest) cannot pay the fee plus a payment at the dust floor.
 pub const INSUFFICIENT_BALANCE: &str = "INSUFFICIENT_BALANCE";
 /// The payment's fee would be over the jar's fee budget (cap / 10).
 pub const FEE_OVER_BUDGET: &str = "FEE_OVER_BUDGET";
+/// The jar holds too little to pay at least half the cap; the allowance carries over until
+/// more top-ups arrive (ADR 0005's size floor).
+pub const PAYMENT_TOO_SMALL: &str = "PAYMENT_TOO_SMALL";
 /// Paying the cap would leave change below the dust floor, which would go to miners.
 pub const CHANGE_BELOW_DUST: &str = "CHANGE_BELOW_DUST";
 /// The payment is already proven confirmed.

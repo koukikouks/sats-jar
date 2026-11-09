@@ -287,13 +287,27 @@ impl SatsJar {
         let now = env::block_timestamp_ms() / 1_000;
         let period_length = jar.args.period.0;
         let period = rule::period_index(started_at, period_length, now);
-        if jar.paid_period == Some(period) {
+        let cap = jar.args.cap.0;
+        if jar.allowance.paid_period == Some(period) {
             let wait = rule::until_next_period(started_at, period_length, period, now);
             refuse(
                 error::ALREADY_PAID,
                 &format!(
                     "the allowance for this period was already paid; next one in {}",
                     rule::wait(wait)
+                ),
+            );
+        }
+        if let Some(pending) = jar
+            .allowance
+            .payment
+            .filter(|id| self.payment(*id).is_pending())
+        {
+            refuse(
+                error::PAYMENT_PENDING,
+                &format!(
+                    "payment {pending} is not yet confirmed on Bitcoin; confirm it before the next \
+                     allowance"
                 ),
             );
         }
@@ -308,30 +322,42 @@ impl SatsJar {
             change_script_len: change_script.len() as u64,
             witness_script_len: jar.address.witness_script.len() as u64,
         };
-        let plan =
-            payment::plan(&free, jar.args.cap.0, fee_rate.0, &shape).unwrap_or_else(|shortfall| {
-                match shortfall {
-                    Shortfall::InsufficientBalance => refuse(
-                        error::INSUFFICIENT_BALANCE,
-                        "the jar's coins cannot pay the fee and a payment above the dust floor",
-                    ),
-                    Shortfall::FeeOverBudget { fee, budget } => refuse(
-                        error::FEE_OVER_BUDGET,
-                        &format!(
-                            "the fee would be {fee} sats, over the jar's {budget}-sat fee budget; \
+        let plan = payment::plan(
+            &free,
+            jar.allowance.available(cap, period),
+            cap,
+            cap / 10,
+            fee_rate.0,
+            &shape,
+        )
+        .unwrap_or_else(|shortfall| match shortfall {
+            Shortfall::InsufficientBalance => refuse(
+                error::INSUFFICIENT_BALANCE,
+                "the jar's coins cannot pay the fee and a payment above the dust floor",
+            ),
+            Shortfall::FeeOverBudget { fee, budget } => refuse(
+                error::FEE_OVER_BUDGET,
+                &format!(
+                    "the fee would be {fee} sats, over the jar's {budget}-sat fee budget; \
                          wait for lower fees"
-                        ),
-                    ),
-                    Shortfall::ChangeBelowDust { change } => refuse(
-                        error::CHANGE_BELOW_DUST,
-                        &format!(
-                            "the change would be {change} sats, below the {}-sat dust floor; wait \
+                ),
+            ),
+            Shortfall::PaymentTooSmall { amount } => refuse(
+                error::PAYMENT_TOO_SMALL,
+                &format!(
+                    "the payment would be {amount} sats, under half the {cap}-sat cap; \
+                             wait for more top-ups"
+                ),
+            ),
+            Shortfall::ChangeBelowDust { change } => refuse(
+                error::CHANGE_BELOW_DUST,
+                &format!(
+                    "the change would be {change} sats, below the {}-sat dust floor; wait \
                          for another top-up",
-                            topup::DUST_FLOOR
-                        ),
-                    ),
-                }
-            });
+                    topup::DUST_FLOOR
+                ),
+            ),
+        });
         let signatures = plan.inputs.len() as u64;
         let required = Gas::from_gas(
             signer::SIGN_GAS
@@ -387,7 +413,8 @@ impl SatsJar {
         }
         self.free_coins
             .insert(jar_id.clone(), free[plan.inputs.len()..].to_vec());
-        jar.paid_period = Some(period);
+        jar.allowance
+            .record(cap, period, plan.amount, plan.fee, payment_id);
         self.jars.insert(jar_id.clone(), jar);
         self.payments.insert(
             payment_id,
@@ -604,7 +631,7 @@ impl SatsJar {
     pub fn get_jar(&self, jar_id: String) -> Option<JarView> {
         self.jars
             .get(&jar_id)
-            .map(|jar| jar.view(&jar_id, self.network))
+            .map(|jar| jar.view(&jar_id, self.network, env::block_timestamp_ms() / 1_000))
     }
 }
 

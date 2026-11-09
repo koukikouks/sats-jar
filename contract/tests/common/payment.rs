@@ -140,3 +140,43 @@ impl Jars {
         topup_proof(regtest, &block, txid)
     }
 }
+
+impl Jars {
+    /// Moves sandbox time forward until it is at least `unix` seconds.
+    pub async fn wait_until(&self, unix: u64) {
+        while super::now(&self.worker).await < unix {
+            self.worker.fast_forward(20).await.expect("fast_forward");
+        }
+    }
+
+    /// A jar with a `period`-second period and one proven top-up per entry in `coins`.
+    pub async fn funded_jar_with_period(
+        &self,
+        regtest: &Regtest,
+        period: u64,
+        coins: &[u64],
+    ) -> RegtestJar {
+        let mut args = self.valid_args(&regtest.new_address()).await;
+        args["period"] = json!(period.to_string());
+        self.funded_jar_with(regtest, args, coins).await
+    }
+
+    /// Switches the signer stand-in's answer: `sign`, `fail`, `wrong_key`, `stall` or `slow`.
+    pub async fn signer_mode(&self, mode: &str) {
+        self.signer
+            .call("set_mode")
+            .args_json(json!({ "mode": mode }))
+            .transact()
+            .await
+            .unwrap()
+            .into_result()
+            .expect("set_mode");
+    }
+}
+
+/// The amounts a signed payment pays, as rust-bitcoin reads them: (payee, change or 0).
+pub fn paid(payment: &Value) -> (u64, u64) {
+    let tx = decode(&from_hex(payment["signed_tx"].as_str().unwrap()));
+    let change = tx.output.get(1).map_or(0, |o| o.value.to_sat());
+    (tx.output[0].value.to_sat(), change)
+}
