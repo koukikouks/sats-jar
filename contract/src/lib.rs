@@ -6,6 +6,7 @@ mod dev_escape;
 mod error;
 mod events;
 mod hex;
+mod history;
 mod jar;
 mod light_client;
 mod mpc_key;
@@ -33,8 +34,8 @@ use payment::{
 };
 use topup::TopupProof;
 
-/// At most this many coins per `get_coins` page.
-const MAX_COINS_PAGE: u32 = 100;
+/// At most this many coins or history records per page.
+const MAX_PAGE: u32 = 100;
 
 #[near(serializers = [json, borsh])]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -65,6 +66,8 @@ enum StorageKey {
     Payments,
     PaymentTxids,
     FreeCoins,
+    History,
+    HistoryLengths,
 }
 
 #[near(contract_state)]
@@ -87,6 +90,10 @@ pub struct SatsJar {
     /// Each jar's confirmed coins not reserved by a payment, largest first. Coin selection reads
     /// only this list, never the whole coin history.
     free_coins: LookupMap<String, Vec<FreeCoin>>,
+    /// Every jar's history, keyed by jar id and the record's index.
+    history: LookupMap<(String, u32), history::Record>,
+    /// How many records each jar's history holds.
+    history_lengths: LookupMap<String, u32>,
 }
 
 #[near]
@@ -118,6 +125,8 @@ impl SatsJar {
             next_payment_id: 1,
             payment_txids: LookupMap::new(StorageKey::PaymentTxids),
             free_coins: LookupMap::new(StorageKey::FreeCoins),
+            history: LookupMap::new(StorageKey::History),
+            history_lengths: LookupMap::new(StorageKey::HistoryLengths),
         }
     }
 
@@ -157,6 +166,7 @@ impl SatsJar {
         let address = jar.address(self.network);
         let storage_before = env::storage_usage();
         self.jars.insert(jar_id.clone(), jar);
+        self.record(&jar_id, history::Event::JarCreated);
         self.jars.flush();
         self.charge_storage(storage_before);
 
@@ -240,6 +250,14 @@ impl SatsJar {
             .get_or_insert(U64(env::block_timestamp_ms() / 1_000));
         self.add_coin(&jar_id, index, txid, vout, value.0);
         self.jars.insert(jar_id.clone(), jar);
+        self.record(
+            &jar_id,
+            history::Event::TopupProven {
+                txid: hex::display(&txid),
+                vout,
+                value,
+            },
+        );
         SatsJarEvent::TopupProven {
             jar_id,
             txid: hex::display(&txid),
@@ -262,7 +280,7 @@ impl SatsJar {
         };
         let from = from_index.unwrap_or(0);
         let to = from
-            .saturating_add(limit.unwrap_or(MAX_COINS_PAGE).min(MAX_COINS_PAGE))
+            .saturating_add(limit.unwrap_or(MAX_PAGE).min(MAX_PAGE))
             .min(jar.coin_count);
         (from..to)
             .filter_map(|i| self.coins.get(&(jar_id.clone(), i)).map(Coin::view))
@@ -326,7 +344,7 @@ impl SatsJar {
             &free,
             jar.allowance.available(cap, period),
             cap,
-            cap / 10,
+            jar.allowance.fee_budget_left(cap, period),
             fee_rate.0,
             &shape,
         )
@@ -338,7 +356,7 @@ impl SatsJar {
             Shortfall::FeeOverBudget { fee, budget } => refuse(
                 error::FEE_OVER_BUDGET,
                 &format!(
-                    "the fee would be {fee} sats, over the jar's {budget}-sat fee budget; \
+                    "the fee would be {fee} sats, over the {budget} sats left in this period's fee budget; \
                          wait for lower fees"
                 ),
             ),
@@ -416,6 +434,12 @@ impl SatsJar {
             },
         );
         self.payment_txids.insert(txid, payment_id);
+        self.record(
+            &jar_id,
+            history::Event::AllowanceRequested {
+                payment_id: U64(payment_id),
+            },
+        );
         SatsJarEvent::AllowanceRequested {
             jar_id: jar_id.clone(),
             payment_id: U64(payment_id),
@@ -462,12 +486,11 @@ impl SatsJar {
         }
         refuse_short_gas(payment.sighashes.len());
         // A new round: the callback of any earlier one no longer matches and is ignored.
-        payment.attempt = payment.attempt.checked_add(1).unwrap_or_else(|| {
-            refuse(
-                error::SIGNING_IN_PROGRESS,
-                "this payment has been retried too often",
-            )
-        });
+        // 2^32 rounds of at least 45 Tgas each would cost far more gas than exists.
+        payment.attempt = payment
+            .attempt
+            .checked_add(1)
+            .unwrap_or_else(|| env::abort());
         payment.status = PaymentStatus::Signing;
         payment.signing_started_at = now;
         let (jar_id, attempt, sighashes) = (
@@ -476,6 +499,13 @@ impl SatsJar {
             payment.sighashes.clone(),
         );
         self.payments.insert(payment_id.0, payment);
+        self.record(
+            &jar_id,
+            history::Event::PaymentSigningRetried {
+                payment_id,
+                attempt,
+            },
+        );
         SatsJarEvent::PaymentSigningRetried {
             jar_id: jar_id.clone(),
             payment_id,
@@ -510,6 +540,7 @@ impl SatsJar {
             Ok((signatures, tx)) => {
                 payment.signatures = signatures;
                 payment.status = PaymentStatus::Signed;
+                self.record(&jar_id, history::Event::PaymentSigned { payment_id });
                 SatsJarEvent::PaymentSigned {
                     jar_id,
                     payment_id,
@@ -522,6 +553,13 @@ impl SatsJar {
                 payment.status = PaymentStatus::SigningFailed {
                     reason: reason.clone(),
                 };
+                self.record(
+                    &jar_id,
+                    history::Event::PaymentSigningFailed {
+                        payment_id,
+                        reason: reason.clone(),
+                    },
+                );
                 SatsJarEvent::PaymentSigningFailed {
                     jar_id,
                     payment_id,
@@ -614,6 +652,7 @@ impl SatsJar {
         payment.status = PaymentStatus::Confirmed;
         let txid = hex::display(&payment.txid);
         self.payments.insert(payment_id.0, payment);
+        self.record(&jar_id, history::Event::PaymentConfirmed { payment_id });
         SatsJarEvent::PaymentConfirmed {
             jar_id,
             payment_id,
@@ -638,6 +677,31 @@ impl SatsJar {
             .signed_tx(&payment, &payment.signatures)
             .unwrap_or_else(|_| env::abort());
         hex::encode(&tx)
+    }
+
+    /// The jar's history in order, `limit` (at most 100) records from `from_index`.
+    pub fn get_history(
+        &self,
+        jar_id: String,
+        from_index: Option<u32>,
+        limit: Option<u32>,
+    ) -> Vec<history::Entry> {
+        let length = self.history_lengths.get(&jar_id).copied().unwrap_or(0);
+        let from = from_index.unwrap_or(0);
+        let to = from
+            .saturating_add(limit.unwrap_or(MAX_PAGE).min(MAX_PAGE))
+            .min(length);
+        (from..to)
+            .filter_map(|index| {
+                self.history
+                    .get(&(jar_id.clone(), index))
+                    .map(|record| history::Entry {
+                        index,
+                        at: U64(record.at),
+                        event: record.event.clone(),
+                    })
+            })
+            .collect()
     }
 
     pub fn get_payment(&self, payment_id: U64) -> Option<PaymentView> {
@@ -703,6 +767,23 @@ impl SatsJar {
                 .with_unused_gas_weight(0)
                 .on_payment_signed(U64(payment_id), attempt),
         )
+    }
+
+    /// Appends `event` to the jar's history, written at once so `create_jar` can measure it.
+    fn record(&mut self, jar_id: &str, event: history::Event) {
+        let index = self.history_lengths.get(jar_id).copied().unwrap_or(0);
+        self.history.insert(
+            (jar_id.to_owned(), index),
+            history::Record {
+                at: env::block_timestamp_ms() / 1_000,
+                event,
+            },
+        );
+        // 2^32 state changes for one jar would cost far more gas than exists.
+        let length = index.checked_add(1).unwrap_or_else(|| env::abort());
+        self.history_lengths.insert(jar_id.to_owned(), length);
+        self.history.flush();
+        self.history_lengths.flush();
     }
 
     fn payment(&self, payment_id: u64) -> Payment {

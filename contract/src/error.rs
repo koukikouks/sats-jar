@@ -75,9 +75,11 @@ pub const ALREADY_PAID: &str = "ALREADY_PAID";
 pub const PAYMENT_PENDING: &str = "PAYMENT_PENDING";
 /// The fee rate is below 1 sat/vB, which Bitcoin nodes do not relay.
 pub const FEE_TOO_LOW: &str = "FEE_TOO_LOW";
-/// The jar's free coins (its 10 largest) cannot pay the fee plus a payment at the dust floor.
+/// The jar's free coins (its 10 largest) cannot pay the fee (or, if less, the fee budget left)
+/// plus a payment at the dust floor.
 pub const INSUFFICIENT_BALANCE: &str = "INSUFFICIENT_BALANCE";
-/// The payment's fee would be over the jar's fee budget (cap / 10).
+/// The payment's fee would be over what is left of the period's fee budget (all allowance fees
+/// in a period at most cap / 10).
 pub const FEE_OVER_BUDGET: &str = "FEE_OVER_BUDGET";
 /// The jar holds too little to pay at least half the cap; the allowance carries over until
 /// more top-ups arrive (ADR 0005's size floor).

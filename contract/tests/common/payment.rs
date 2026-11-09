@@ -242,3 +242,26 @@ impl Jars {
             .expect("respond");
     }
 }
+
+impl Jars {
+    pub async fn get_history(&self, jar_id: &str, from_index: u32, limit: u32) -> Value {
+        self.contract
+            .view("get_history")
+            .args_json(json!({ "jar_id": jar_id, "from_index": from_index, "limit": limit }))
+            .await
+            .expect("get_history")
+            .json()
+            .expect("json")
+    }
+
+    /// The `event` names of a jar's whole history, in order.
+    pub async fn history_events(&self, jar_id: &str) -> Vec<String> {
+        self.get_history(jar_id, 0, 100)
+            .await
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|e| e["event"].as_str().unwrap().to_owned())
+            .collect()
+    }
+}

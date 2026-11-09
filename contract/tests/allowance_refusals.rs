@@ -1,5 +1,6 @@
-//! Every refusal `request_allowance` makes in T04, each a failed transaction with its code.
-//! (T05 adds carry-over, the size floor and "payment pending", and tests the full order.)
+//! Each refusal `request_allowance` makes, as a failed transaction with its code. The size
+//! floor is in `size_floor_and_fee_budget.rs`, "payment pending" and the order where two apply
+//! in `refusal_order.rs`.
 
 mod common;
 
@@ -49,9 +50,16 @@ async fn the_next_period_pays_again() {
     let jar = jars
         .funded_jar_with(&regtest, args, &[50_000, 50_000])
         .await;
-    jars.signed_allowance(&jar.id, 1).await;
+    let first = jars.signed_allowance(&jar.id, 1).await;
     let refused = jars.request_allowance(&jar.id, 1).await;
     assert!(refusal(&refused).contains("ALREADY_PAID: "));
+    // The first must be confirmed before the next period's allowance (PAYMENT_PENDING).
+    let id = first["payment_id"].as_str().unwrap();
+    let proof = jars.mine_payment(&regtest, &first).await;
+    jars.confirm_payment(id, &proof)
+        .await
+        .into_result()
+        .unwrap();
 
     let start = now(&jars.worker).await;
     while now(&jars.worker).await < start + 61 {

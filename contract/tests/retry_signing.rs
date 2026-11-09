@@ -145,6 +145,9 @@ async fn a_signing_stuck_past_its_window_is_retried_and_its_late_answer_changes_
     let second_retrying = jars.get_payment(&second_id).await;
     assert_eq!(second_retrying["status"], "signing");
 
+    let first_history = jars.history_events(&first.id).await;
+    let second_history = jars.history_events(&second.id).await;
+
     // The first rounds now answer, one with a signature and one with a failure. Neither moves
     // a payment: one is already signed, the other is in a newer round.
     jars.signer_respond(true).await;
@@ -153,6 +156,8 @@ async fn a_signing_stuck_past_its_window_is_retried_and_its_late_answer_changes_
     second_round.await.unwrap().into_result().unwrap();
     assert_eq!(jars.get_payment(&first_id).await, first_signed);
     assert_eq!(jars.get_payment(&second_id).await, second_retrying);
+    assert_eq!(jars.history_events(&first.id).await, first_history);
+    assert_eq!(jars.history_events(&second.id).await, second_history);
 
     // The newer round still decides: it times out, and a retry signs.
     jars.worker.fast_forward(210).await.unwrap();

@@ -72,6 +72,8 @@ async fn cancelling_a_payment_frees_its_coins_for_the_next_allowance() {
         .unwrap();
 
     assert_eq!(jars.get_payment("1").await["status"], "cancelled");
+    let events = jars.history_events(&jar.id).await;
+    assert_eq!(events.last().unwrap(), "payment_cancelled");
     let coin = &jars.get_coins(&jar.id).await[0];
     assert_eq!(coin["status"], "confirmed");
     assert_eq!(coin["payment_id"], json!(null));

@@ -4,6 +4,7 @@
 use crate::coins::CoinStatus;
 use crate::error::{self, refuse};
 use crate::events::SatsJarEvent;
+use crate::history;
 use crate::payment::{self, FreeCoin, PaymentStatus};
 use crate::{SatsJar, SatsJarExt};
 use near_sdk::json_types::U64;
@@ -45,6 +46,7 @@ impl SatsJar {
         self.free_coins.insert(jar_id.clone(), free);
         payment.status = PaymentStatus::Cancelled;
         self.payments.insert(payment_id.0, payment);
+        self.record(&jar_id, history::Event::PaymentCancelled { payment_id });
         SatsJarEvent::PaymentCancelled { jar_id, payment_id }.emit();
     }
 }
