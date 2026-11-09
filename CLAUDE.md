@@ -6,7 +6,13 @@ All work follows the skills in `.claude/skills/` along their main flow: `/grill-
 
 Code follows `CODING_STANDARDS.md`; check stack facts in `docs/agents/stack-notes.md` before reaching for a library or API.
 
-Every ticket closes with `/code-review` against the ticket's issue, run by fresh Opus sub-agents briefed as senior engineers. Each finding must trace to the ticket's acceptance criteria, the spec (#1), an ADR or `CODING_STANDARDS.md`. The Spec axis also hunts scope creep: code, options or features no requirement asked for get removed. A clean review is the expected outcome, not a failure to find something. Fix what it raises, then commit the ticket as its own commit referencing the issue.
+The loop is plan → build → review → fix → ship, Claude only:
+
+1. **Plan**: the builder plans; a fresh reviewer approves before code is written (specs and ticket sets likewise).
+2. **Build**: one implementer per ticket, test-first (`/tdd`).
+3. **Review**: `/code-review` against the ticket's issue, run by reviewers that start with a fresh context and none of the builder's reasoning, briefed as senior engineers. Opus reviews contract, money, key and security code; Sonnet may review low-risk changes (docs, config, scripts). Each finding must trace to the ticket's acceptance criteria, the spec (#1), an ADR or `CODING_STANDARDS.md`. The Spec axis also hunts scope creep: code, options or features no requirement asked for get removed. A clean review is the expected outcome, not a failure to find something.
+4. **Fix**: the builder fixes what the review raised; stop after about three review rounds and surface what is left.
+5. **Ship**: commit the ticket as its own commit referencing the issue, and push it once its review passes. Anything that goes live (the locked contract deploy, the hosted site, making things public, the submission) waits for the maintainer's own test and sign-off.
 
 ## Agent skills
 
