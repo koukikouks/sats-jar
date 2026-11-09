@@ -9,9 +9,11 @@ mod hex;
 mod jar;
 mod light_client;
 mod mpc_key;
+mod nft;
 mod payment;
 mod rule;
 mod signer;
+mod svg;
 mod topup;
 
 use btc::{OutPoint, Transaction, TxOut};
@@ -22,7 +24,7 @@ use jar::{CreateArgs, Jar, JarView};
 use light_client::TxInclusionInfo;
 use mpc_key::PointBytes;
 use near_sdk::json_types::U64;
-use near_sdk::store::{LookupMap, LookupSet};
+use near_sdk::store::{IterableSet, LookupMap, LookupSet};
 use near_sdk::{
     env, near, AccountId, BorshStorageKey, Gas, NearToken, PanicOnDefault, Promise, PromiseError,
     PublicKey,
@@ -65,6 +67,8 @@ enum StorageKey {
     Payments,
     PaymentTxids,
     FreeCoins,
+    Holders,
+    HolderJars { account_hash: [u8; 32] },
 }
 
 #[near(contract_state)]
@@ -87,6 +91,9 @@ pub struct SatsJar {
     /// Each jar's confirmed coins not reserved by a payment, largest first. Coin selection reads
     /// only this list, never the whole coin history.
     free_coins: LookupMap<String, Vec<FreeCoin>>,
+    /// Each holder's jar ids, for NEP-181 enumeration by holder. Whatever moves a jar updates
+    /// this together with `Jar.owner_id`.
+    holders: LookupMap<AccountId, IterableSet<String>>,
 }
 
 #[near]
@@ -118,6 +125,7 @@ impl SatsJar {
             next_payment_id: 1,
             payment_txids: LookupMap::new(StorageKey::PaymentTxids),
             free_coins: LookupMap::new(StorageKey::FreeCoins),
+            holders: LookupMap::new(StorageKey::Holders),
         }
     }
 
@@ -158,6 +166,7 @@ impl SatsJar {
         let storage_before = env::storage_usage();
         self.jars.insert(jar_id.clone(), jar);
         self.jars.flush();
+        self.add_to_holder(&family_account, &jar_id);
         self.charge_storage(storage_before);
 
         Nep171Event::NftMint(vec![NftMintData {

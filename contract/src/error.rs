@@ -82,3 +82,10 @@ pub const CHANGE_BELOW_DUST: &str = "CHANGE_BELOW_DUST";
 pub const PAYMENT_ALREADY_CONFIRMED: &str = "PAYMENT_ALREADY_CONFIRMED";
 /// The payment was cancelled (development builds only), so it can never be confirmed.
 pub const PAYMENT_CANCELLED: &str = "PAYMENT_CANCELLED";
+/// `nft_transfer` and `nft_transfer_call` never move a jar; `start_transfer` does, re-homing
+/// its Bitcoin first.
+pub const PLAIN_TRANSFER_REFUSED: &str = "PLAIN_TRANSFER_REFUSED";
+/// `nft_approve` before handover: until then nobody but the rule can move the jar.
+pub const APPROVAL_BEFORE_HANDOVER: &str = "APPROVAL_BEFORE_HANDOVER";
+/// The caller does not hold the jar NFT.
+pub const NOT_THE_HOLDER: &str = "NOT_THE_HOLDER";
