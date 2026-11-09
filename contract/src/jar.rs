@@ -242,26 +242,29 @@ impl Jar {
         SegwitAddress::p2wsh(&self.address.witness_script).script_pubkey()
     }
 
+    /// The allowance at `now` (unix seconds): what a request may pay, the fee budget left and
+    /// when the next allowance may be requested (null before the first top-up). `get_jar` and
+    /// the picture both read it.
+    pub fn allowance_at(&self, now: u64) -> (u64, u64, Option<u64>) {
+        let cap = self.args.cap.0;
+        let Some(started_at) = self.clock.started_at else {
+            return (0, cap / 10, None);
+        };
+        let length = self.args.period.0;
+        let period = rule::period_index(started_at.0, length, now);
+        (
+            self.allowance.available(cap, period),
+            self.allowance.fee_budget_left(cap, period),
+            Some(
+                self.allowance
+                    .next_allowance_at(started_at.0, length, period),
+            ),
+        )
+    }
+
     /// The jar as `get_jar` shows it at `now` (unix seconds).
     pub fn view(&self, jar_id: &str, network: Network, now: u64) -> JarView {
-        let cap = self.args.cap.0;
-        let (available_allowance, fee_budget_left, next_allowance_at) = match self.clock.started_at
-        {
-            None => (0, cap / 10, None),
-            Some(started_at) => {
-                let length = self.args.period.0;
-                let period = rule::period_index(started_at.0, length, now);
-                (
-                    self.allowance.available(cap, period),
-                    self.allowance.fee_budget_left(cap, period),
-                    Some(U64(self.allowance.next_allowance_at(
-                        started_at.0,
-                        length,
-                        period,
-                    ))),
-                )
-            }
-        };
+        let (available_allowance, fee_budget_left, next_allowance_at) = self.allowance_at(now);
         JarView {
             jar_id: jar_id.to_owned(),
             giver: self.giver.clone(),
@@ -277,7 +280,7 @@ impl Jar {
             proven_balance: U64(self.proven_balance),
             available_allowance: U64(available_allowance),
             fee_budget_left: U64(fee_budget_left),
-            next_allowance_at,
+            next_allowance_at: next_allowance_at.map(U64),
         }
     }
 }

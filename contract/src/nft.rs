@@ -249,11 +249,14 @@ fn token(jar_id: &str, jar: &Jar) -> Token {
 }
 
 fn metadata(jar_id: &str, jar: &Jar) -> TokenMetadata {
+    let now = env::block_timestamp_ms() / 1_000;
     let svg = svg::render(&Picture {
         nickname: jar.args.nickname.clone(),
         balance: jar.proven_balance,
         cap: jar.args.cap.0,
         unlock_at: jar.args.unlock_at.0,
+        next_allowance_at: jar.allowance_at(now).2,
+        now,
     });
     TokenMetadata {
         title: Some(format!("Sats Jar #{jar_id}")),

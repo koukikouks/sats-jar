@@ -494,3 +494,52 @@ async fn only_the_holder_revokes_with_one_yocto() {
         assert!(revoked.is_success(), "{method}: {:?}", revoked.failures());
     }
 }
+
+/// `unix` as `YYYY-MM-DD HH:MM` in UTC, from the system's `date` (BSD, else GNU).
+fn utc_minute(unix: u64) -> String {
+    let bsd = std::process::Command::new("date")
+        .args(["-u", "-r", &unix.to_string(), "+%F %H:%M"])
+        .output()
+        .ok()
+        .filter(|out| out.status.success());
+    let out = bsd.unwrap_or_else(|| {
+        std::process::Command::new("date")
+            .args(["-u", "-d", &format!("@{unix}"), "+%F %H:%M"])
+            .output()
+            .expect("date")
+    });
+    String::from_utf8(out.stdout).unwrap().trim().to_owned()
+}
+
+#[tokio::test]
+async fn the_picture_shows_the_next_allowance_time() {
+    let regtest = Regtest::start();
+    let jars = start_paying(Build::Locked, "regtest").await;
+    let empty: String = jars
+        .create_jar(&jars.valid_args(&regtest.new_address()).await)
+        .await
+        .json()
+        .unwrap();
+    let jar = jars.funded_jar(&regtest, &[50_000]).await;
+
+    let unfunded = picture(&jars, &empty).await;
+    let due = picture(&jars, &jar.id).await;
+    jars.signed_allowance(&jar.id, 1).await;
+    let paid = picture(&jars, &jar.id).await;
+
+    assert_eq!(
+        text(&unfunded, "next_allowance"),
+        "Allowance starts at first top-up"
+    );
+    assert_eq!(text(&due, "next_allowance"), "Allowance due now");
+    // The same time get_jar shows: the next period's start.
+    let next: u64 = jars.get_jar(&jar.id).await["next_allowance_at"]
+        .as_str()
+        .unwrap()
+        .parse()
+        .unwrap();
+    assert_eq!(
+        text(&paid, "next_allowance"),
+        format!("Next allowance {} UTC", utc_minute(next))
+    );
+}
