@@ -124,3 +124,25 @@ pub const CLAIM_CHANGED: &str = "CLAIM_CHANGED";
 /// The handover's public delay has ended: no allowance runs until the handover completes or
 /// the claim is cancelled.
 pub const HANDOVER_IN_PROGRESS: &str = "HANDOVER_IN_PROGRESS";
+/// `complete_handover` before 2 guardians have confirmed an open claim.
+pub const HANDOVER_NOT_CONFIRMED: &str = "HANDOVER_NOT_CONFIRMED";
+/// `complete_handover` while the public delay still runs; the message says when it ends.
+pub const HANDOVER_DELAY_RUNNING: &str = "HANDOVER_DELAY_RUNNING";
+/// `complete_handover` before the jar's unlock date; the message names it.
+pub const BEFORE_UNLOCK: &str = "BEFORE_UNLOCK";
+/// A re-homing's fee would be over 5% of the value it moves (or the cost at 1 sat/vB if higher).
+pub const FEE_TOO_HIGH: &str = "FEE_TOO_HIGH";
+/// A re-homing's output after the fee would be under Bitcoin's 330-sat P2WSH dust limit.
+pub const OUTPUT_BELOW_DUST: &str = "OUTPUT_BELOW_DUST";
+/// The handover is completing (its Bitcoin has started moving), so its claim can no longer be
+/// cancelled or replaced.
+pub const HANDOVER_COMPLETING: &str = "HANDOVER_COMPLETING";
+/// The jar has been handed over to the child's account.
+pub const HANDOVER_DONE: &str = "HANDOVER_DONE";
+/// `request_spend` before handover, from anyone: only the allowance and an emergency payment
+/// pay out, and only to the child's address.
+pub const SPEND_BEFORE_HANDOVER: &str = "SPEND_BEFORE_HANDOVER";
+/// The holder's own spend after handover is not in this build yet (T12 replaces this).
+pub const SPEND_UNAVAILABLE: &str = "SPEND_UNAVAILABLE";
+/// Approvals after handover are not in this build yet (T12 replaces this).
+pub const APPROVALS_UNAVAILABLE: &str = "APPROVALS_UNAVAILABLE";

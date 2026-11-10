@@ -2,6 +2,7 @@
 //! enumeration. The token id is the jar id and the holder is `Jar.owner_id`.
 
 use crate::error::{self, refuse};
+use crate::events::{Nep171Event, NftTransferData};
 use crate::handover::Handover;
 use crate::jar::Jar;
 use crate::svg::{self, Picture};
@@ -114,9 +115,17 @@ impl SatsJar {
         let jar = self.jar(&token_id);
         // Exhaustive on purpose: each new handover state must decide whether approvals open.
         match jar.handover {
-            Handover::None | Handover::Claimed { .. } | Handover::Confirmed { .. } => refuse(
+            Handover::None
+            | Handover::Claimed { .. }
+            | Handover::Confirmed { .. }
+            | Handover::Completing { .. } => refuse(
                 error::APPROVAL_BEFORE_HANDOVER,
                 "a jar takes no approvals before handover",
+            ),
+            // Placeholder until T12 builds approvals after handover; it must be gone before T14.
+            Handover::Done { .. } => refuse(
+                error::APPROVALS_UNAVAILABLE,
+                "this contract does not take approvals yet",
             ),
         }
     }
@@ -212,6 +221,27 @@ impl SatsJar {
                 &format!("the caller is not the holder of jar {jar_id}"),
             );
         }
+    }
+
+    /// Moves the jar to `to`: its holder, both holders' sets and NEP-171's `nft_transfer` event
+    /// change together. The caller writes `jar` back.
+    pub(crate) fn move_jar(&mut self, jar_id: &str, jar: &mut Jar, to: AccountId) {
+        let from = std::mem::replace(&mut jar.owner_id, to.clone());
+        let emptied = self.holders.get_mut(&from).is_some_and(|held| {
+            held.remove(jar_id);
+            held.flush();
+            held.is_empty()
+        });
+        if emptied {
+            self.holders.remove(&from);
+        }
+        self.add_to_holder(&to, jar_id);
+        Nep171Event::NftTransfer(vec![NftTransferData {
+            old_owner_id: from,
+            new_owner_id: to,
+            token_ids: vec![jar_id.to_owned()],
+        }])
+        .emit();
     }
 
     /// Adds a jar to its holder's set and writes both the set and the map, so a storage

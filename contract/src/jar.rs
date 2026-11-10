@@ -50,6 +50,24 @@ pub struct JarAddress {
     pub exit_key_hash: [u8; 20],
 }
 
+impl JarAddress {
+    /// The address whose MPC branch is `mpc_key` and whose exit branch is the key behind
+    /// `exit_key_hash`, from `locktime`.
+    pub fn new(mpc_key: &PointBytes, exit_key_hash: [u8; 20], locktime: u32) -> JarAddress {
+        let witness_script = btc::jar_script(&mpc_key::compress(mpc_key), &exit_key_hash, locktime)
+            .unwrap_or_else(|_| env_abort());
+        JarAddress {
+            witness_script,
+            locktime,
+            exit_key_hash,
+        }
+    }
+
+    pub fn script_pubkey(&self) -> Vec<u8> {
+        SegwitAddress::p2wsh(&self.witness_script).script_pubkey()
+    }
+}
+
 /// The allowance clock. It starts at the first proven top-up (ADR 0005), so a new jar has none.
 #[near(serializers = [json, borsh])]
 #[derive(Debug, Clone, Default)]
@@ -67,7 +85,11 @@ pub struct Jar {
     pub args: CreateArgs,
     /// The jar's MPC key (path = jar id), kept uncompressed for `ecrecover`.
     pub mpc_key: PointBytes,
+    /// The current address: top-ups and every payment's change go here.
     pub address: JarAddress,
+    /// The addresses the jar moved away from, oldest first. `Coin.address` i names
+    /// `old_addresses[i]`, and the current address is index `old_addresses.len()`.
+    pub old_addresses: Vec<JarAddress>,
     pub clock: Clock,
     pub handover: Handover,
     /// How many coins have been proven; the next coin's index.
@@ -87,6 +109,8 @@ pub struct JarView {
     pub owner_id: AccountId,
     pub create_args: CreateArgs,
     pub address: String,
+    /// The addresses the jar moved away from, oldest first (a top-up sent there is a stray).
+    pub old_addresses: Vec<String>,
     /// Hex.
     pub witness_script: String,
     /// `secp256k1:<base58 x‖y>`, as the MPC contract's `derived_public_key` view shows it.
@@ -195,19 +219,14 @@ impl Jar {
                     "the exit date after this unlock date is past what Bitcoin can lock to (2106)",
                 )
             });
-        let witness_script =
-            btc::jar_script(&mpc_key::compress(&mpc_key), &exit_key_hash, locktime)
-                .unwrap_or_else(|_| env_abort());
+        let address = JarAddress::new(&mpc_key, exit_key_hash, locktime);
         Jar {
             giver,
             owner_id: args.family_account.clone(),
             args,
             mpc_key,
-            address: JarAddress {
-                witness_script,
-                locktime,
-                exit_key_hash,
-            },
+            address,
+            old_addresses: Vec::new(),
             clock: Clock::default(),
             handover: Handover::default(),
             coin_count: 0,
@@ -231,7 +250,34 @@ impl Jar {
 
     /// The scriptPubKey a top-up to the jar address pays.
     pub fn script_pubkey(&self) -> Vec<u8> {
-        SegwitAddress::p2wsh(&self.address.witness_script).script_pubkey()
+        self.address.script_pubkey()
+    }
+
+    /// The current address's index (what `Coin.address` holds for a coin there).
+    pub fn address_index(&self) -> u32 {
+        // A new address per re-homing: far fewer than 2^32.
+        u32::try_from(self.old_addresses.len()).unwrap_or_else(|_| env_abort())
+    }
+
+    /// The address with index `index`; a coin's index always names one.
+    pub fn address_at(&self, index: u32) -> &JarAddress {
+        match (index as usize).cmp(&self.old_addresses.len()) {
+            std::cmp::Ordering::Less => &self.old_addresses[index as usize],
+            std::cmp::Ordering::Equal => &self.address,
+            std::cmp::Ordering::Greater => env_abort(),
+        }
+    }
+
+    /// The index of the jar address `script_pubkey` pays, if it pays one.
+    pub fn address_index_of(&self, script_pubkey: &[u8]) -> Option<u32> {
+        (0..=self.address_index())
+            .find(|&index| self.address_at(index).script_pubkey() == script_pubkey)
+    }
+
+    /// Makes `address` the current address; the old one keeps its index.
+    pub fn rehome(&mut self, address: JarAddress) {
+        let old = std::mem::replace(&mut self.address, address);
+        self.old_addresses.push(old);
     }
 
     /// The allowance at `now` (unix seconds): what a request may pay, the fee budget left and
@@ -254,8 +300,9 @@ impl Jar {
         )
     }
 
-    /// The jar as `get_jar` shows it at `now` (unix seconds).
-    pub fn view(&self, jar_id: &str, network: Network, now: u64) -> JarView {
+    /// The jar as `get_jar` shows it at `now` (unix seconds); `coins_to_move` is how many coins
+    /// a completing handover has still to put in a re-homing payment.
+    pub fn view(&self, jar_id: &str, network: Network, now: u64, coins_to_move: u32) -> JarView {
         let (available_allowance, fee_budget_left, next_allowance_at) = self.allowance_at(now);
         JarView {
             jar_id: jar_id.to_owned(),
@@ -263,12 +310,17 @@ impl Jar {
             owner_id: self.owner_id.clone(),
             create_args: self.args.clone(),
             address: self.address(network),
+            old_addresses: self
+                .old_addresses
+                .iter()
+                .map(|old| SegwitAddress::p2wsh(&old.witness_script).encode(network.into()))
+                .collect(),
             witness_script: to_hex(&self.address.witness_script),
             public_key: mpc_key::to_near_string(&self.mpc_key),
             locktime: self.address.locktime,
             demo_timing: demo_timing(self.args.period.0),
             clock: self.clock.clone(),
-            handover: self.handover.view(now),
+            handover: self.handover.view(now, coins_to_move),
             proven_balance: U64(self.proven_balance),
             available_allowance: U64(available_allowance),
             fee_budget_left: U64(fee_budget_left),
