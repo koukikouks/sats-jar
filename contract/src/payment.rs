@@ -251,6 +251,8 @@ pub enum PaymentKind {
     },
     /// Moves coins to the jar's new address, whose exit branch is the new holder's key.
     Rehoming,
+    /// The holder's own spend after handover: the payee first, then any change.
+    Spend,
 }
 
 /// Moves only forward: signing → signed or signing failed, signed → confirmed. A failed or
@@ -297,7 +299,7 @@ impl Payment {
     /// re-homing has none; its one output is the value it moves.
     pub fn change(&self) -> Option<&Output> {
         match self.kind {
-            PaymentKind::Allowance { .. } => self.outputs.get(1),
+            PaymentKind::Allowance { .. } | PaymentKind::Spend => self.outputs.get(1),
             PaymentKind::Rehoming => None,
         }
     }
@@ -308,9 +310,9 @@ impl Payment {
 pub struct PaymentView {
     pub payment_id: U64,
     pub jar_id: String,
-    /// `"allowance"` or `"rehoming"`.
+    /// `"allowance"`, `"rehoming"` or `"spend"`.
     pub kind: String,
-    /// An allowance's period; null for a re-homing.
+    /// An allowance's period; null for any other kind.
     pub period: Option<U64>,
     pub status: StatusView,
     /// Why signing failed, for a `signing_failed` payment.

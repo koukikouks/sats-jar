@@ -69,6 +69,9 @@ pub enum Event {
     HandoverCompleted {
         child_account: AccountId,
     },
+    SpendRequested {
+        payment_id: U64,
+    },
 }
 
 #[near(serializers = [borsh])]

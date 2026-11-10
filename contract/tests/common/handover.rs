@@ -258,18 +258,119 @@ impl Jars {
     /// `request_spend` from `caller` of 5,000 sats to a regtest address at 1 sat/vB, with
     /// 1 yoctoNEAR and 300 Tgas.
     pub async fn request_spend(&self, caller: &Account, jar_id: &str) -> ExecutionFinalResult {
+        self.spend(
+            caller,
+            jar_id,
+            &child_address(bitcoin::Network::Regtest),
+            5_000,
+            1,
+        )
+        .await
+    }
+
+    /// `request_spend` from `caller` of `amount` sats to `to` at `fee_rate` sat/vB, with
+    /// 1 yoctoNEAR and 300 Tgas.
+    pub async fn spend(
+        &self,
+        caller: &Account,
+        jar_id: &str,
+        to: &str,
+        amount: u64,
+        fee_rate: u64,
+    ) -> ExecutionFinalResult {
+        self.spend_with(
+            caller,
+            jar_id,
+            to,
+            amount,
+            fee_rate,
+            NearToken::from_yoctonear(1),
+            Gas::from_tgas(300),
+        )
+        .await
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub async fn spend_with(
+        &self,
+        caller: &Account,
+        jar_id: &str,
+        to: &str,
+        amount: u64,
+        fee_rate: u64,
+        deposit: NearToken,
+        gas: Gas,
+    ) -> ExecutionFinalResult {
         caller
             .call(self.contract.id(), "request_spend")
             .args_json(json!({
                 "jar_id": jar_id,
-                "to": child_address(bitcoin::Network::Regtest),
-                "amount": "5000",
-                "fee_rate": "1",
+                "to": to,
+                "amount": amount.to_string(),
+                "fee_rate": fee_rate.to_string(),
             }))
-            .deposit(NearToken::from_yoctonear(1))
-            .gas(Gas::from_tgas(300))
+            .deposit(deposit)
+            .gas(gas)
             .transact()
             .await
             .expect("send request_spend")
+    }
+
+    /// A spend from `caller` that must be signed; returns its payment.
+    pub async fn signed_spend(
+        &self,
+        caller: &Account,
+        jar_id: &str,
+        to: &str,
+        amount: u64,
+        fee_rate: u64,
+    ) -> Value {
+        let result = self.spend(caller, jar_id, to, amount, fee_rate).await;
+        let id: String = result.json().expect("payment id");
+        let payment = self.get_payment(&id).await;
+        assert_eq!(payment["status"], "signed", "{payment}");
+        payment
+    }
+
+    /// An unfunded demo-timing jar handed over to `family.child` (the NFT moves at the first
+    /// `complete_handover`); returns its id.
+    pub async fn handed_over_empty(&self, family: &Family) -> String {
+        let mut args = self
+            .demo_args(family, &child_address(bitcoin::Network::Regtest))
+            .await;
+        let unlock_at = super::now(&self.worker).await + 240;
+        args["unlock_at"] = json!(unlock_at.to_string());
+        let jar: String = self.create_jar(&args).await.json().expect("jar id");
+        self.confirmed_claim(family, &jar).await;
+        let delay_ends_at: u64 = self.handover(&jar).await["confirmed"]["delay_ends_at"]
+            .as_str()
+            .unwrap()
+            .parse()
+            .unwrap();
+        self.wait_until(delay_ends_at.max(unlock_at)).await;
+        self.complete_handover(&family.stranger, &jar, 1)
+            .await
+            .into_result()
+            .expect("handed over");
+        jar
+    }
+
+    /// A jar with one proven top-up per entry in `coins`, handed over to `family.child`: every
+    /// coin re-homed to the child's key and confirmed, the NFT moved.
+    pub async fn handed_over(
+        &self,
+        regtest: &Regtest,
+        family: &Family,
+        coins: &[u64],
+    ) -> RegtestJar {
+        let jar = self.due_handover(regtest, family, coins).await;
+        while self.get_jar(&jar.id).await["owner_id"] != json!(family.child.id()) {
+            let payment = self.signed_rehoming(family, &jar.id, 1).await;
+            self.confirmed(regtest, &payment)
+                .await
+                .into_result()
+                .expect("re-homing confirmed");
+        }
+        jar
     }
 }

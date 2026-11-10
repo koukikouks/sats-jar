@@ -109,6 +109,16 @@ pub enum SatsJarEvent {
         jar_id: String,
         child_account: AccountId,
     },
+    /// The holder's spend of `amount` sats to `to`; `fee` in sats, `txid` in display hex.
+    #[event_version("1.0.0")]
+    SpendRequested {
+        jar_id: String,
+        payment_id: U64,
+        to: String,
+        amount: U64,
+        fee: U64,
+        txid: String,
+    },
 }
 
 #[near(serializers = [json])]

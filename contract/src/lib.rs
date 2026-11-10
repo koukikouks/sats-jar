@@ -718,6 +718,7 @@ impl SatsJar {
         let (kind, period) = match payment.kind {
             PaymentKind::Allowance { period } => ("allowance", Some(U64(period))),
             PaymentKind::Rehoming => ("rehoming", None),
+            PaymentKind::Spend => ("spend", None),
         };
         let signed_tx = (!payment.signatures.is_empty())
             .then(|| self.signed_tx(payment, &payment.signatures).ok())
