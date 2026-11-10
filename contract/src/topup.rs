@@ -42,16 +42,19 @@ pub struct Topup {
     pub txid: [u8; 32],
     pub vout: u32,
     pub value: u64,
+    /// The index of the jar address the output pays.
+    pub address: u32,
 }
 
-/// Checks a top-up of the jar whose scriptPubKey is `jar_script_pubkey`, refusing in the
-/// spec's order, and returns the output and the light client's argument. `is_payment` says
-/// whether a txid is one of the contract's own payments.
+/// Checks a top-up of a jar, refusing in the spec's order, and returns the output and the
+/// light client's argument. `address_of` gives the index of the jar address a scriptPubKey
+/// pays (current or old: a top-up to an old one is a stray), and `is_payment` says whether a
+/// txid is one of the contract's own payments.
 pub fn check(
     tx_hex: &str,
     vout: u32,
     proof: &TopupProof,
-    jar_script_pubkey: &[u8],
+    address_of: impl Fn(&[u8]) -> Option<u32>,
     is_payment: impl Fn(&[u8; 32]) -> bool,
 ) -> (Topup, TxInclusionProof) {
     let tx = crate::hex::decode(tx_hex)
@@ -82,12 +85,12 @@ pub fn check(
             &format!("the transaction has no output {vout}"),
         )
     });
-    if output.script_pubkey != jar_script_pubkey {
+    let address = address_of(&output.script_pubkey).unwrap_or_else(|| {
         refuse(
             error::NOT_TO_JAR,
-            &format!("output {vout} does not pay this jar's address"),
-        );
-    }
+            &format!("output {vout} does not pay any of this jar's addresses"),
+        )
+    });
     if output.value < DUST_FLOOR {
         refuse(
             error::BELOW_DUST,
@@ -102,6 +105,7 @@ pub fn check(
             txid,
             vout,
             value: output.value,
+            address,
         },
         args,
     )
