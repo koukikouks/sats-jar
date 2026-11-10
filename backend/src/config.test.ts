@@ -7,6 +7,8 @@ const FULL = {
   CONTRACT_ACCOUNT_ID: "sats-jar-dev.testnet",
   DRAFTS_FILE: "/var/data/drafts.json",
   PORT: "8787",
+  KEEPER_ACCOUNT_ID: "keeper.sats-jar-app.testnet",
+  KEEPER_PRIVATE_KEY: "ed25519:not-a-real-keeper-secret",
 };
 
 describe("config", () => {
@@ -17,11 +19,13 @@ describe("config", () => {
       contractAccountId: "sats-jar-dev.testnet",
       draftsFile: "/var/data/drafts.json",
       port: 8787,
+      keeperAccountId: "keeper.sats-jar-app.testnet",
+      keeperPrivateKey: "ed25519:not-a-real-keeper-secret",
     });
   });
 
   it("names every missing setting and never repeats a value", () => {
-    const { CONTRACT_ACCOUNT_ID: _c, PORT: _p, ...partial } = FULL;
+    const { CONTRACT_ACCOUNT_ID: _c, PORT: _p, KEEPER_PRIVATE_KEY: _k, ...partial } = FULL;
 
     let message = "";
     try {
@@ -32,7 +36,9 @@ describe("config", () => {
 
     expect(message).toContain("CONTRACT_ACCOUNT_ID");
     expect(message).toContain("PORT");
+    expect(message).toContain("KEEPER_PRIVATE_KEY");
     expect(message).not.toContain("SPONSOR_PRIVATE_KEY");
     expect(message).not.toContain("not-a-real-secret-value");
+    expect(message).not.toContain("KEEPER_ACCOUNT_ID");
   });
 });

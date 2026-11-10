@@ -1,0 +1,30 @@
+{
+  "jar_id": "1",
+  "giver": "sats-jar-dev.testnet",
+  "owner_id": "sats-jar-dev.testnet",
+  "create_args": {
+    "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+    "cap": "2500",
+    "period": "86400",
+    "unlock_at": "1794355391",
+    "guardians": [
+      "guardian-a.sats-jar-dev.testnet",
+      "guardian-b.sats-jar-dev.testnet"
+    ],
+    "family_account": "sats-jar-dev.testnet",
+    "nickname": "Dev money moment"
+  },
+  "address": "tb1q5vkrawlraeg8r4h5efs96z85sgv48qk4r5d9kd5eusj2zmtc9puqc3ezza",
+  "witness_script": "6321026957c15136a769e73830ee47d2dcf245161748c149330b29048199315f7b0212ac6704efdaf36ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac68",
+  "public_key": "secp256k1:37A4ACjoxrVYWtDiH5VUFhU5rPGZuziRMJuK4GtiHrwGdCtHPAjM62GVvzyGQvYN9ZBbY58iihALaY6VqobNNt1D",
+  "locktime": 1794366191,
+  "demo_timing": true,
+  "clock": {
+    "started_at": "1794269169"
+  },
+  "handover": "none",
+  "proven_balance": "1260",
+  "available_allowance": "0",
+  "fee_budget_left": "10",
+  "next_allowance_at": "1794355569"
+}

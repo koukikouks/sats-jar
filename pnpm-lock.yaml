@@ -23,6 +23,9 @@ importers:
       '@noble/hashes':
         specifier: 2.4.0
         version: 2.4.0
+      '@sats-jar/scripts':
+        specifier: workspace:*
+        version: link:../scripts
       '@scure/base':
         specifier: 2.4.0
         version: 2.4.0
@@ -33,6 +36,9 @@ importers:
       '@sats-jar/device-keys':
         specifier: workspace:*
         version: link:../packages/device-keys
+      '@scure/btc-signer':
+        specifier: 2.4.1
+        version: 2.4.1
 
   packages/device-keys:
     dependencies:
@@ -55,6 +61,8 @@ importers:
       near-api-js:
         specifier: 7.4.0
         version: 7.4.0
+
+  packages/proof: {}
 
   scripts:
     dependencies:

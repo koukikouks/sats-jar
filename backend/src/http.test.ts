@@ -39,7 +39,9 @@ function setup() {
   const chain = fakeChain();
   const file = join(mkdtempSync(join(tmpdir(), "sats-jar-backend-")), "drafts.json");
   const store = fileStore(file);
-  const handle = createBackend({ chain, store, appAccount: APP });
+  // The keeper has its own tests (keeper.test.ts); here it does nothing.
+  const keeper = { run: async () => ({ startedAt: 0, steps: [] }) };
+  const handle = createBackend({ chain, store, appAccount: APP, keeper });
   const call = async (method: string, path: string, body?: unknown) => {
     const response = await handle(
       new Request(`http://backend.test${path}`, {

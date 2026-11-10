@@ -1,0 +1,221 @@
+{
+ "final_execution_status": "FINAL",
+ "receipts_outcome": [
+  {
+   "block_hash": "8d8WmvtesVv1zgBmaT3zboPrXV5vmjQD4EvEyyEBTaJd",
+   "id": "5JmayqhTk3gpqd95tgFCe5CbVh9TwgzqAVeLhMbKfZmo",
+   "outcome": {
+    "executor_id": "sats-jar-dev.testnet",
+    "gas_burnt": 1459677842110,
+    "logs": [],
+    "metadata": {
+     "contracts": [
+      {
+       "local": "FaNy3dNbK3d5s1xR2PKA6fXE79e9j4ojjGGifYZtUazE"
+      }
+     ],
+     "gas_profile": [
+      {
+       "cost": "BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "3177217332"
+      },
+      {
+       "cost": "CONTRACT_LOADING_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "35445963"
+      },
+      {
+       "cost": "CONTRACT_LOADING_BYTES",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "333182661650"
+      },
+      {
+       "cost": "READ_MEMORY_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "7829589600"
+      },
+      {
+       "cost": "READ_MEMORY_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "349722636"
+      },
+      {
+       "cost": "READ_REGISTER_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "7551495558"
+      },
+      {
+       "cost": "READ_REGISTER_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "65050920"
+      },
+      {
+       "cost": "STORAGE_READ_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "112713691498"
+      },
+      {
+       "cost": "STORAGE_READ_KEY_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "340477863"
+      },
+      {
+       "cost": "STORAGE_READ_VALUE_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "3540543524"
+      },
+      {
+       "cost": "UTF8_DECODING_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "3111779061"
+      },
+      {
+       "cost": "UTF8_DECODING_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "23618018799"
+      },
+      {
+       "cost": "WASM_INSTRUCTION",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "51947991084"
+      },
+      {
+       "cost": "WRITE_MEMORY_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "11215179444"
+      },
+      {
+       "cost": "WRITE_MEMORY_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "1841269872"
+      },
+      {
+       "cost": "WRITE_REGISTER_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "8596567458"
+      },
+      {
+       "cost": "WRITE_REGISTER_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "2398786884"
+      }
+     ],
+     "version": 4
+    },
+    "receipt_ids": [
+     "UhEfa8mvZjMYp3zaq1MP2gYeJW8b5R3x4sKD5dS87WF"
+    ],
+    "status": {
+     "Failure": {
+      "ActionError": {
+       "index": 0,
+       "kind": {
+        "FunctionCallError": {
+         "ExecutionError": "Smart contract panicked: ALREADY_PAID: the allowance for this period was already paid; next one in 23h 59m"
+        }
+       }
+      }
+     }
+    },
+    "tokens_burnt": "145967784211000000000"
+   },
+   "proof": [
+    {
+     "direction": "Left",
+     "hash": "EVYmVystFXXQ895z8UtF5VpY5WGkfUGMMhCktZLGUMmJ"
+    }
+   ]
+  },
+  {
+   "block_hash": "Hdj2imPoaWYYyNKwL2ZhYDQQKbP9TF5nffyiPxQn59Ec",
+   "id": "UhEfa8mvZjMYp3zaq1MP2gYeJW8b5R3x4sKD5dS87WF",
+   "outcome": {
+    "executor_id": "sats-jar-dev.testnet",
+    "gas_burnt": 223182562500,
+    "logs": [],
+    "metadata": {
+     "contracts": [
+      {
+       "local": "FaNy3dNbK3d5s1xR2PKA6fXE79e9j4ojjGGifYZtUazE"
+      }
+     ],
+     "gas_profile": [],
+     "version": 4
+    },
+    "receipt_ids": [],
+    "status": {
+     "SuccessValue": ""
+    },
+    "tokens_burnt": "0"
+   },
+   "proof": [
+    {
+     "direction": "Left",
+     "hash": "B74PykfqWe6dcWcTyJLPnVQRxEv4sDAG6aetWCEvmkh7"
+    }
+   ]
+  }
+ ],
+ "status": {
+  "Failure": {
+   "ActionError": {
+    "index": 0,
+    "kind": {
+     "FunctionCallError": {
+      "ExecutionError": "Smart contract panicked: ALREADY_PAID: the allowance for this period was already paid; next one in 23h 59m"
+     }
+    }
+   }
+  }
+ },
+ "transaction": {
+  "actions": [
+   {
+    "FunctionCall": {
+     "args": "eyJqYXJfaWQiOiIxIiwiZmVlX3JhdGUiOiIxIn0=",
+     "deposit": "0",
+     "gas": 80000000000000,
+     "method_name": "request_allowance"
+    }
+   }
+  ],
+  "hash": "HXdy5TkMDTf3u7iy1FPZ7U8EEhshmVDRyMZEW6NCRNUP",
+  "nonce": 276990895000006,
+  "priority_fee": 0,
+  "public_key": "ed25519:9GghJQFLGwSM2Fezo2f35ZsgpyseGrV9XG2rYfCNpeoi",
+  "receiver_id": "sats-jar-dev.testnet",
+  "signature": "ed25519:41KiNjum7zLNUzTwqBT49WV4qAVsbzEuk5mQJ44UNJ22DuBfrjEMVgmQsGbEp5sQLguUjE94aN5s1zhm7dtXv7Pr",
+  "signer_id": "sats-jar-dev.testnet"
+ },
+ "transaction_outcome": {
+  "block_hash": "8d8WmvtesVv1zgBmaT3zboPrXV5vmjQD4EvEyyEBTaJd",
+  "id": "HXdy5TkMDTf3u7iy1FPZ7U8EEhshmVDRyMZEW6NCRNUP",
+  "outcome": {
+   "executor_id": "sats-jar-dev.testnet",
+   "gas_burnt": 308162352964,
+   "logs": [],
+   "metadata": {
+    "gas_profile": null,
+    "version": 1
+   },
+   "receipt_ids": [
+    "5JmayqhTk3gpqd95tgFCe5CbVh9TwgzqAVeLhMbKfZmo"
+   ],
+   "status": {
+    "SuccessReceiptId": "5JmayqhTk3gpqd95tgFCe5CbVh9TwgzqAVeLhMbKfZmo"
+   },
+   "tokens_burnt": "30816235296400000000"
+  },
+  "proof": [
+   {
+    "direction": "Right",
+    "hash": "6FDb7y6Ki8y5bYNhPHf6K4KLP7n5nPUkpMRmxnsvc4Wc"
+   },
+   {
+    "direction": "Right",
+    "hash": "3JxWNdbiTqRZUPJXa3BGTP4d6etg2F2GtLHWEr3ExZfQ"
+   }
+  ]
+ }
+}
