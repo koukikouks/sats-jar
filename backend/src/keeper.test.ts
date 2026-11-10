@@ -326,6 +326,20 @@ describe("allowance", () => {
         }),
       0,
     ],
+    [
+      "while its handover completes (contract/src/handover.rs HandoverView)",
+      (dev: Dev) =>
+        dev.jars.set("1", {
+          ...dev.jars.get("1")!,
+          handover: { completing: { delay_ends_at: "1", coins_to_move: 1, coins_left: 1 } },
+        }),
+      0,
+    ],
+    [
+      "once its handover is done",
+      (dev: Dev) => dev.jars.set("1", { ...dev.jars.get("1")!, handover: { done: { completed_at: "1" } } }),
+      0,
+    ],
   ])("no request_allowance %s", async (_case, change, shift) => {
     const { dev, now } = allowanceDue();
     change(dev);

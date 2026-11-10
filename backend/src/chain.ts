@@ -27,7 +27,12 @@ export type JarView = {
   address: string;
   create_args: { cap: string; period: string };
   clock: { started_at: string | null };
-  handover: "none" | { claimed: object } | { confirmed: { delay_ends_at: string } };
+  handover:
+    | "none"
+    | { claimed: object }
+    | { confirmed: { delay_ends_at: string } }
+    | { completing: object }
+    | { done: object };
   proven_balance: string;
   available_allowance: string;
   fee_budget_left: string;

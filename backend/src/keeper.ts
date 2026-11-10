@@ -300,7 +300,8 @@ function finished(payment: PaymentView): boolean {
 function allowanceDue(jar: JarView, now: number): boolean {
   if (jar.next_allowance_at === null || Number(jar.next_allowance_at) > now) return false;
   if (Number(jar.available_allowance) === 0 || Number(jar.proven_balance) === 0) return false;
-  // From the end of a confirmed handover's delay, no allowance runs.
+  // From the end of a confirmed handover's delay, no allowance runs (Handover::payouts_stopped).
   const { handover } = jar;
-  return !(typeof handover === "object" && "confirmed" in handover && Number(handover.confirmed.delay_ends_at) <= now);
+  if (handover === "none" || "claimed" in handover) return true;
+  return "confirmed" in handover && Number(handover.confirmed.delay_ends_at) > now;
 }
