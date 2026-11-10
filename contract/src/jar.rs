@@ -4,6 +4,7 @@ use crate::error::{self, refuse};
 use crate::handover::{Handover, HandoverView};
 use crate::mpc_key::{self, PointBytes};
 use crate::rule::{self, Ledger};
+use crate::transfer::{Transfer, TransferView};
 use crate::Network;
 use btc::{BtcError, SegwitAddress};
 use near_sdk::json_types::U64;
@@ -99,6 +100,8 @@ pub struct Jar {
     pub proven_balance: u64,
     /// Carry-over, the fee budget and the last allowance (the rule's ledger).
     pub allowance: Ledger,
+    /// A transfer after handover.
+    pub transfer: Transfer,
 }
 
 #[near(serializers = [json])]
@@ -130,6 +133,7 @@ pub struct JarView {
     /// Unix seconds from which the next allowance may be requested (in the past when one is
     /// due now); null before the first top-up.
     pub next_allowance_at: Option<U64>,
+    pub transfer: TransferView,
 }
 
 /// Whether a jar runs on shortened time; derived from its period, never set by the caller.
@@ -232,6 +236,7 @@ impl Jar {
             coin_count: 0,
             proven_balance: 0,
             allowance: Ledger::default(),
+            transfer: Transfer::default(),
         }
     }
 
@@ -301,7 +306,7 @@ impl Jar {
     }
 
     /// The jar as `get_jar` shows it at `now` (unix seconds); `coins_to_move` is how many coins
-    /// a completing handover has still to put in a re-homing payment.
+    /// a completing handover or an accepted transfer has still to put in a re-homing payment.
     pub fn view(&self, jar_id: &str, network: Network, now: u64, coins_to_move: u32) -> JarView {
         let (available_allowance, fee_budget_left, next_allowance_at) = self.allowance_at(now);
         JarView {
@@ -325,6 +330,7 @@ impl Jar {
             available_allowance: U64(available_allowance),
             fee_budget_left: U64(fee_budget_left),
             next_allowance_at: next_allowance_at.map(U64),
+            transfer: self.transfer.view(coins_to_move),
         }
     }
 }

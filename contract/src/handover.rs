@@ -6,9 +6,8 @@
 
 use crate::error::{self, refuse};
 use crate::events::SatsJarEvent;
-use crate::jar::{demo_timing, exit_delay, JarAddress};
-use crate::payment;
-use crate::{hex, history, rule, Network, SatsJar, SatsJarExt};
+use crate::jar::demo_timing;
+use crate::{hex, history, rehoming, rule, Network, SatsJar, SatsJarExt};
 use k256::elliptic_curve::sec1::FromEncodedPoint;
 use k256::{AffinePoint, EncodedPoint};
 use near_sdk::json_types::U64;
@@ -329,13 +328,7 @@ impl Handover {
         else {
             return false;
         };
-        let fixed = spent.iter().filter(|&&index| index < *fixed_below).count();
-        // More fixed coins spent than were fixed would be a broken invariant: never move early.
-        *left = u32::try_from(fixed)
-            .ok()
-            .and_then(|fixed| left.checked_sub(fixed))
-            .unwrap_or_else(|| env::abort());
-        *left == 0
+        rehoming::count_down(*fixed_below, left, spent)
     }
 
     /// Ends a completing handover at `now`; returns the child's account the jar moves to.
@@ -414,9 +407,10 @@ impl Handover {
     }
 }
 
-/// The child's Bitcoin key from its hex: a secp256k1 point in SEC1 compressed form, the only
-/// form segwit v0 relays, so the re-homed exit branch can always be spent.
-fn parse_key(text: &str) -> [u8; 33] {
+/// A holder's Bitcoin key from its hex: a secp256k1 point in SEC1 compressed form, the only
+/// form segwit v0 relays, so the re-homed exit branch can always be spent. Refuses with `code`,
+/// naming the key as `whose`.
+pub(crate) fn parse_key(text: &str, code: &str, whose: &str) -> [u8; 33] {
     hex::decode(text)
         .and_then(|bytes| <[u8; 33]>::try_from(bytes).ok())
         .filter(|key| matches!(key[0], 0x02 | 0x03))
@@ -427,9 +421,11 @@ fn parse_key(text: &str) -> [u8; 33] {
         })
         .unwrap_or_else(|| {
             refuse(
-                error::INVALID_CHILD_KEY,
-                "the child's Bitcoin key must be a compressed secp256k1 public key (33 bytes of hex, \
-                 starting 02 or 03)",
+                code,
+                &format!(
+                    "{whose} must be a compressed secp256k1 public key (33 bytes of hex, starting \
+                     02 or 03)"
+                ),
             )
         })
 }
@@ -453,7 +449,11 @@ impl SatsJar {
                 &format!("a claim for {child_account} must be sent by {child_account} itself"),
             );
         }
-        let key = parse_key(&child_btc_pubkey);
+        let key = parse_key(
+            &child_btc_pubkey,
+            error::INVALID_CHILD_KEY,
+            "the child's Bitcoin key",
+        );
         let now = env::block_timestamp_ms() / 1_000;
         let (lapses_at, lapsed) = jar.handover.claim(
             Claim {
@@ -565,13 +565,7 @@ impl SatsJar {
         let mut jar = self.jar(&jar_id).clone();
         let now = env::block_timestamp_ms() / 1_000;
         jar.handover.refuse_unless_due(now, jar.args.unlock_at.0);
-        let free = self.free_coins.get(&jar_id).cloned().unwrap_or_default();
-        // Every pending payment reserves at least one coin, and the proven balance still counts
-        // reserved coins, so a free list worth less means a payment is pending.
-        let free_value = free
-            .iter()
-            .fold(0u64, |sum, coin| sum.saturating_add(coin.value));
-        if free_value < jar.proven_balance {
+        if self.payment_pending(&jar_id, &jar) {
             refuse(
                 error::PAYMENT_PENDING,
                 "a payment from this jar is not yet confirmed on Bitcoin; confirm it before the \
@@ -581,27 +575,16 @@ impl SatsJar {
         if fee_rate.0 < 1 {
             refuse(error::FEE_TOO_LOW, "the fee rate must be at least 1 sat/vB");
         }
+        let free = self.free_coins.get(&jar_id).cloned().unwrap_or_default();
         let first_call = match &jar.handover {
             Handover::Confirmed { claim, .. } => Some(claim.child_btc_pubkey),
             _ => None,
         };
         if let Some(child_btc_pubkey) = first_call {
-            // HASH160 of the child's key: the exit branch's key hash (`OP_HASH160` checks it).
-            let exit_key_hash = env::ripemd160_array(env::sha256_array(child_btc_pubkey));
-            let locktime = now
-                .checked_add(exit_delay(demo_timing(jar.args.period.0), self.network))
-                .and_then(|t| u32::try_from(t).ok())
-                .unwrap_or_else(|| {
-                    refuse(
-                        error::LOCKTIME_OUT_OF_RANGE,
-                        "the exit date two years from now is past what Bitcoin can lock to (2106)",
-                    )
-                });
-            jar.rehome(JarAddress::new(&jar.mpc_key, exit_key_hash, locktime));
+            let (address, locktime) = self.rehome_to(&mut jar, &child_btc_pubkey, now);
             // Nothing is pending, so every coin not yet spent is free and moves.
             let coins = u32::try_from(free.len()).unwrap_or_else(|_| env::abort());
             jar.handover.start(jar.coin_count, coins);
-            let address = jar.address(self.network);
             self.record(
                 &jar_id,
                 history::Event::RehomingStarted {
@@ -624,12 +607,7 @@ impl SatsJar {
             }
         }
         let fixed_below = jar.handover.fixed_below().unwrap_or_else(|| env::abort());
-        let fixed: Vec<payment::FreeCoin> = free
-            .iter()
-            .filter(|coin| coin.index < fixed_below)
-            .take(payment::MAX_INPUTS)
-            .copied()
-            .collect();
+        let fixed = self.rehoming_batch(&jar, &free, fixed_below, fee_rate.0);
         PromiseOrValue::Promise(self.start_rehoming(&jar_id, jar, &fixed, fee_rate.0))
     }
 }

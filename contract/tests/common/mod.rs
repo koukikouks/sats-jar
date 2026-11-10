@@ -6,6 +6,7 @@ mod handover;
 mod payment;
 mod strays;
 mod topup;
+mod transfer;
 #[allow(unused_imports)]
 pub use handover::*;
 #[allow(unused_imports)]
@@ -14,6 +15,8 @@ pub use payment::*;
 pub use strays::*;
 #[allow(unused_imports)]
 pub use topup::*;
+#[allow(unused_imports)]
+pub use transfer::*;
 
 use bitcoin::hashes::Hash;
 use near_workspaces::network::Sandbox;

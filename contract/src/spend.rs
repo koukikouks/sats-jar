@@ -40,6 +40,12 @@ impl SatsJar {
                 &format!("the caller is not the holder of jar {jar_id}"),
             );
         }
+        if jar.transfer.is_open() {
+            refuse(
+                error::TRANSFER_OPEN,
+                "a transfer of this jar is open; cancel it before spending",
+            );
+        }
         let payee_script = payee_script(&to, self.network);
         if amount.0 < topup::DUST_FLOOR {
             refuse(

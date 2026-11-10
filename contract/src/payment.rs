@@ -193,6 +193,34 @@ pub fn plan_rehoming(
     })
 }
 
+/// The coins for a move's next re-homing batch: `fixed` (the up to 10 largest coins fixed to
+/// move), or, when their one output at `fee_rate` would fall under Bitcoin's dust limit, up to 9
+/// of them and `carrier`, a free coin outside the fixed set (an earlier batch's output). Only a
+/// 1 sat/vB batch can fall under dust (any higher rate meets the 5% fee bound first), and a
+/// carrier of at least 330 sats with one fixed coin of at least 330 clears it, so every move
+/// finishes. `shape_of` sizes a batch as the payment will be sized.
+pub fn rehoming_batch(
+    fixed: &[FreeCoin],
+    carrier: Option<FreeCoin>,
+    fee_rate: u64,
+    shape_of: impl Fn(&[FreeCoin]) -> Shape,
+) -> Vec<FreeCoin> {
+    let fixed = &fixed[..fixed.len().min(MAX_INPUTS)];
+    let below_dust = !fixed.is_empty()
+        && matches!(
+            plan_rehoming(fixed, fee_rate, &shape_of(fixed)),
+            Err(RehomingShortfall::OutputBelowDust { .. })
+        );
+    match carrier {
+        Some(carrier) if below_dust => {
+            let mut batch = fixed[..fixed.len().min(MAX_INPUTS - 1)].to_vec();
+            batch.push(carrier);
+            batch
+        }
+        _ => fixed.to_vec(),
+    }
+}
+
 /// The largest virtual size (BIP-141) of a payment with `inputs` jar inputs and outputs with
 /// these scripts, signed down the MPC branch: weight = 4 × base + witness, rounded up.
 pub fn vsize(inputs: usize, output_script_lens: &[u64], shape: &Shape) -> u64 {

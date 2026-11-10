@@ -1,12 +1,14 @@
 //! Re-homing payments: moving coins to the jar's current address, one payment of up to 10 coins
-//! at a time, for a handover and for strays (top-ups to an address the jar has moved away from).
+//! at a time, for a handover, a transfer (ADR 0009: one code path covers both) and strays
+//! (top-ups to an address the jar has moved away from).
 
 use crate::coins::Coin;
 use crate::error::{self, refuse};
 use crate::events::SatsJarEvent;
 use crate::handover::Handover;
-use crate::jar::Jar;
+use crate::jar::{demo_timing, exit_delay, Jar, JarAddress};
 use crate::payment::{self, FreeCoin, Output, PaymentKind, RehomingShortfall};
+use crate::transfer::Transfer;
 use crate::{hex, history, SatsJar, SatsJarExt};
 use near_sdk::json_types::U64;
 use near_sdk::{env, near, Promise};
@@ -43,10 +45,13 @@ impl SatsJar {
     }
 }
 
-/// Refuses while the jar's coins are being re-homed for a move (a completing handover): the
-/// strays are swept once the jar has moved, so a sweep never makes the move wait for it.
+/// Refuses while the jar's coins are being re-homed for a move (a completing handover or an
+/// accepted transfer): the strays are swept once the jar has moved, so a sweep never makes the
+/// move wait for it.
 fn refuse_while_rehoming(jar: &Jar) {
-    if matches!(jar.handover, Handover::Completing { .. }) {
+    if matches!(jar.handover, Handover::Completing { .. })
+        || matches!(jar.transfer, Transfer::Accepted { .. })
+    {
         refuse(
             error::REHOMING_IN_PROGRESS,
             "the jar's coins are moving to its new address; strays are swept once the jar has \
@@ -132,4 +137,87 @@ impl SatsJar {
         .emit();
         self.sign_round(jar_id, payment_id, &sighashes, 0)
     }
+}
+
+impl SatsJar {
+    /// Whether a payment from the jar is pending. Every pending payment reserves at least one
+    /// coin, and the proven balance still counts reserved coins, so a free list worth less
+    /// means one is.
+    pub(crate) fn payment_pending(&self, jar_id: &str, jar: &Jar) -> bool {
+        let free_value = self
+            .free_coins
+            .get(jar_id)
+            .map_or(&[][..], Vec::as_slice)
+            .iter()
+            .fold(0u64, |sum, coin| sum.saturating_add(coin.value));
+        free_value < jar.proven_balance
+    }
+
+    /// Moves `jar` to a new address whose exit branch is `key` (SEC1 compressed), timelocked two
+    /// years from `now` (3 hours under demo timing off mainnet); returns the address and its
+    /// locktime. The old address keeps its index.
+    pub(crate) fn rehome_to(&self, jar: &mut Jar, key: &[u8; 33], now: u64) -> (String, u32) {
+        // HASH160 of the key: the exit branch's key hash (`OP_HASH160` checks it).
+        let exit_key_hash = env::ripemd160_array(env::sha256_array(key));
+        let locktime = now
+            .checked_add(exit_delay(demo_timing(jar.args.period.0), self.network))
+            .and_then(|t| u32::try_from(t).ok())
+            .unwrap_or_else(|| {
+                refuse(
+                    error::LOCKTIME_OUT_OF_RANGE,
+                    "the exit date two years from now is past what Bitcoin can lock to (2106)",
+                )
+            });
+        jar.rehome(JarAddress::new(&jar.mpc_key, exit_key_hash, locktime));
+        (jar.address(self.network), locktime)
+    }
+
+    /// The next re-homing batch of a move: up to the 10 largest free coins fixed to move (index
+    /// below `fixed_below`), or, if their output at `fee_rate` would fall under dust, up to 9 of
+    /// them and the largest free coin not fixed as a carrier.
+    pub(crate) fn rehoming_batch(
+        &self,
+        jar: &Jar,
+        free: &[FreeCoin],
+        fixed_below: u32,
+        fee_rate: u64,
+    ) -> Vec<FreeCoin> {
+        let fixed: Vec<FreeCoin> = free
+            .iter()
+            .filter(|coin| coin.index < fixed_below)
+            .take(payment::MAX_INPUTS)
+            .copied()
+            .collect();
+        // The free list is largest first.
+        let carrier = free.iter().find(|coin| coin.index >= fixed_below).copied();
+        payment::rehoming_batch(&fixed, carrier, fee_rate, |coins| {
+            rehoming_shape(jar, coins)
+        })
+    }
+}
+
+/// The size inputs of a re-homing of `coins` to the jar's current address, as `start_rehoming`
+/// measures them: one output, the longest input script.
+fn rehoming_shape(jar: &Jar, coins: &[FreeCoin]) -> payment::Shape {
+    payment::Shape {
+        payee_script_len: jar.script_pubkey().len() as u64,
+        change_script_len: 0,
+        witness_script_len: coins
+            .iter()
+            .map(|coin| jar.address_at(coin.address).witness_script.len() as u64)
+            .max()
+            .unwrap_or(0),
+    }
+}
+
+/// Counts down the coins fixed to move (index below `fixed_below`) among `spent`, a confirmed
+/// payment's inputs, whatever kind of payment spent them; true once `left` reaches 0.
+pub fn count_down(fixed_below: u32, left: &mut u32, spent: &[u32]) -> bool {
+    let fixed = spent.iter().filter(|&&index| index < fixed_below).count();
+    // More fixed coins spent than were fixed would be a broken invariant: never move early.
+    *left = u32::try_from(fixed)
+        .ok()
+        .and_then(|fixed| left.checked_sub(fixed))
+        .unwrap_or_else(|| env::abort());
+    *left == 0
 }

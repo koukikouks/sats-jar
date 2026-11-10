@@ -72,6 +72,24 @@ pub enum Event {
     SpendRequested {
         payment_id: U64,
     },
+    TransferStarted {
+        receiver: AccountId,
+    },
+    TransferCancelled,
+    /// The receiver accepted with `btc_pubkey` (hex): the jar's new `address`, whose exit branch
+    /// opens at `locktime` (unix seconds), and how many coins are fixed to move there.
+    TransferAccepted {
+        receiver: AccountId,
+        btc_pubkey: String,
+        address: String,
+        locktime: u32,
+        coins: u32,
+    },
+    /// Every fixed coin moved and confirmed: the jar NFT moved from `from` to `to`.
+    TransferCompleted {
+        from: AccountId,
+        to: AccountId,
+    },
 }
 
 #[near(serializers = [borsh])]

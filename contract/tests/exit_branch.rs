@@ -5,15 +5,9 @@
 
 mod common;
 
-use bitcoin::absolute::LockTime;
 use bitcoin::hashes::Hash;
-use bitcoin::secp256k1::{Message, Secp256k1, SecretKey};
-use bitcoin::sighash::{EcdsaSighashType, SighashCache};
-use bitcoin::transaction::Version;
-use bitcoin::{
-    Address, Amount, CompressedPublicKey, Network, OutPoint, ScriptBuf, Sequence, Transaction,
-    TxIn, TxOut, Txid, Witness,
-};
+use bitcoin::secp256k1::{Secp256k1, SecretKey};
+use bitcoin::{Address, CompressedPublicKey, Network, OutPoint, ScriptBuf, Txid};
 use common::*;
 use test_support::serde_json::json;
 use test_support::{from_hex, to_hex, Regtest};
@@ -40,53 +34,6 @@ fn phrase_key() -> SecretKey {
         "a9c4134b73560f43fc5c081e5c1daa7ce068adc806d80e1f37cb658e0fea4c8d",
     ))
     .unwrap()
-}
-
-/// An exit-branch spend of the `value`-sat coin at `outpoint` (witness `[sig, key, <empty> for
-/// ELSE, script]`), signed with `key`, with the address's locktime as the transaction's lock time.
-fn exit_spend(
-    regtest: &Regtest,
-    outpoint: OutPoint,
-    value: u64,
-    script: &ScriptBuf,
-    locktime: u32,
-    key: &SecretKey,
-) -> Vec<u8> {
-    let payee = regtest
-        .new_address()
-        .parse::<Address<_>>()
-        .unwrap()
-        .require_network(Network::Regtest)
-        .unwrap();
-    let mut tx = Transaction {
-        version: Version::TWO,
-        lock_time: LockTime::from_consensus(locktime),
-        input: vec![TxIn {
-            previous_output: outpoint,
-            script_sig: ScriptBuf::new(),
-            // Below 0xFFFFFFFF, or CHECKLOCKTIMEVERIFY fails whatever the lock time.
-            sequence: Sequence::ENABLE_LOCKTIME_NO_RBF,
-            witness: Witness::new(),
-        }],
-        output: vec![TxOut {
-            value: Amount::from_sat(value - 1_000),
-            script_pubkey: payee.script_pubkey(),
-        }],
-    };
-    let sighash = SighashCache::new(&tx)
-        .p2wsh_signature_hash(0, script, Amount::from_sat(value), EcdsaSighashType::All)
-        .unwrap();
-    let secp = Secp256k1::new();
-    let signature = secp.sign_ecdsa(&Message::from(sighash), key);
-    let mut sig = signature.serialize_der().to_vec();
-    sig.push(EcdsaSighashType::All as u8);
-    tx.input[0].witness = Witness::from_slice(&[
-        sig,
-        key.public_key(&secp).serialize().to_vec(),
-        vec![],
-        script.to_bytes(),
-    ]);
-    bitcoin::consensus::serialize(&tx)
 }
 
 #[tokio::test]

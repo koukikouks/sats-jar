@@ -20,6 +20,7 @@ mod signer;
 mod spend;
 mod svg;
 mod topup;
+mod transfer;
 
 use btc::{OutPoint, Transaction, TxOut};
 use coins::{Coin, CoinStatus, CoinView, OutPointKey};
@@ -662,6 +663,7 @@ impl SatsJar {
             self.add_coin(&jar_id, index, payment.txid, vout, output.value, address);
         }
         let handed_over = jar.handover.count_down(&payment.inputs);
+        let transferred = jar.transfer.count_down(&payment.inputs);
         self.jars.insert(jar_id.clone(), jar);
         let change = payment.change().map_or(0, |output| output.value);
         payment.status = PaymentStatus::Confirmed;
@@ -677,6 +679,9 @@ impl SatsJar {
         .emit();
         if handed_over {
             self.finish_handover(&jar_id, env::block_timestamp_ms() / 1_000);
+        }
+        if transferred {
+            self.finish_transfer(&jar_id);
         }
     }
 
@@ -763,7 +768,9 @@ impl SatsJar {
 
     pub fn get_jar(&self, jar_id: String) -> Option<JarView> {
         let jar = self.jars.get(&jar_id)?;
-        let coins_to_move = jar.handover.fixed_below().map_or(0, |below| {
+        // A completing handover and an accepted transfer never overlap.
+        let fixed_below = jar.handover.fixed_below().or(jar.transfer.fixed_below());
+        let coins_to_move = fixed_below.map_or(0, |below| {
             let free = self.free_coins.get(&jar_id).map_or(&[][..], Vec::as_slice);
             // At most every coin the jar has, which fits a u32.
             free.iter().filter(|coin| coin.index < below).count() as u32

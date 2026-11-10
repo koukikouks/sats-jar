@@ -135,6 +135,30 @@ pub enum SatsJarEvent {
     /// The holder revoked every approval.
     #[event_version("1.0.0")]
     ApprovalsRevoked { jar_id: String },
+    /// The holder offered the jar to `receiver`.
+    #[event_version("1.0.0")]
+    TransferStarted { jar_id: String, receiver: AccountId },
+    /// The holder cancelled a transfer not yet accepted.
+    #[event_version("1.0.0")]
+    TransferCancelled { jar_id: String },
+    /// The receiver accepted with `btc_pubkey` (hex): the jar moved to its new `address`,
+    /// whose exit branch is that key from `locktime` (unix seconds); `coins` are fixed to move.
+    #[event_version("1.0.0")]
+    TransferAccepted {
+        jar_id: String,
+        receiver: AccountId,
+        btc_pubkey: String,
+        address: String,
+        locktime: u32,
+        coins: u32,
+    },
+    /// Every fixed coin moved and confirmed: the jar NFT moved from `from` to `to`.
+    #[event_version("1.0.0")]
+    TransferCompleted {
+        jar_id: String,
+        from: AccountId,
+        to: AccountId,
+    },
 }
 
 #[near(serializers = [json])]

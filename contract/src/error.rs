@@ -153,3 +153,17 @@ pub const INVALID_ADDRESS: &str = "INVALID_ADDRESS";
 pub const AMOUNT_BELOW_DUST: &str = "AMOUNT_BELOW_DUST";
 /// `nft_approve` of an 11th account: a jar has at most 10 approved accounts.
 pub const TOO_MANY_APPROVALS: &str = "TOO_MANY_APPROVALS";
+/// `start_transfer` before handover: until then the jar belongs to the rule.
+pub const TRANSFER_BEFORE_HANDOVER: &str = "TRANSFER_BEFORE_HANDOVER";
+/// A transfer of the jar is already open (started or accepted).
+pub const TRANSFER_OPEN: &str = "TRANSFER_OPEN";
+/// No transfer of the jar is open.
+pub const NO_OPEN_TRANSFER: &str = "NO_OPEN_TRANSFER";
+/// The receiver has accepted the transfer, so it can no longer be cancelled.
+pub const TRANSFER_ACCEPTED: &str = "TRANSFER_ACCEPTED";
+/// Only the receiver's own account accepts a transfer and names its Bitcoin key.
+pub const NOT_THE_RECEIVER: &str = "NOT_THE_RECEIVER";
+/// The receiver's Bitcoin key is not a compressed secp256k1 public key.
+pub const INVALID_BTC_KEY: &str = "INVALID_BTC_KEY";
+/// The transfer was accepted with another Bitcoin key.
+pub const KEY_CHANGED: &str = "KEY_CHANGED";
