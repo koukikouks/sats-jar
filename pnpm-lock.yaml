@@ -64,6 +64,18 @@ importers:
 
   packages/proof: {}
 
+  packages/sdk:
+    dependencies:
+      '@sats-jar/device-keys':
+        specifier: workspace:*
+        version: link:../device-keys
+      '@sats-jar/proof':
+        specifier: workspace:*
+        version: link:../proof
+      near-api-js:
+        specifier: 7.4.0
+        version: 7.4.0
+
   scripts:
     dependencies:
       '@noble/hashes':
