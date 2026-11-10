@@ -4,6 +4,7 @@ import { createApp } from "./app.ts";
 import {
   BACKEND,
   CONTRACT,
+  fixture,
   memoryStorage,
   recorded,
   testNetwork,
@@ -179,6 +180,30 @@ describe("creating a jar", () => {
     expect((await giver.jars.create(input)).jarId).toBe("3");
     expect(net.sent).toHaveLength(2); // the first bytes, resent once; nothing newly signed
     expect(net.sent[1]?.signedTx).toBe(first?.signedTx);
+  });
+
+  test("bytes now rejected that only the full-history indexer saw land give their jar; nothing is minted again", async () => {
+    // FastNEAR's live row for this very create_jar (T15's, which made jar 3), served under the
+    // retried bytes' hash (labelled): RPC has forgotten it, so only the indexer knows it landed.
+    const row = (fixture("part2-live").exchanges.find((e) => JSON.stringify(e.request.body).includes("EzMfNip"))?.response.body as {
+      transactions: { transaction: Record<string, unknown> }[];
+    }).transactions[0];
+    let landed = false;
+    const { net, giver, input } = await readyGiver(
+      (_, attempt) => {
+        if (attempt === 1) {
+          landed = true;
+          return lost();
+        }
+        return rejected;
+      },
+      { indexed: (hash) => (landed && row ? { ...row, transaction: { ...row.transaction, hash } } : undefined) },
+    );
+    await expect(giver.jars.create(input)).rejects.toMatchObject({ code: "UNAVAILABLE" });
+    net.jars.set("3", net.sent[0]?.args.guardians as string[]);
+
+    expect((await giver.jars.create(input)).jarId).toBe("3");
+    expect(net.signings()).toBe(1);
   });
 
   test("a jar of the giver's with other create args is not taken; the new create is signed afresh", async () => {

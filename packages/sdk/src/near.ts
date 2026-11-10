@@ -16,6 +16,8 @@ import type { SatsJarRefusal } from "./api.ts";
 /** Testnet only (CODING_STANDARDS); the endpoint the backend and proof view use. */
 export const NEAR_RPC = "https://rpc.testnet.fastnear.com";
 export const nearTransactionUrl = (hash: string): string => `https://testnet.nearblocks.io/txns/${hash}`;
+/** FastNEAR's keyless full-history transaction lookup (as packages/proof reads it); RPC nodes forget after ~2.5 days. */
+const FASTNEAR_TRANSACTIONS = "https://tx.test.fastnear.com/v0/transactions";
 
 /** A JSON-RPC error answer: its cause name (INVALID_TRANSACTION, UNKNOWN_TRANSACTION, ...). */
 class RpcError extends Error {
@@ -44,6 +46,14 @@ export interface SignedCall {
 interface Status {
   Failure?: unknown;
   SuccessValue?: string;
+  SuccessReceiptId?: string;
+}
+
+/** One FastNEAR /v0/transactions row: the transaction and every receipt it caused, with outcomes. */
+interface IndexedTx {
+  transaction: { hash: string };
+  execution_outcome: { outcome: { executor_id: string; status: Status } };
+  receipts: { execution_outcome: { id: string; outcome: { executor_id: string; status: Status } } }[];
 }
 
 /** The final outcome of a transaction, as RPC `send_tx` and `tx` give it. */
@@ -51,6 +61,12 @@ export interface Outcome {
   status: Status;
   transaction_outcome: { id: string };
   receipts_outcome: { outcome: { executor_id: string; status: Status } }[];
+}
+
+/** One access key as RPC's view_access_key_list gives it: "FullAccess", or a function-call permission. */
+export interface AccessKey {
+  public_key: string;
+  access_key: { permission: unknown };
 }
 
 /** The transaction was refused before it ran (bad nonce, expired, unknown key, no balance). */
@@ -106,6 +122,22 @@ export function near(http: typeof fetch, contract: string) {
   return {
     view,
 
+    /** The account's access keys at final; none for an account that does not exist. */
+    async accessKeys(accountId: string): Promise<AccessKey[]> {
+      try {
+        const { keys } = await rpc<{ keys: AccessKey[] }>("query", {
+          request_type: "view_access_key_list",
+          finality: "final",
+          account_id: accountId,
+        });
+        return keys;
+      } catch (error) {
+        if (error instanceof RpcError && error.cause === "UNKNOWN_ACCOUNT") return [];
+        if (error instanceof RpcError) throw unavailable();
+        throw error;
+      }
+    },
+
     /** Signs a call to the contract with the device's key: next nonce, a final block. */
     async sign(signer: { accountId: string; secretKey: string }, call: FunctionCall): Promise<SignedCall> {
       const key = KeyPair.fromString(signer.secretKey as KeyPairString);
@@ -141,6 +173,40 @@ export function near(http: typeof fetch, contract: string) {
         if (error instanceof RpcError) throw unavailable();
         throw error;
       }
+    },
+
+    /**
+     * The transaction's outcome from FastNEAR's full history, or null if it has none. Its final
+     * status is the transaction's, followed through each `SuccessReceiptId` to the receipt that ends it.
+     */
+    async indexed(hash: string): Promise<Outcome | null> {
+      let rows: IndexedTx[];
+      try {
+        const response = await http(FASTNEAR_TRANSACTIONS, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ tx_hashes: [hash] }),
+        });
+        if (!response.ok) throw new Error("indexer");
+        rows = ((await response.json()) as { transactions?: IndexedTx[] }).transactions ?? [];
+      } catch {
+        throw unavailable();
+      }
+      const row = rows.find((r) => r.transaction.hash === hash);
+      if (!row) return null;
+      const byId = new Map(row.receipts.map((r) => [r.execution_outcome.id, r.execution_outcome.outcome]));
+      let status = row.execution_outcome.outcome.status;
+      for (let hops = 0; status.SuccessReceiptId !== undefined; hops += 1) {
+        const next = byId.get(status.SuccessReceiptId);
+        // Not final yet, or an answer this SDK cannot follow: say so rather than guess.
+        if (!next || hops > row.receipts.length) throw unavailable();
+        status = next.status;
+      }
+      return {
+        status,
+        transaction_outcome: { id: hash },
+        receipts_outcome: row.receipts.map((r) => ({ outcome: r.execution_outcome.outcome })),
+      };
     },
 
     /** The transaction's final outcome, or null if the chain has never seen it. */

@@ -51,8 +51,9 @@ export function creator(deps: {
         outcome = await near.send(pending);
       } catch (error) {
         if (!(error instanceof Rejected)) throw error;
-        // Rejected: expired, or it landed meanwhile (the nonce is used); look once more.
-        outcome = await near.outcome(pending);
+        // Rejected: expired, or it landed (the nonce is used); look once more, in full history too
+        // (RPC nodes forget a transaction after ~2.5 days).
+        outcome = (await near.outcome(pending)) ?? (await near.indexed(pending.hash));
       }
     }
     if (outcome) {
@@ -86,14 +87,6 @@ export function creator(deps: {
     }
   }
 
-  async function accountId(publicKey: string): Promise<string> {
-    const known = await keys.accountId();
-    if (known) return known;
-    const made = await backend.createAccount(publicKey);
-    await keys.rememberAccount(made);
-    return made;
-  }
-
   async function finish(draftId: string, jarId: string) {
     try {
       await backend.closeDraft(draftId, jarId);
@@ -116,7 +109,7 @@ export function creator(deps: {
     }
 
     const pendingDraft = await backend.draft(draft.draftId);
-    const giver = await accountId(key.publicKey);
+    const giver = await keys.ensureAccount(backend);
     // Family account = the giver's own for now (plan decision); the contract keeps both.
     const args = {
       child_address: input.childAddress,
