@@ -10,7 +10,7 @@ use crate::events::SatsJarEvent;
 use crate::handover::{parse_key, Handover};
 use crate::{hex, history, rehoming, SatsJar, SatsJarExt};
 use near_sdk::json_types::U64;
-use near_sdk::{assert_one_yocto, env, near, AccountId, PromiseOrValue};
+use near_sdk::{assert_one_yocto, env, near, AccountId, NearToken, PromiseOrValue};
 
 /// Where the jar is in a transfer.
 #[near(serializers = [borsh])]
@@ -185,8 +185,8 @@ impl SatsJar {
     /// call builds one re-homing payment of up to 10 of them; once accepted, anyone may call
     /// again with the same key until every coin has moved. The result is the payment id, or
     /// null when the jar was empty and moved to the receiver in this call. 1 yoctoNEAR to
-    /// accept; later batches take any deposit and need none, so a keeper's function-call key
-    /// can send them.
+    /// accept; later batches take 0 or 1 yoctoNEAR, so a keeper's function-call key can send
+    /// them.
     #[payable]
     pub fn accept_transfer(
         &mut self,
@@ -194,14 +194,19 @@ impl SatsJar {
         btc_pubkey: String,
         fee_rate: U64,
     ) -> PromiseOrValue<Option<U64>> {
-        // Only a later batch of an accepted transfer goes without 1 yoctoNEAR; every other call
-        // checks it first, as before.
+        // Only a later batch of an accepted transfer goes without 1 yoctoNEAR (it takes 0 or 1);
+        // every other call checks it first, as before.
         let accepted = self
             .jars
             .get(&jar_id)
             .is_some_and(|jar| matches!(jar.transfer, Transfer::Accepted { .. }));
         if !accepted {
             assert_one_yocto();
+        } else if env::attached_deposit() > NearToken::from_yoctonear(1) {
+            refuse(
+                error::DEPOSIT_TOO_HIGH,
+                "a later batch of an accepted transfer takes at most 1 yoctoNEAR",
+            );
         }
         let mut jar = self.jar(&jar_id).clone();
         let key = match &jar.transfer {

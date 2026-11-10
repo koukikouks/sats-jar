@@ -189,3 +189,5 @@ pub const NOT_THE_RECEIVER: &str = "NOT_THE_RECEIVER";
 pub const INVALID_BTC_KEY: &str = "INVALID_BTC_KEY";
 /// The transfer was accepted with another Bitcoin key.
 pub const KEY_CHANGED: &str = "KEY_CHANGED";
+/// A later batch of an accepted transfer was sent with more than 1 yoctoNEAR attached.
+pub const DEPOSIT_TOO_HIGH: &str = "DEPOSIT_TOO_HIGH";

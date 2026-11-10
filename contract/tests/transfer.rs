@@ -534,6 +534,18 @@ async fn later_batches_need_no_deposit_and_the_receiver_may_still_attach_one() {
         .await
         .into_result()
         .expect("first batch confirmed");
+    // More than 1 yoctoNEAR is a mistake, not silently kept.
+    let overpaid = jars
+        .accept_transfer_with(
+            &family.stranger,
+            &jar.id,
+            &buyer_key(),
+            1,
+            NearToken::from_yoctonear(2),
+        )
+        .await;
+    let reason = refusal(&overpaid);
+    assert!(reason.contains("DEPOSIT_TOO_HIGH: "), "{reason}");
     // A keeper's function-call key can attach no deposit.
     let second = jars
         .signed_transfer_batch_with(
