@@ -87,6 +87,9 @@ async function ready(name: string): Promise<SatsJarPartOne> {
     await app.device.unlock({ pin: PIN });
   }
   check((await app.device.state()) === "unlocked", `${name}'s device is unlocked`);
+  app.device.lock();
+  check((await app.device.state()) === "locked", `${name}'s device locks again`);
+  await app.device.unlock({ pin: PIN });
   return app;
 }
 

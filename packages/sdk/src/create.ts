@@ -58,8 +58,11 @@ export function creator(deps: {
     if (outcome) {
       try {
         return await settle(draft, outcome);
-      } catch {
-        return null; // the earlier attempt was refused: no jar, so this one starts afresh
+      } catch (error) {
+        // Only the contract's refusal means "no jar, start afresh"; anything else (a failed
+        // storage write) stops here, so nothing new is ever signed on a guess.
+        if (error instanceof SatsJarRefusal) return null;
+        throw error;
       }
     }
     const jarId = await jarWithArgs(pending.signerId, pending.args);

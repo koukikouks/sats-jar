@@ -7,7 +7,7 @@ import {
   type LockedKeys,
 } from "@sats-jar/device-keys";
 import type { Device, DeviceState, DeviceStorage } from "./api.ts";
-import { refusal } from "./refusals.ts";
+import { refusal, unavailable } from "./refusals.ts";
 
 const DEVICE = "sats-jar:device";
 
@@ -53,7 +53,7 @@ export function deviceKeys(storage: DeviceStorage) {
         unlocked = await unlock(record.locked, { kind: "pin", pin });
       } catch (error) {
         if (error instanceof WrongPinError) throw refusal("WRONG_PIN");
-        throw error;
+        throw unavailable(); // damaged stored keys: never the raw error
       }
     },
 

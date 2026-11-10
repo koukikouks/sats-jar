@@ -1,19 +1,15 @@
 // A jar as its screens show it: built from the proof view's reader (T20) over public APIs, plus
 // who this device's person is to the jar.
+import { JarNotFoundError, createProofReader, type JarProof } from "@sats-jar/proof";
 import {
-  JarNotFoundError,
-  ProofUnavailableError,
-  createProofReader,
-  type JarProof,
-} from "@sats-jar/proof";
-import type {
-  Allowance,
-  EmergencyStatus,
-  HandoverStatus,
-  JarStatus,
-  JarSummary,
-  Role,
-  TopUp,
+  SatsJarRefusal,
+  type Allowance,
+  type EmergencyStatus,
+  type HandoverStatus,
+  type JarStatus,
+  type JarSummary,
+  type Role,
+  type TopUp,
 } from "./api.ts";
 import type { Near } from "./near.ts";
 import { refusal, unavailable } from "./refusals.ts";
@@ -124,7 +120,7 @@ export function jarReader(deps: { http: typeof fetch; near: Near; contract: stri
       .map((p) => ({
         amount: p.amount,
         fee: p.fee,
-        status: p.status as Allowance["status"],
+        status: allowanceStatus(p.status),
         requestedAt: requested.get(p.paymentId) ?? 0,
         explorerUrl: p.explorerUrl,
       }));
@@ -180,8 +176,18 @@ export function jarReader(deps: { http: typeof fetch; near: Near; contract: stri
 
 function translate(error: unknown): Error {
   if (error instanceof JarNotFoundError) return refusal("UNKNOWN_JAR");
-  if (error instanceof ProofUnavailableError) return unavailable();
-  return error instanceof Error ? error : unavailable();
+  if (error instanceof SatsJarRefusal) return error;
+  // ProofUnavailableError, or an answer the reader could not make sense of: never raw text.
+  return unavailable();
+}
+
+const ALLOWANCE_STATUSES: readonly Allowance["status"][] = ["signing", "signing_failed", "signed", "confirmed", "cancelled"];
+
+/** The contract's payment status, checked; one this SDK does not know reads as UNAVAILABLE. */
+function allowanceStatus(status: string): Allowance["status"] {
+  const known = ALLOWANCE_STATUSES.find((s) => s === status);
+  if (!known) throw unavailable();
+  return known;
 }
 
 /** The claim's child account in any handover state that names one. */

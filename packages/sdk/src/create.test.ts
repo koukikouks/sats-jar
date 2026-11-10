@@ -44,8 +44,24 @@ async function readyGiver(send: SendTx, extra: Parameters<typeof testNetwork>[0]
     return answer;
   };
   net = testNetwork({ ...extra, sendTx });
-  const app = () => createApp({ contract: CONTRACT, backendUrl: BACKEND, storage: memoryStorage() }, net.fetch);
-  const giver = app();
+  const app = (storage = memoryStorage()) => createApp({ contract: CONTRACT, backendUrl: BACKEND, storage }, net.fetch);
+  // The giver's storage can be told to fail its writes (a full or broken device store).
+  const store = memoryStorage();
+  let failWrites = 0;
+  const giver = app({
+    ...store,
+    set: async (k, v) => {
+      if (failWrites > 0) {
+        failWrites -= 1;
+        throw new Error("quota exceeded");
+      }
+      await store.set(k, v);
+    },
+  });
+  /** The giver's next `writes` storage writes fail. */
+  const breakStorage = (writes: number) => {
+    failWrites = writes;
+  };
   await giver.device.setUp({ pin: "482913" });
   const draft = await giver.invites.start({ nickname: "Sunny's jar", guardians: 2 });
   const guardians: string[] = [];
@@ -57,7 +73,7 @@ async function readyGiver(send: SendTx, extra: Parameters<typeof testNetwork>[0]
     guardians.push([...net.accounts.keys()].find((a) => !before.has(a)) ?? "");
   }
   const input = { draftId: draft.draftId, childAddress: CHILD, cap: 20_000, period: FULL_PERIOD, unlockAt: UNLOCK };
-  return { net, giver, draft, guardians, input };
+  return { net, giver, draft, guardians, input, breakStorage };
 }
 
 describe("creating a jar", () => {
@@ -114,6 +130,26 @@ describe("creating a jar", () => {
     );
 
     await expect(giver.jars.create(input)).rejects.toMatchObject({ code: "UNAVAILABLE" });
+    net.jars.set("3", net.sent[0]?.args.guardians as string[]);
+    expect((await giver.jars.create(input)).jarId).toBe("3");
+    expect(net.sent).toHaveLength(1);
+  });
+
+  test("a storage failure while settling a retry stops it; it never signs a second create_jar", async () => {
+    let landed = false;
+    const { net, giver, input, breakStorage } = await readyGiver(
+      () => {
+        landed = true;
+        return lost();
+      },
+      { txStatus: () => (landed ? created : undefined) },
+    );
+    await expect(giver.jars.create(input)).rejects.toMatchObject({ code: "UNAVAILABLE" });
+
+    breakStorage(1); // the write that records the found jar id fails
+    await expect(giver.jars.create(input)).rejects.toThrow();
+    expect(net.sent).toHaveLength(1);
+
     net.jars.set("3", net.sent[0]?.args.guardians as string[]);
     expect((await giver.jars.create(input)).jarId).toBe("3");
     expect(net.sent).toHaveLength(1);

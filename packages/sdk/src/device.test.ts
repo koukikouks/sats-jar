@@ -42,6 +42,18 @@ describe("device setup and unlock", () => {
     await expect(app.device.setUp({ pin: "111111" })).rejects.toMatchObject({ code: "ALREADY_SET_UP" });
   });
 
+  test("damaged stored keys read as UNAVAILABLE, never the raw error", async () => {
+    const storage = memoryStorage();
+    const net = testNetwork({});
+    await createApp(config(storage), net.fetch).device.setUp({ pin: "482913" });
+    const record = JSON.parse((await storage.get("sats-jar:device")) ?? "{}") as { locked: Record<string, unknown> };
+    await storage.set("sats-jar:device", JSON.stringify({ ...record, locked: { ...record.locked, salt: "%%% not base64 %%%" } }));
+
+    const refusal = await createApp(config(storage), net.fetch).device.unlock({ pin: "482913" }).catch((e: unknown) => e);
+    expect(refusal).toBeInstanceOf(SatsJarRefusal);
+    expect(refusal).toMatchObject({ code: "UNAVAILABLE" });
+  });
+
   test("unlocking a device with no keys is refused as NO_DEVICE", async () => {
     const app = createApp(config(), testNetwork({}).fetch);
     await expect(app.device.unlock({ pin: "482913" })).rejects.toMatchObject({ code: "NO_DEVICE" });

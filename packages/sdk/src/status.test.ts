@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
+import { SatsJarRefusal } from "./api.ts";
 import { createApp } from "./app.ts";
 import { BACKEND, CONTRACT, fixture, memoryStorage, testNetwork, type Fixture, type TestNetwork } from "./test-network.ts";
 
@@ -120,6 +121,14 @@ describe("jar status", () => {
     });
   });
 
+  test("a view the reader cannot make sense of reads as UNAVAILABLE, never the raw error", async () => {
+    // Synthetic, labelled: a get_jar answer missing its fields.
+    const net = testNetwork({ fixtures: recordings, views: [{ method: "get_jar", args: { jar_id: "1" }, result: { jar_id: "1" } }] });
+    const refusal = await app(net).jars.status("1").catch((e: unknown) => e);
+    expect(refusal).toBeInstanceOf(SatsJarRefusal);
+    expect(refusal).toMatchObject({ code: "UNAVAILABLE" });
+  });
+
   test("an unknown jar is refused as UNKNOWN_JAR", async () => {
     await expect(app(testNetwork({ fixtures: recordings })).jars.status("99")).rejects.toMatchObject({ code: "UNKNOWN_JAR" });
   });
@@ -181,6 +190,18 @@ describe("allowances", () => {
         explorerUrl: `https://mempool.space/testnet/tx/${ALLOWANCE}`,
       },
     ]);
+  });
+});
+
+describe("allowance status", () => {
+  test("a payment status this SDK does not know reads as UNAVAILABLE, not an unchecked value", async () => {
+    // Synthetic, labelled: jar 1's live payment with a status no contract version has.
+    const live = fixture("proof-near-views").exchanges.find(
+      (e) => (e.request.body as { params: { method_name: string } }).params.method_name === "get_payment",
+    );
+    const payment = JSON.parse(new TextDecoder().decode(Uint8Array.from((live?.response.body as { result: { result: number[] } }).result.result))) as Record<string, unknown>;
+    const net = testNetwork({ fixtures: recordings, views: [{ method: "get_payment", args: { payment_id: "1" }, result: { ...payment, status: "replaced" } }] });
+    await expect(app(net).jars.allowances("1")).rejects.toMatchObject({ code: "UNAVAILABLE" });
   });
 });
 
