@@ -1,0 +1,14 @@
+{
+  "name": "@sats-jar/scripts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@noble/hashes": "2.4.0",
+    "@scure/base": "2.4.0",
+    "@scure/btc-signer": "2.4.1",
+    "near-api-js": "7.4.0"
+  }
+}

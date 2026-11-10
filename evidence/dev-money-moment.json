@@ -1,0 +1,1024 @@
+{
+  "about": "Testnet run of T06 (koukikouks/sats-jar#17) against the development contract: every NEAR transaction, Bitcoin transaction and block, with what each shows. Written by scripts/src/money-moment.ts.",
+  "contract": "sats-jar-dev.testnet",
+  "steps": [
+    {
+      "at": "2026-11-10T00:03:12.026Z",
+      "step": "create_jar",
+      "near_tx": "2d282ErWmmtK9WhT8L5yg7iP7XsPFQYe3Nf48WmFJAqw",
+      "sent": {
+        "method": "create_jar",
+        "args": {
+          "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+          "cap": "2500",
+          "period": "86400",
+          "unlock_at": "1794355391",
+          "guardians": [
+            "guardian-a.sats-jar-dev.testnet",
+            "guardian-b.sats-jar-dev.testnet"
+          ],
+          "family_account": "sats-jar-dev.testnet",
+          "nickname": "Dev money moment"
+        },
+        "tgas": 100,
+        "yocto": "1000000000000000000000000"
+      }
+    },
+    {
+      "at": "2026-11-10T00:03:16.954Z",
+      "step": "create_jar (outcome)",
+      "near_tx": "2d282ErWmmtK9WhT8L5yg7iP7XsPFQYe3Nf48WmFJAqw",
+      "explorer": "https://testnet.nearblocks.io/txns/2d282ErWmmtK9WhT8L5yg7iP7XsPFQYe3Nf48WmFJAqw",
+      "ok": true,
+      "value": "1",
+      "error": null,
+      "receipts": [
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 6.781,
+          "block_height": 276991300,
+          "result": "1"
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991301,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991302,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991301,
+          "result": null
+        }
+      ]
+    },
+    {
+      "at": "2026-11-10T00:04:00.012Z",
+      "step": "topup (signed, before broadcast)",
+      "btc_tx": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+      "to_jar": [
+        2000,
+        2000
+      ],
+      "fee": 196,
+      "vsize": 196,
+      "minimum_fee": 1
+    },
+    {
+      "at": "2026-11-10T00:04:00.076Z",
+      "step": "topup (broadcast)",
+      "btc_tx": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+      "explorer": "https://mempool.space/testnet/tx/2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea"
+    },
+    {
+      "at": "2026-11-10T00:06:08.290Z",
+      "step": "topup confirmed",
+      "btc_tx": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+      "block": "00000000000002947504f72a2797fbf37a3da14d44ea49d82e07decce7d38cc8",
+      "block_height": 5322873,
+      "light_client_tip": 5322876
+    },
+    {
+      "at": "2026-11-10T00:06:08.581Z",
+      "step": "prove_topup vout 0",
+      "near_tx": "HCiJsjbdjVTXxFtdtY2tfucqQjqFUVZ7WJyJRqx8FLgB",
+      "sent": {
+        "method": "prove_topup",
+        "args": {
+          "jar_id": "1",
+          "tx": "02000000000101dc2d164d12e671f2b1595dc7da3e89268414e73a7e7ab8626754a38873dbbc590100000000ffffffff03d007000000000000220020a32c3ebbe3ee5071d6f4ca605d08f482195382d51d1a5b3699e424a16d782878d007000000000000220020a32c3ebbe3ee5071d6f4ca605d08f482195382d51d1a5b3699e424a16d782878aba7040000000000160014d69cd757d52625702dfe3a2dc0abeb6122d308fe0247304402203d7b90533d5e0cbcf5bd129befd3d489b8f4b1cc02950ee012b1516bcc345ec90220429e2794f88dce711f8cfc27cf12175ddf99c417f631581ab71092b7f9f55288012102d1d7ca2ea08ce460131d903d87b54307314c74d4bc27e8deb531fb51198a7bf000000000",
+          "vout": 0,
+          "proof": {
+            "tx_id": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+            "tx_block_blockhash": "00000000000002947504f72a2797fbf37a3da14d44ea49d82e07decce7d38cc8",
+            "tx_index": 1,
+            "merkle_proof": [
+              "04a09cc82691f1394381e4fed2bbefd0db2f3b0a19fb6d8d0f99878b875c291e"
+            ],
+            "coinbase_tx_id": "04a09cc82691f1394381e4fed2bbefd0db2f3b0a19fb6d8d0f99878b875c291e",
+            "coinbase_merkle_proof": [
+              "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea"
+            ]
+          }
+        },
+        "tgas": 60,
+        "yocto": "0"
+      }
+    },
+    {
+      "at": "2026-11-10T00:06:13.542Z",
+      "step": "prove_topup vout 0 (outcome)",
+      "near_tx": "HCiJsjbdjVTXxFtdtY2tfucqQjqFUVZ7WJyJRqx8FLgB",
+      "explorer": "https://testnet.nearblocks.io/txns/HCiJsjbdjVTXxFtdtY2tfucqQjqFUVZ7WJyJRqx8FLgB",
+      "ok": true,
+      "value": null,
+      "error": null,
+      "receipts": [
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": "prove_topup",
+          "gas_burnt_tgas": 2.547,
+          "block_height": 276991608,
+          "result": null
+        },
+        {
+          "executor": "btc-client-v4.testnet",
+          "method": "verify_transaction_inclusion_with_heights",
+          "gas_burnt_tgas": 1.811,
+          "block_height": 276991609,
+          "result": {
+            "tx_block_height": 5322873,
+            "mainchain_tip_height": 5322876
+          }
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991610,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": "on_topup_proven",
+          "gas_burnt_tgas": 2.796,
+          "block_height": 276991610,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991611,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991609,
+          "result": null
+        }
+      ]
+    },
+    {
+      "at": "2026-11-10T00:06:13.697Z",
+      "step": "prove_topup vout 1",
+      "near_tx": "GzLbxDei9F5R4MMzA5qdfEw8g7EWRAhzRn5msFVgPBgj",
+      "sent": {
+        "method": "prove_topup",
+        "args": {
+          "jar_id": "1",
+          "tx": "02000000000101dc2d164d12e671f2b1595dc7da3e89268414e73a7e7ab8626754a38873dbbc590100000000ffffffff03d007000000000000220020a32c3ebbe3ee5071d6f4ca605d08f482195382d51d1a5b3699e424a16d782878d007000000000000220020a32c3ebbe3ee5071d6f4ca605d08f482195382d51d1a5b3699e424a16d782878aba7040000000000160014d69cd757d52625702dfe3a2dc0abeb6122d308fe0247304402203d7b90533d5e0cbcf5bd129befd3d489b8f4b1cc02950ee012b1516bcc345ec90220429e2794f88dce711f8cfc27cf12175ddf99c417f631581ab71092b7f9f55288012102d1d7ca2ea08ce460131d903d87b54307314c74d4bc27e8deb531fb51198a7bf000000000",
+          "vout": 1,
+          "proof": {
+            "tx_id": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+            "tx_block_blockhash": "00000000000002947504f72a2797fbf37a3da14d44ea49d82e07decce7d38cc8",
+            "tx_index": 1,
+            "merkle_proof": [
+              "04a09cc82691f1394381e4fed2bbefd0db2f3b0a19fb6d8d0f99878b875c291e"
+            ],
+            "coinbase_tx_id": "04a09cc82691f1394381e4fed2bbefd0db2f3b0a19fb6d8d0f99878b875c291e",
+            "coinbase_merkle_proof": [
+              "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea"
+            ]
+          }
+        },
+        "tgas": 60,
+        "yocto": "0"
+      }
+    },
+    {
+      "at": "2026-11-10T00:06:19.092Z",
+      "step": "prove_topup vout 1 (outcome)",
+      "near_tx": "GzLbxDei9F5R4MMzA5qdfEw8g7EWRAhzRn5msFVgPBgj",
+      "explorer": "https://testnet.nearblocks.io/txns/GzLbxDei9F5R4MMzA5qdfEw8g7EWRAhzRn5msFVgPBgj",
+      "ok": true,
+      "value": null,
+      "error": null,
+      "receipts": [
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": "prove_topup",
+          "gas_burnt_tgas": 2.547,
+          "block_height": 276991617,
+          "result": null
+        },
+        {
+          "executor": "btc-client-v4.testnet",
+          "method": "verify_transaction_inclusion_with_heights",
+          "gas_burnt_tgas": 1.811,
+          "block_height": 276991618,
+          "result": {
+            "tx_block_height": 5322873,
+            "mainchain_tip_height": 5322878
+          }
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991619,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": "on_topup_proven",
+          "gas_burnt_tgas": 2.822,
+          "block_height": 276991619,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991620,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991618,
+          "result": null
+        }
+      ]
+    },
+    {
+      "at": "2026-11-10T00:06:19.398Z",
+      "step": "jar after top-up",
+      "jar": {
+        "jar_id": "1",
+        "giver": "sats-jar-dev.testnet",
+        "owner_id": "sats-jar-dev.testnet",
+        "create_args": {
+          "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+          "cap": "2500",
+          "period": "86400",
+          "unlock_at": "1794355391",
+          "guardians": [
+            "guardian-a.sats-jar-dev.testnet",
+            "guardian-b.sats-jar-dev.testnet"
+          ],
+          "family_account": "sats-jar-dev.testnet",
+          "nickname": "Dev money moment"
+        },
+        "address": "tb1q5vkrawlraeg8r4h5efs96z85sgv48qk4r5d9kd5eusj2zmtc9puqc3ezza",
+        "witness_script": "6321026957c15136a769e73830ee47d2dcf245161748c149330b29048199315f7b0212ac6704efdaf36ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac68",
+        "public_key": "secp256k1:37A4ACjoxrVYWtDiH5VUFhU5rPGZuziRMJuK4GtiHrwGdCtHPAjM62GVvzyGQvYN9ZBbY58iihALaY6VqobNNt1D",
+        "locktime": 1794366191,
+        "demo_timing": true,
+        "clock": {
+          "started_at": "1794269169"
+        },
+        "handover": "none",
+        "proven_balance": "4000",
+        "available_allowance": "2500",
+        "fee_budget_left": "250",
+        "next_allowance_at": "1794269169"
+      },
+      "coins": [
+        {
+          "txid": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+          "vout": 0,
+          "value": "2000",
+          "status": "confirmed",
+          "payment_id": null
+        },
+        {
+          "txid": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+          "vout": 1,
+          "value": "2000",
+          "status": "confirmed",
+          "payment_id": null
+        }
+      ]
+    },
+    {
+      "at": "2026-11-10T00:06:27.314Z",
+      "step": "fee floor before request_allowance",
+      "minimum_fee": 1
+    },
+    {
+      "at": "2026-11-10T00:06:27.509Z",
+      "step": "request_allowance",
+      "near_tx": "GT7NZh8kRdF1zphS8WmV8mFYs3j7JLvxdY2ai2jxAZdW",
+      "sent": {
+        "method": "request_allowance",
+        "args": {
+          "jar_id": "1",
+          "fee_rate": "1"
+        },
+        "tgas": 80,
+        "yocto": "0"
+      }
+    },
+    {
+      "at": "2026-11-10T00:06:35.559Z",
+      "step": "request_allowance again (already paid)",
+      "near_tx": "HXdy5TkMDTf3u7iy1FPZ7U8EEhshmVDRyMZEW6NCRNUP",
+      "sent": {
+        "method": "request_allowance",
+        "args": {
+          "jar_id": "1",
+          "fee_rate": "1"
+        },
+        "tgas": 80,
+        "yocto": "0"
+      }
+    },
+    {
+      "at": "2026-11-10T00:06:39.101Z",
+      "step": "request_allowance again (already paid) (outcome)",
+      "near_tx": "HXdy5TkMDTf3u7iy1FPZ7U8EEhshmVDRyMZEW6NCRNUP",
+      "explorer": "https://testnet.nearblocks.io/txns/HXdy5TkMDTf3u7iy1FPZ7U8EEhshmVDRyMZEW6NCRNUP",
+      "ok": false,
+      "value": null,
+      "error": "ALREADY_PAID: the allowance for this period was already paid; next one in 23h 59m",
+      "receipts": [
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": "request_allowance",
+          "gas_burnt_tgas": 1.46,
+          "block_height": 276991653,
+          "result": {
+            "failure": {
+              "ActionError": {
+                "index": 0,
+                "kind": {
+                  "FunctionCallError": {
+                    "ExecutionError": "Smart contract panicked: ALREADY_PAID: the allowance for this period was already paid; next one in 23h 59m"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991654,
+          "result": null
+        }
+      ]
+    },
+    {
+      "at": "2026-11-10T00:06:39.102Z",
+      "step": "request_allowance (outcome)",
+      "near_tx": "GT7NZh8kRdF1zphS8WmV8mFYs3j7JLvxdY2ai2jxAZdW",
+      "explorer": "https://testnet.nearblocks.io/txns/GT7NZh8kRdF1zphS8WmV8mFYs3j7JLvxdY2ai2jxAZdW",
+      "ok": true,
+      "value": "1",
+      "error": null,
+      "receipts": [
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": "request_allowance",
+          "gas_burnt_tgas": 4.813,
+          "block_height": 276991640,
+          "result": null
+        },
+        {
+          "executor": "v1.signer-prod.testnet",
+          "method": "sign",
+          "gas_burnt_tgas": 4.266,
+          "block_height": 276991641,
+          "result": null
+        },
+        {
+          "executor": "v1.signer-prod.testnet",
+          "method": "return_signature_and_clean_state_on_success",
+          "gas_burnt_tgas": 3.463,
+          "block_height": 276991647,
+          "result": {
+            "scheme": "Secp256k1",
+            "big_r": {
+              "affine_point": "02ff4557f8cc242942dce6bf785c4fbe077827d07cc8d15c179f28ea117178fb43"
+            },
+            "s": {
+              "scalar": "679585969e6b7e02a760335dbb7d06941c75fd097ecec15e16f128141306146c"
+            },
+            "recovery_id": 0
+          }
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991648,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991642,
+          "result": null
+        },
+        {
+          "executor": "v1.signer-prod.testnet",
+          "method": "sign",
+          "gas_burnt_tgas": 4.217,
+          "block_height": 276991641,
+          "result": null
+        },
+        {
+          "executor": "v1.signer-prod.testnet",
+          "method": "return_signature_and_clean_state_on_success",
+          "gas_burnt_tgas": 3.415,
+          "block_height": 276991646,
+          "result": {
+            "scheme": "Secp256k1",
+            "big_r": {
+              "affine_point": "03d825820816526aecdac0ce8369dad57e3fc6a82f1f2586a986391164ddc06e19"
+            },
+            "s": {
+              "scalar": "37efe4ff0be17912abc01eae535b050e2fad5a88eb77aa6e737c18df55a56dcc"
+            },
+            "recovery_id": 1
+          }
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991647,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991642,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": "on_payment_signed",
+          "gas_burnt_tgas": 4.009,
+          "block_height": 276991648,
+          "result": "1"
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991649,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991641,
+          "result": null
+        }
+      ]
+    },
+    {
+      "at": "2026-11-10T00:06:39.260Z",
+      "step": "payment after signing",
+      "payment": {
+        "payment_id": "1",
+        "jar_id": "1",
+        "kind": "allowance",
+        "period": "0",
+        "status": "signed",
+        "failure": null,
+        "txid": "4016901c16ce105d6c6b44531406ac8e4942cb9177698c4b3be7aa939b00e69c",
+        "amount": "2500",
+        "fee": "240",
+        "change": "1260",
+        "inputs": [
+          {
+            "txid": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+            "vout": 0,
+            "value": "2000"
+          },
+          {
+            "txid": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+            "vout": 1,
+            "value": "2000"
+          }
+        ],
+        "signed_tx": "02000000000102eaa9c02a3a9581186c37939be929f071a4bd9a3299ae4e9d3cb8197defa4db2e0000000000fdffffffeaa9c02a3a9581186c37939be929f071a4bd9a3299ae4e9d3cb8197defa4db2e0100000000fdffffff02c409000000000000160014d69cd757d52625702dfe3a2dc0abeb6122d308feec04000000000000220020a32c3ebbe3ee5071d6f4ca605d08f482195382d51d1a5b3699e424a16d78287803483045022100ff4557f8cc242942dce6bf785c4fbe077827d07cc8d15c179f28ea117178fb430220679585969e6b7e02a760335dbb7d06941c75fd097ecec15e16f128141306146c010101466321026957c15136a769e73830ee47d2dcf245161748c149330b29048199315f7b0212ac6704efdaf36ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac6803483045022100d825820816526aecdac0ce8369dad57e3fc6a82f1f2586a986391164ddc06e19022037efe4ff0be17912abc01eae535b050e2fad5a88eb77aa6e737c18df55a56dcc010101466321026957c15136a769e73830ee47d2dcf245161748c149330b29048199315f7b0212ac6704efdaf36ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac6800000000"
+      }
+    },
+    {
+      "at": "2026-11-10T00:06:47.187Z",
+      "step": "allowance payment (before broadcast)",
+      "btc_tx": "4016901c16ce105d6c6b44531406ac8e4942cb9177698c4b3be7aa939b00e69c",
+      "vsize": 240,
+      "fee": 240
+    },
+    {
+      "at": "2026-11-10T00:06:48.516Z",
+      "step": "allowance payment (broadcast, accepted by testnet3)",
+      "btc_tx": "4016901c16ce105d6c6b44531406ac8e4942cb9177698c4b3be7aa939b00e69c",
+      "explorer": "https://mempool.space/testnet/tx/4016901c16ce105d6c6b44531406ac8e4942cb9177698c4b3be7aa939b00e69c"
+    },
+    {
+      "at": "2026-11-10T00:07:24.030Z",
+      "step": "allowance payment confirmed",
+      "btc_tx": "4016901c16ce105d6c6b44531406ac8e4942cb9177698c4b3be7aa939b00e69c",
+      "block": "0000000000000b45dc1b7eff00e7296691854f9477c451a67f8eb6ce16364517",
+      "block_height": 5322884,
+      "light_client_tip": 5322886
+    },
+    {
+      "at": "2026-11-10T00:07:24.306Z",
+      "step": "confirm_payment",
+      "near_tx": "HdercU3awYUhcUg9872nkuooeuL34RUDkZiU1oB49UJ",
+      "sent": {
+        "method": "confirm_payment",
+        "args": {
+          "payment_id": "1",
+          "proof": {
+            "tx_id": "4016901c16ce105d6c6b44531406ac8e4942cb9177698c4b3be7aa939b00e69c",
+            "tx_block_blockhash": "0000000000000b45dc1b7eff00e7296691854f9477c451a67f8eb6ce16364517",
+            "tx_index": 1,
+            "merkle_proof": [
+              "c1598336cf1191e8270724d3f69ce4fb0a73aaa3820832668eecd28ad27c9381"
+            ],
+            "coinbase_tx_id": "c1598336cf1191e8270724d3f69ce4fb0a73aaa3820832668eecd28ad27c9381",
+            "coinbase_merkle_proof": [
+              "4016901c16ce105d6c6b44531406ac8e4942cb9177698c4b3be7aa939b00e69c"
+            ]
+          }
+        },
+        "tgas": 60,
+        "yocto": "0"
+      }
+    },
+    {
+      "at": "2026-11-10T00:07:29.129Z",
+      "step": "confirm_payment (outcome)",
+      "near_tx": "HdercU3awYUhcUg9872nkuooeuL34RUDkZiU1oB49UJ",
+      "explorer": "https://testnet.nearblocks.io/txns/HdercU3awYUhcUg9872nkuooeuL34RUDkZiU1oB49UJ",
+      "ok": true,
+      "value": null,
+      "error": null,
+      "receipts": [
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": "confirm_payment",
+          "gas_burnt_tgas": 2.255,
+          "block_height": 276991735,
+          "result": null
+        },
+        {
+          "executor": "btc-client-v4.testnet",
+          "method": "verify_transaction_inclusion_with_heights",
+          "gas_burnt_tgas": 1.811,
+          "block_height": 276991736,
+          "result": {
+            "tx_block_height": 5322884,
+            "mainchain_tip_height": 5322886
+          }
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991737,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": "on_payment_confirmed",
+          "gas_burnt_tgas": 3.336,
+          "block_height": 276991737,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991738,
+          "result": null
+        },
+        {
+          "executor": "sats-jar-dev.testnet",
+          "method": null,
+          "gas_burnt_tgas": 0.223,
+          "block_height": 276991736,
+          "result": null
+        }
+      ]
+    },
+    {
+      "at": "2026-11-10T00:07:29.595Z",
+      "step": "jar after confirm_payment",
+      "jar": {
+        "jar_id": "1",
+        "giver": "sats-jar-dev.testnet",
+        "owner_id": "sats-jar-dev.testnet",
+        "create_args": {
+          "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+          "cap": "2500",
+          "period": "86400",
+          "unlock_at": "1794355391",
+          "guardians": [
+            "guardian-a.sats-jar-dev.testnet",
+            "guardian-b.sats-jar-dev.testnet"
+          ],
+          "family_account": "sats-jar-dev.testnet",
+          "nickname": "Dev money moment"
+        },
+        "address": "tb1q5vkrawlraeg8r4h5efs96z85sgv48qk4r5d9kd5eusj2zmtc9puqc3ezza",
+        "witness_script": "6321026957c15136a769e73830ee47d2dcf245161748c149330b29048199315f7b0212ac6704efdaf36ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac68",
+        "public_key": "secp256k1:37A4ACjoxrVYWtDiH5VUFhU5rPGZuziRMJuK4GtiHrwGdCtHPAjM62GVvzyGQvYN9ZBbY58iihALaY6VqobNNt1D",
+        "locktime": 1794366191,
+        "demo_timing": true,
+        "clock": {
+          "started_at": "1794269169"
+        },
+        "handover": "none",
+        "proven_balance": "1260",
+        "available_allowance": "0",
+        "fee_budget_left": "10",
+        "next_allowance_at": "1794355569"
+      },
+      "coins": [
+        {
+          "txid": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+          "vout": 0,
+          "value": "2000",
+          "status": "spent",
+          "payment_id": "1"
+        },
+        {
+          "txid": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+          "vout": 1,
+          "value": "2000",
+          "status": "spent",
+          "payment_id": "1"
+        },
+        {
+          "txid": "4016901c16ce105d6c6b44531406ac8e4942cb9177698c4b3be7aa939b00e69c",
+          "vout": 1,
+          "value": "1260",
+          "status": "confirmed",
+          "payment_id": null
+        }
+      ],
+      "payment": {
+        "payment_id": "1",
+        "jar_id": "1",
+        "kind": "allowance",
+        "period": "0",
+        "status": "confirmed",
+        "failure": null,
+        "txid": "4016901c16ce105d6c6b44531406ac8e4942cb9177698c4b3be7aa939b00e69c",
+        "amount": "2500",
+        "fee": "240",
+        "change": "1260",
+        "inputs": [
+          {
+            "txid": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+            "vout": 0,
+            "value": "2000"
+          },
+          {
+            "txid": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+            "vout": 1,
+            "value": "2000"
+          }
+        ],
+        "signed_tx": "02000000000102eaa9c02a3a9581186c37939be929f071a4bd9a3299ae4e9d3cb8197defa4db2e0000000000fdffffffeaa9c02a3a9581186c37939be929f071a4bd9a3299ae4e9d3cb8197defa4db2e0100000000fdffffff02c409000000000000160014d69cd757d52625702dfe3a2dc0abeb6122d308feec04000000000000220020a32c3ebbe3ee5071d6f4ca605d08f482195382d51d1a5b3699e424a16d78287803483045022100ff4557f8cc242942dce6bf785c4fbe077827d07cc8d15c179f28ea117178fb430220679585969e6b7e02a760335dbb7d06941c75fd097ecec15e16f128141306146c010101466321026957c15136a769e73830ee47d2dcf245161748c149330b29048199315f7b0212ac6704efdaf36ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac6803483045022100d825820816526aecdac0ce8369dad57e3fc6a82f1f2586a986391164ddc06e19022037efe4ff0be17912abc01eae535b050e2fad5a88eb77aa6e737c18df55a56dcc010101466321026957c15136a769e73830ee47d2dcf245161748c149330b29048199315f7b0212ac6704efdaf36ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac6800000000"
+      }
+    }
+  ],
+  "deploy": {
+    "account": "sats-jar-dev.testnet",
+    "build": "cargo near build non-reproducible-wasm --features dev-escape --no-abi",
+    "wasm_bytes": 305870,
+    "wasm_sha256_bs58": "FaNy3dNbK3d5s1xR2PKA6fXE79e9j4ojjGGifYZtUazE",
+    "deployed_code_hash": "FaNy3dNbK3d5s1xR2PKA6fXE79e9j4ojjGGifYZtUazE",
+    "storage_usage": 306274,
+    "mpc_contract": "v1.signer-prod.testnet",
+    "mpc_version": "3.18.0",
+    "mpc_root_public_key": "secp256k1:4NfTiv3UsGahebgTaHyD9vF8KYKMBnfd6kh94mK6xv8fGBiJB8TBtFMP5WWXz6B89Ac1fbpzPwAvoyQebemHFwx3",
+    "light_client": "btc-client-v4.testnet",
+    "light_client_mainchain_size": 52704,
+    "account_transactions": [
+      {
+        "near_tx": "C1YSTirJdD5QBhZy1Wdbv7gQWye9TaZ1RNrJYNy24FdQ",
+        "block_height": 276990907,
+        "explorer": "https://testnet.nearblocks.io/txns/C1YSTirJdD5QBhZy1Wdbv7gQWye9TaZ1RNrJYNy24FdQ"
+      },
+      {
+        "near_tx": "12oyPiksXfhqtQhpKXXZdr2CaShURuVUxsivPPEkKHF5",
+        "block_height": 276990895,
+        "explorer": "https://testnet.nearblocks.io/txns/12oyPiksXfhqtQhpKXXZdr2CaShURuVUxsivPPEkKHF5"
+      }
+    ]
+  },
+  "comparisons": [
+    {
+      "check": "deployed code hash equals the local dev build",
+      "live": "FaNy3dNbK3d5s1xR2PKA6fXE79e9j4ojjGGifYZtUazE",
+      "contract_or_stand_in": "FaNy3dNbK3d5s1xR2PKA6fXE79e9j4ojjGGifYZtUazE",
+      "match": true
+    },
+    {
+      "check": "jar key equals the live derived_public_key",
+      "live": "secp256k1:37A4ACjoxrVYWtDiH5VUFhU5rPGZuziRMJuK4GtiHrwGdCtHPAjM62GVvzyGQvYN9ZBbY58iihALaY6VqobNNt1D",
+      "contract_or_stand_in": "secp256k1:37A4ACjoxrVYWtDiH5VUFhU5rPGZuziRMJuK4GtiHrwGdCtHPAjM62GVvzyGQvYN9ZBbY58iihALaY6VqobNNt1D",
+      "match": true
+    },
+    {
+      "check": "witness script rebuilt independently",
+      "live": "6321026957c15136a769e73830ee47d2dcf245161748c149330b29048199315f7b0212ac6704efdaf36ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac68",
+      "contract_or_stand_in": "6321026957c15136a769e73830ee47d2dcf245161748c149330b29048199315f7b0212ac6704efdaf36ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac68",
+      "match": true
+    },
+    {
+      "check": "locktime is unlock_at + 3 h",
+      "live": 1794366191,
+      "contract_or_stand_in": 1794366191,
+      "match": true
+    },
+    {
+      "check": "jar address is the P2WSH of that script",
+      "live": "tb1q5vkrawlraeg8r4h5efs96z85sgv48qk4r5d9kd5eusj2zmtc9puqc3ezza",
+      "contract_or_stand_in": "tb1q5vkrawlraeg8r4h5efs96z85sgv48qk4r5d9kd5eusj2zmtc9puqc3ezza",
+      "match": true
+    },
+    {
+      "check": "demo timing",
+      "live": true,
+      "contract_or_stand_in": true,
+      "match": true
+    },
+    {
+      "check": "prove_topup vout 0 succeeds at exactly 60 Tgas",
+      "live": true,
+      "contract_or_stand_in": true,
+      "match": true
+    },
+    {
+      "check": "light client answer and gas (vout 0)",
+      "live": {
+        "answer": {
+          "tx_block_height": 5322873,
+          "mainchain_tip_height": 5322876
+        },
+        "gas_burnt_tgas": 1.811
+      },
+      "contract_or_stand_in": {
+        "call_gas_tgas": 20,
+        "callback_gas_tgas": 20
+      },
+      "match": true
+    },
+    {
+      "check": "prove_topup vout 1 succeeds at exactly 60 Tgas",
+      "live": true,
+      "contract_or_stand_in": true,
+      "match": true
+    },
+    {
+      "check": "light client answer and gas (vout 1)",
+      "live": {
+        "answer": {
+          "tx_block_height": 5322873,
+          "mainchain_tip_height": 5322878
+        },
+        "gas_burnt_tgas": 1.811
+      },
+      "contract_or_stand_in": {
+        "call_gas_tgas": 20,
+        "callback_gas_tgas": 20
+      },
+      "match": true
+    },
+    {
+      "check": "proven balance after both coins",
+      "live": "4000",
+      "contract_or_stand_in": "4000",
+      "match": true
+    },
+    {
+      "check": "available allowance before the request",
+      "live": "2500",
+      "contract_or_stand_in": "2500",
+      "match": true
+    },
+    {
+      "check": "fee budget left before the request",
+      "live": "250",
+      "contract_or_stand_in": "250",
+      "match": true
+    },
+    {
+      "check": "proven balance before the request",
+      "live": "4000",
+      "contract_or_stand_in": "4000",
+      "match": true
+    },
+    {
+      "check": "second request in the period is refused as already paid",
+      "live": "ALREADY_PAID",
+      "contract_or_stand_in": "ALREADY_PAID",
+      "match": true
+    },
+    {
+      "check": "live sign requests (1 yocto, 15 Tgas floor), their answers and the signing callback",
+      "live": {
+        "request_block": 276991640,
+        "signer_receipts": [
+          {
+            "method": "sign",
+            "gas_burnt_tgas": 4.266,
+            "block_height": 276991641,
+            "result": null
+          },
+          {
+            "method": "return_signature_and_clean_state_on_success",
+            "gas_burnt_tgas": 3.463,
+            "block_height": 276991647,
+            "result": {
+              "scheme": "Secp256k1",
+              "big_r": {
+                "affine_point": "02ff4557f8cc242942dce6bf785c4fbe077827d07cc8d15c179f28ea117178fb43"
+              },
+              "s": {
+                "scalar": "679585969e6b7e02a760335dbb7d06941c75fd097ecec15e16f128141306146c"
+              },
+              "recovery_id": 0
+            }
+          },
+          {
+            "method": "sign",
+            "gas_burnt_tgas": 4.217,
+            "block_height": 276991641,
+            "result": null
+          },
+          {
+            "method": "return_signature_and_clean_state_on_success",
+            "gas_burnt_tgas": 3.415,
+            "block_height": 276991646,
+            "result": {
+              "scheme": "Secp256k1",
+              "big_r": {
+                "affine_point": "03d825820816526aecdac0ce8369dad57e3fc6a82f1f2586a986391164ddc06e19"
+              },
+              "s": {
+                "scalar": "37efe4ff0be17912abc01eae535b050e2fad5a88eb77aa6e737c18df55a56dcc"
+              },
+              "recovery_id": 1
+            }
+          }
+        ],
+        "callback": {
+          "executor": "sats-jar-dev.testnet",
+          "method": "on_payment_signed",
+          "gas_burnt_tgas": 4.009,
+          "block_height": 276991648,
+          "result": "1"
+        }
+      },
+      "contract_or_stand_in": {
+        "sign_gas_tgas": 15,
+        "deposit_yocto": 1,
+        "inputs": 2,
+        "callback_gas_tgas": 30
+      },
+      "match": true
+    },
+    {
+      "check": "payment txid",
+      "live": "4016901c16ce105d6c6b44531406ac8e4942cb9177698c4b3be7aa939b00e69c",
+      "contract_or_stand_in": "4016901c16ce105d6c6b44531406ac8e4942cb9177698c4b3be7aa939b00e69c",
+      "match": true
+    },
+    {
+      "check": "payee is the child's address",
+      "live": "0014d69cd757d52625702dfe3a2dc0abeb6122d308fe",
+      "contract_or_stand_in": "0014d69cd757d52625702dfe3a2dc0abeb6122d308fe",
+      "match": true
+    },
+    {
+      "check": "payee amount is the cap",
+      "live": 2500,
+      "contract_or_stand_in": 2500,
+      "match": true
+    },
+    {
+      "check": "change goes back to the jar",
+      "live": "0020a32c3ebbe3ee5071d6f4ca605d08f482195382d51d1a5b3699e424a16d782878",
+      "contract_or_stand_in": "0020a32c3ebbe3ee5071d6f4ca605d08f482195382d51d1a5b3699e424a16d782878",
+      "match": true
+    },
+    {
+      "check": "change amount",
+      "live": "1260",
+      "contract_or_stand_in": "1260",
+      "match": true
+    },
+    {
+      "check": "two inputs",
+      "live": 2,
+      "contract_or_stand_in": 2,
+      "match": true
+    },
+    {
+      "check": "confirm_payment succeeds at exactly 60 Tgas",
+      "live": true,
+      "contract_or_stand_in": true,
+      "match": true
+    },
+    {
+      "check": "payment confirmed",
+      "live": "confirmed",
+      "contract_or_stand_in": "confirmed",
+      "match": true
+    },
+    {
+      "check": "change is a confirmed coin",
+      "live": "confirmed",
+      "contract_or_stand_in": "confirmed",
+      "match": true
+    },
+    {
+      "check": "proven balance is the change",
+      "live": "1260",
+      "contract_or_stand_in": "1260",
+      "match": true
+    }
+  ],
+  "jar": {
+    "jar_id": "1",
+    "view": {
+      "jar_id": "1",
+      "giver": "sats-jar-dev.testnet",
+      "owner_id": "sats-jar-dev.testnet",
+      "create_args": {
+        "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+        "cap": "2500",
+        "period": "86400",
+        "unlock_at": "1794355391",
+        "guardians": [
+          "guardian-a.sats-jar-dev.testnet",
+          "guardian-b.sats-jar-dev.testnet"
+        ],
+        "family_account": "sats-jar-dev.testnet",
+        "nickname": "Dev money moment"
+      },
+      "address": "tb1q5vkrawlraeg8r4h5efs96z85sgv48qk4r5d9kd5eusj2zmtc9puqc3ezza",
+      "witness_script": "6321026957c15136a769e73830ee47d2dcf245161748c149330b29048199315f7b0212ac6704efdaf36ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac68",
+      "public_key": "secp256k1:37A4ACjoxrVYWtDiH5VUFhU5rPGZuziRMJuK4GtiHrwGdCtHPAjM62GVvzyGQvYN9ZBbY58iihALaY6VqobNNt1D",
+      "locktime": 1794366191,
+      "demo_timing": true,
+      "clock": {
+        "started_at": null
+      },
+      "handover": "none",
+      "proven_balance": "0",
+      "available_allowance": "0",
+      "fee_budget_left": "250",
+      "next_allowance_at": null
+    }
+  },
+  "topup": {
+    "txid": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+    "broadcast": true,
+    "fee": 196
+  },
+  "ledger": {
+    "wallet_before": 309263,
+    "topup": 4000,
+    "topup_fee": 196,
+    "wallet_after_topup": 305067,
+    "allowance_received": 2500,
+    "allowance_fee_from_jar": 240,
+    "left_in_jar": 1260,
+    "wallet_after": 307567
+  },
+  "payment": {
+    "payment_id": "1",
+    "txid": "4016901c16ce105d6c6b44531406ac8e4942cb9177698c4b3be7aa939b00e69c",
+    "broadcast": true
+  },
+  "light_client_window": {
+    "mainchain_size": 52704,
+    "tip_at_record": 5322886,
+    "oldest_provable_height": 5270183,
+    "recorded_at": "2026-11-10T00:08:07+00:00",
+    "observed": "The light client tip went from 5,322,876 to 5,322,886 in 76 s during this run (a testnet3 block storm). Testnet3's rate is bursty: about 19,000 blocks in 18 h on 2026-11-09, so the 52,704-header window lasts roughly 2 to 5 days. A top-up or payment must be proven inside it.",
+    "note": "Recorded by hand after the run from the light client's get_last_block_height and the step timestamps above."
+  }
+}

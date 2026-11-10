@@ -27,6 +27,7 @@ Short link names used below:
 | Proof view: NEAR tx list | FastNEAR tx API (`tx.test.fastnear.com/v0/account`) or NearBlocks **v3** via the backend; error text from NEAR RPC `EXPERIMENTAL_tx_status` | — |
 | Proof view: Bitcoin | mempool.space testnet3 (`/testnet/api`); Blockstream Esplora as fallback (same API shape) | — |
 | Accounts | Sub-account of the app account; zero-balance account (182 bytes), so 0 NEAR needed | — |
+| Testnet dev deploy and scripts | near-cli-rs (faucet account, deploy) + Node scripts on near-api-js and `@scure/btc-signer` (`scripts/`) | near-cli-rs 0.30.1 |
 
 ## 1. near-sdk-rs
 
@@ -126,6 +127,9 @@ Proof building follows `merkle_proof_calculator`: duplicate the last element on 
 1. It checks only merkle inclusion and main-chain membership. It does **not** enforce confirmations: compute `tip − height + 1` yourself. It also does not prove that `tx_id` is a real transaction ([LC lib.rs L355-363](https://github.com/Near-One/btc-light-client-contract/blob/ac30f6afd53e2f1f64158deff62832499ec123d6/contract/src/lib.rs#L355)). Take the raw tx bytes as input, compute the txid in the contract (SHA256d of the non-witness serialisation), and parse outputs from those bytes.
 2. It panics, not returns null, for an unknown block, a non-main-chain block, an empty proof (blocks with only a coinbase), a length mismatch or a bad coinbase proof, and while paused. The callback must handle `PromiseError`. Only the last 52,704 headers are kept (`get_mainchain_size`, live).
 3. The `mempool.space /tx/{txid}/merkle-proof` endpoint returns display-order hashes and no coinbase proof. Use `/block/{hash}/txids` instead.
+4. **The proof window is short on testnet3.** 52,704 headers was about 127 h of blocks, but testnet3 now has block storms (about 19,000 blocks in 18 h on 2026-11-09), so a block leaves the window after 2–5 days. A top-up proven later can never be proven, and a payment whose block has left can never be confirmed (it stays signed, and PAYMENT_PENDING then blocks the jar). Prove promptly.
+
+**Measured live (T06, 2026-11-09, dev contract `sats-jar-dev.testnet`, `evidence/dev-money-moment.json`).** `prove_topup` at exactly 60 TGas succeeded: own work 2.5 TGas, `verify_transaction_inclusion_with_heights` 1.8 TGas (of the 20 TGas given), callback 2.8 TGas. The light client ran 3–5 blocks behind mempool.space's tip. A 2-input `request_allowance` at exactly 80 TGas (2 × 15 + 30 + 20) signed first time: own work 4.8 TGas, each `sign` 4.2 TGas plus the signer's resume receipt 3.4 TGas, answered 5–6 NEAR blocks after the request; `on_payment_signed` 4.0 TGas. The signed transaction was accepted by testnet3 at 1 sat/vB (mempool.space `minimumFee` 1). The live answers had `recovery_id` 0 with `02` and 1 with `03` big_r prefixes. A second `request_allowance` while the first was signing failed with `ALREADY_PAID: the allowance for this period was already paid; next one in 23h 59m` (1.5 TGas). `confirm_payment` at exactly 60 TGas succeeded: own work 2.3 TGas, light client 1.8 TGas, callback 3.3 TGas. No stand-in mismatch was found.
 
 ## 6. Bitcoin Core regtest in Rust tests
 
