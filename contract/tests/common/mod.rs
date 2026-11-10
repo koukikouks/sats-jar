@@ -4,11 +4,14 @@
 
 mod handover;
 mod payment;
+mod strays;
 mod topup;
 #[allow(unused_imports)]
 pub use handover::*;
 #[allow(unused_imports)]
 pub use payment::*;
+#[allow(unused_imports)]
+pub use strays::*;
 #[allow(unused_imports)]
 pub use topup::*;
 

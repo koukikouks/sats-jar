@@ -4,11 +4,10 @@
 //! moved and been confirmed, the jar NFT moves to the child's account. The state machine is pure
 //! (time comes in as `now`); the contract's calls follow it.
 
-use crate::coins::Coin;
 use crate::error::{self, refuse};
 use crate::events::SatsJarEvent;
 use crate::jar::{demo_timing, exit_delay, JarAddress};
-use crate::payment::{self, Output, PaymentKind, RehomingShortfall};
+use crate::payment;
 use crate::{hex, history, rule, Network, SatsJar, SatsJarExt};
 use k256::elliptic_curve::sec1::FromEncodedPoint;
 use k256::{AffinePoint, EncodedPoint};
@@ -631,69 +630,7 @@ impl SatsJar {
             .take(payment::MAX_INPUTS)
             .copied()
             .collect();
-        let inputs: Vec<Coin> = fixed
-            .iter()
-            .map(|coin| self.coin(&jar_id, coin.index))
-            .collect();
-        let to = jar.script_pubkey();
-        let shape = payment::Shape {
-            payee_script_len: to.len() as u64,
-            change_script_len: 0,
-            witness_script_len: inputs
-                .iter()
-                .map(|coin| jar.address_at(coin.address).witness_script.len() as u64)
-                .max()
-                // Completing with nothing left to move and nothing pending is a broken invariant.
-                .unwrap_or_else(|| env::abort()),
-        };
-        let plan = payment::plan_rehoming(&fixed, fee_rate.0, &shape).unwrap_or_else(
-            |shortfall| match shortfall {
-                RehomingShortfall::FeeTooHigh { fee, bound } => refuse(
-                    error::FEE_TOO_HIGH,
-                    &format!(
-                        "the fee would be {fee} sats, over the {bound} sats a re-homing may pay (5% \
-                         of the value it moves, or the cost at 1 sat/vB if that is higher)"
-                    ),
-                ),
-                RehomingShortfall::OutputBelowDust { amount } => refuse(
-                    error::OUTPUT_BELOW_DUST,
-                    &format!(
-                        "the re-homed output would be {amount} sats, under Bitcoin's {}-sat dust \
-                         limit",
-                        payment::P2WSH_DUST
-                    ),
-                ),
-            },
-        );
-        crate::refuse_short_gas(plan.inputs.len());
-        let outputs = vec![Output {
-            value: plan.amount,
-            script_pubkey: to,
-        }];
-        let (payment_id, txid, sighashes) = self.start_payment(
-            &jar_id,
-            &jar,
-            &plan.inputs,
-            outputs,
-            plan.fee,
-            PaymentKind::Rehoming,
-        );
-        self.jars.insert(jar_id.clone(), jar);
-        self.record(
-            &jar_id,
-            history::Event::RehomingRequested {
-                payment_id: U64(payment_id),
-            },
-        );
-        SatsJarEvent::RehomingRequested {
-            jar_id: jar_id.clone(),
-            payment_id: U64(payment_id),
-            amount: U64(plan.amount),
-            fee: U64(plan.fee),
-            txid: hex::display(&txid),
-        }
-        .emit();
-        PromiseOrValue::Promise(self.sign_round(&jar_id, payment_id, &sighashes, 0))
+        PromiseOrValue::Promise(self.start_rehoming(&jar_id, jar, &fixed, fee_rate.0))
     }
 }
 
