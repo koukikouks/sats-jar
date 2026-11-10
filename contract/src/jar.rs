@@ -1,6 +1,7 @@
 //! One jar: the giver's create args, kept exactly as sent, and what the contract derives from them.
 
 use crate::error::{self, refuse};
+use crate::handover::{Handover, HandoverView};
 use crate::mpc_key::{self, PointBytes};
 use crate::rule::{self, Ledger};
 use crate::Network;
@@ -57,15 +58,6 @@ pub struct Clock {
     pub started_at: Option<U64>,
 }
 
-/// Where the jar is in handover (ADR 0009). Claims arrive in T08.
-#[near(serializers = [json, borsh])]
-#[derive(Debug, Clone, Default)]
-#[serde(rename_all = "snake_case")]
-pub enum Handover {
-    #[default]
-    None,
-}
-
 #[near(serializers = [borsh])]
 #[derive(Debug, Clone)]
 pub struct Jar {
@@ -103,7 +95,7 @@ pub struct JarView {
     /// Derived from the settings (`demo_timing`), never from the caller.
     pub demo_timing: bool,
     pub clock: Clock,
-    pub handover: Handover,
+    pub handover: HandoverView,
     /// Sats in the jar's proven coins not yet spent by a confirmed payment.
     pub proven_balance: U64,
     /// Sats an allowance requested now may pay (carry-over included); 0 before the first
@@ -276,7 +268,7 @@ impl Jar {
             locktime: self.address.locktime,
             demo_timing: demo_timing(self.args.period.0),
             clock: self.clock.clone(),
-            handover: self.handover.clone(),
+            handover: self.handover.view(now),
             proven_balance: U64(self.proven_balance),
             available_allowance: U64(available_allowance),
             fee_budget_left: U64(fee_budget_left),

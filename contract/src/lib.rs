@@ -5,6 +5,7 @@ mod coins;
 mod dev_escape;
 mod error;
 mod events;
+mod handover;
 mod hex;
 mod history;
 mod jar;
@@ -305,13 +306,20 @@ impl SatsJar {
             self.jars.get(&jar_id).cloned().unwrap_or_else(|| {
                 refuse(error::UNKNOWN_JAR, &format!("there is no jar {jar_id}"))
             });
+        let now = env::block_timestamp_ms() / 1_000;
+        if jar.handover.payouts_stopped(now) {
+            refuse(
+                error::HANDOVER_IN_PROGRESS,
+                "the handover's public delay has ended, so no allowance runs until the handover \
+                 completes or is cancelled",
+            );
+        }
         let started_at = jar.clock.started_at.map(|t| t.0).unwrap_or_else(|| {
             refuse(
                 error::NOT_FUNDED,
                 "the jar has no proven top-up yet, so it has no allowance",
             )
         });
-        let now = env::block_timestamp_ms() / 1_000;
         let period_length = jar.args.period.0;
         let period = rule::period_index(started_at, period_length, now);
         let cap = jar.args.cap.0;

@@ -2,7 +2,8 @@
 //! enumeration. The token id is the jar id and the holder is `Jar.owner_id`.
 
 use crate::error::{self, refuse};
-use crate::jar::{Handover, Jar};
+use crate::handover::Handover;
+use crate::jar::Jar;
 use crate::svg::{self, Picture};
 use crate::{SatsJar, SatsJarExt, StorageKey};
 use near_sdk::base64::{engine::general_purpose::STANDARD, Engine};
@@ -113,7 +114,7 @@ impl SatsJar {
         let jar = self.jar(&token_id);
         // Exhaustive on purpose: each new handover state must decide whether approvals open.
         match jar.handover {
-            Handover::None => refuse(
+            Handover::None | Handover::Claimed { .. } | Handover::Confirmed { .. } => refuse(
                 error::APPROVAL_BEFORE_HANDOVER,
                 "a jar takes no approvals before handover",
             ),
@@ -194,7 +195,8 @@ impl SatsJar {
 }
 
 impl SatsJar {
-    fn jar(&self, jar_id: &str) -> &Jar {
+    /// The jar, or a refusal naming the unknown id.
+    pub(crate) fn jar(&self, jar_id: &str) -> &Jar {
         self.jars
             .get(jar_id)
             .unwrap_or_else(|| refuse(error::UNKNOWN_JAR, &format!("there is no jar {jar_id}")))

@@ -3,7 +3,7 @@
 //! transactions and change nothing, so they live only in the indexer.
 
 use near_sdk::json_types::U64;
-use near_sdk::near;
+use near_sdk::{near, AccountId};
 
 /// What happened, as the matching `satsjar` event names it.
 #[near(serializers = [borsh, json])]
@@ -36,6 +36,24 @@ pub enum Event {
     },
     PaymentCancelled {
         payment_id: U64,
+    },
+    /// `child_btc_pubkey` in hex; `lapses_at` in unix seconds.
+    HandoverClaimed {
+        child_account: AccountId,
+        child_btc_pubkey: String,
+        lapses_at: U64,
+    },
+    /// `delay_ends_at` (unix seconds) is set by the 2nd confirmation, which starts the delay.
+    HandoverConfirmed {
+        guardian: AccountId,
+        delay_ends_at: Option<U64>,
+    },
+    HandoverCancelled {
+        by: AccountId,
+    },
+    /// Recorded when the next claim replaces the lapsed one; `lapsed_at` is when it lapsed.
+    HandoverLapsed {
+        lapsed_at: U64,
     },
 }
 
