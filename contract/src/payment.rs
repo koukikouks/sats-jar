@@ -23,6 +23,9 @@ pub struct FreeCoin {
     pub value: u64,
     /// The coin's index in the jar.
     pub index: u32,
+    /// Which of the jar's addresses the coin sits at (`Coin.address`), so strays come out of the
+    /// list without reading each coin.
+    pub address: u32,
 }
 
 /// Adds `coin` to a free list, keeping it largest first (ties in proof order).

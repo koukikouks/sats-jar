@@ -39,6 +39,7 @@ impl SatsJar {
                 FreeCoin {
                     value: coin.value,
                     index,
+                    address: coin.address,
                 },
             );
             self.coins.insert((jar_id.clone(), index), coin);

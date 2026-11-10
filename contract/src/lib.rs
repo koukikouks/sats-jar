@@ -14,6 +14,7 @@ mod light_client;
 mod mpc_key;
 mod nft;
 mod payment;
+mod rehoming;
 mod rule;
 mod signer;
 mod spend;
@@ -202,9 +203,13 @@ impl SatsJar {
             .jars
             .get(&jar_id)
             .unwrap_or_else(|| refuse(error::UNKNOWN_JAR, &format!("there is no jar {jar_id}")));
-        let (topup, args) = topup::check(&tx, vout, &proof, &jar.script_pubkey(), |txid| {
-            self.payment_txids.contains_key(txid)
-        });
+        let (topup, args) = topup::check(
+            &tx,
+            vout,
+            &proof,
+            |script| jar.address_index_of(script),
+            |txid| self.payment_txids.contains_key(txid),
+        );
         self.refuse_known_coin(&topup.txid, topup.vout);
         if env::prepaid_gas() < light_client::PROVE_TOPUP_GAS {
             refuse(
@@ -230,7 +235,7 @@ impl SatsJar {
                         topup.txid,
                         topup.vout,
                         U64(topup.value),
-                        jar.address_index(),
+                        topup.address,
                     ),
             )
     }
@@ -906,7 +911,14 @@ impl SatsJar {
         );
         self.seen_outpoints.insert(coins::outpoint_key(&txid, vout));
         let mut free = self.free_coins.get(jar_id).cloned().unwrap_or_default();
-        payment::insert_free(&mut free, FreeCoin { value, index });
+        payment::insert_free(
+            &mut free,
+            FreeCoin {
+                value,
+                index,
+                address,
+            },
+        );
         self.free_coins.insert(jar_id.to_owned(), free);
     }
 

@@ -42,7 +42,7 @@ pub const UNKNOWN_JAR: &str = "UNKNOWN_JAR";
 pub const INVALID_TX: &str = "INVALID_TX";
 /// A hash in the top-up's proof is not 32 bytes of hex.
 pub const INVALID_PROOF: &str = "INVALID_PROOF";
-/// The output is past the transaction's last output or does not pay the jar's address.
+/// The output is past the transaction's last output or pays none of the jar's addresses.
 pub const NOT_TO_JAR: &str = "NOT_TO_JAR";
 /// The light client did not find the transaction in its main chain (unknown or side-chain
 /// block, a merkle proof that does not lead to the block's root, or the client is paused).
@@ -146,6 +146,11 @@ pub const SPEND_BEFORE_HANDOVER: &str = "SPEND_BEFORE_HANDOVER";
 pub const SPEND_UNAVAILABLE: &str = "SPEND_UNAVAILABLE";
 /// Approvals after handover are not in this build yet (T12 replaces this).
 pub const APPROVALS_UNAVAILABLE: &str = "APPROVALS_UNAVAILABLE";
+/// `rehome_stray` while the jar's coins are being re-homed: strays are swept once the jar has
+/// moved, so a sweep never holds up the move.
+pub const REHOMING_IN_PROGRESS: &str = "REHOMING_IN_PROGRESS";
+/// `rehome_stray` when no free coin sits at an old jar address.
+pub const NO_STRAYS: &str = "NO_STRAYS";
 /// The emergency amount is over three periods' allowance (3 × cap, ADR 0005).
 pub const OVER_EMERGENCY_CAP: &str = "OVER_EMERGENCY_CAP";
 /// A tenth of the emergency amount could not pay even a one-input payment's fee at 1 sat/vB.
