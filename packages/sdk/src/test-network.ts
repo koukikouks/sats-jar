@@ -101,7 +101,9 @@ export function testNetwork(options: {
     },
   };
   const store = fileStore(join(mkdtempSync(join(tmpdir(), "sats-jar-sdk-")), "drafts.json"));
-  const backend = createBackend({ chain, store, appAccount: APP });
+  // The keeper is not part of the app's flows; it does nothing here.
+  const keeper = { run: async () => ({ startedAt: 0, steps: [] }) };
+  const backend = createBackend({ chain, store, appAccount: APP, keeper });
   const exchanges = [...(options.fixtures ?? []), fixture("near")].flatMap((f) => f.exchanges);
   const sent: SentCall[] = [];
   const near = fixture("near");
