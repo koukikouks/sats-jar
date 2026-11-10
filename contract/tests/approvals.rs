@@ -12,7 +12,7 @@ use near_workspaces::Account;
 use test_support::serde_json::{json, Value};
 
 impl Jars {
-    async fn approve(
+    async fn nft_approve(
         &self,
         caller: &Account,
         jar: &str,
@@ -66,7 +66,7 @@ async fn after_handover_the_holder_approves_accounts_and_ids_never_repeat() {
     let jar = jars.handed_over_empty(&family).await;
     let market = "market.test.near";
 
-    jars.approve(&family.child, &jar, market, None, ONE_YOCTO)
+    jars.nft_approve(&family.child, &jar, market, None, ONE_YOCTO)
         .await
         .into_result()
         .expect("approved");
@@ -78,11 +78,11 @@ async fn after_handover_the_holder_approves_accounts_and_ids_never_repeat() {
     assert!(!jars.is_approved(&jar, "other.test.near", None).await);
 
     // NEP-178: re-approving an account still increments the id.
-    jars.approve(&family.child, &jar, market, None, ONE_YOCTO)
+    jars.nft_approve(&family.child, &jar, market, None, ONE_YOCTO)
         .await
         .into_result()
         .expect("approved again");
-    jars.approve(&family.child, &jar, "other.test.near", None, ONE_YOCTO)
+    jars.nft_approve(&family.child, &jar, "other.test.near", None, ONE_YOCTO)
         .await
         .into_result()
         .expect("approved");
@@ -105,7 +105,7 @@ async fn an_approval_keeps_one_yocto_and_refunds_the_rest_of_the_deposit() {
 
     // A wallet attaches a storage deposit, as for other NFT contracts.
     let result = jars
-        .approve(
+        .nft_approve(
             &family.child,
             &jar,
             "market.test.near",
@@ -141,7 +141,7 @@ async fn an_approved_account_with_a_message_hears_about_it_through_nft_on_approv
         .expect("receiver initialised");
 
     let result = jars
-        .approve(
+        .nft_approve(
             &family.child,
             &jar,
             receiver.id().as_str(),
@@ -169,7 +169,7 @@ async fn a_jar_takes_at_most_ten_approvals_and_only_from_its_holder() {
     let family = jars.family().await;
     let jar = jars.handed_over_empty(&family).await;
     for i in 0..10 {
-        jars.approve(
+        jars.nft_approve(
             &family.child,
             &jar,
             &format!("m{i}.test.near"),
@@ -182,16 +182,16 @@ async fn a_jar_takes_at_most_ten_approvals_and_only_from_its_holder() {
     }
 
     let eleventh = jars
-        .approve(&family.child, &jar, "m10.test.near", None, ONE_YOCTO)
+        .nft_approve(&family.child, &jar, "m10.test.near", None, ONE_YOCTO)
         .await;
     let stranger = jars
-        .approve(&family.stranger, &jar, "m11.test.near", None, ONE_YOCTO)
+        .nft_approve(&family.stranger, &jar, "m11.test.near", None, ONE_YOCTO)
         .await;
     let parent = jars
-        .approve(&family.parent, &jar, "m11.test.near", None, ONE_YOCTO)
+        .nft_approve(&family.parent, &jar, "m11.test.near", None, ONE_YOCTO)
         .await;
     let no_deposit = jars
-        .approve(
+        .nft_approve(
             &family.child,
             &jar,
             "m0.test.near",
@@ -220,7 +220,7 @@ async fn a_jar_takes_at_most_ten_approvals_and_only_from_its_holder() {
         "{reason}"
     );
     // A listed account can still be approved again when the list is full.
-    jars.approve(&family.child, &jar, "m0.test.near", None, ONE_YOCTO)
+    jars.nft_approve(&family.child, &jar, "m0.test.near", None, ONE_YOCTO)
         .await
         .into_result()
         .expect("re-approved");
@@ -233,7 +233,7 @@ async fn the_holder_revokes_one_approval_or_all_of_them() {
     let family = jars.family().await;
     let jar = jars.handed_over_empty(&family).await;
     for account in ["a.test.near", "b.test.near", "c.test.near"] {
-        jars.approve(&family.child, &jar, account, None, ONE_YOCTO)
+        jars.nft_approve(&family.child, &jar, account, None, ONE_YOCTO)
             .await
             .into_result()
             .expect("approved");

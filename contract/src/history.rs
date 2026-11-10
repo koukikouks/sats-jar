@@ -69,6 +69,32 @@ pub enum Event {
     HandoverCompleted {
         child_account: AccountId,
     },
+    /// `amount` in sats; the proposer is its first approval.
+    EmergencyProposed {
+        proposal_id: u32,
+        guardian: AccountId,
+        amount: U64,
+    },
+    /// `delay_ends_at` (unix seconds) is set by the 2nd approval, which starts the delay.
+    EmergencyApproved {
+        proposal_id: u32,
+        guardian: AccountId,
+        delay_ends_at: Option<U64>,
+    },
+    /// The giver cancelled it.
+    EmergencyCancelled {
+        proposal_id: u32,
+    },
+    EmergencyExecuted {
+        proposal_id: u32,
+        payment_id: U64,
+    },
+    /// Still open when a handover's public delay ended at `lapsed_at` (unix seconds); recorded
+    /// by the `cancel_handover` or first `complete_handover` that follows.
+    EmergencyLapsed {
+        proposal_id: u32,
+        lapsed_at: U64,
+    },
     SpendRequested {
         payment_id: U64,
     },

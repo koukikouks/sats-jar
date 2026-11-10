@@ -147,6 +147,28 @@ pub const SPEND_BEFORE_HANDOVER: &str = "SPEND_BEFORE_HANDOVER";
 pub const REHOMING_IN_PROGRESS: &str = "REHOMING_IN_PROGRESS";
 /// `rehome_stray` when no free coin sits at an old jar address.
 pub const NO_STRAYS: &str = "NO_STRAYS";
+/// The emergency amount is over three periods' allowance (3 × cap, ADR 0005).
+pub const OVER_EMERGENCY_CAP: &str = "OVER_EMERGENCY_CAP";
+/// A tenth of the emergency amount could not pay even a one-input payment's fee at 1 sat/vB.
+pub const EMERGENCY_TOO_SMALL: &str = "EMERGENCY_TOO_SMALL";
+/// An emergency proposal is already open; only one runs at a time.
+pub const PROPOSAL_OPEN: &str = "PROPOSAL_OPEN";
+/// No emergency proposal is open: none was made, or it was executed or lapsed.
+pub const NO_OPEN_PROPOSAL: &str = "NO_OPEN_PROPOSAL";
+/// The proposal a guardian approves is not the open one: it changed after the guardian read it.
+pub const PROPOSAL_CHANGED: &str = "PROPOSAL_CHANGED";
+/// This guardian already approved the proposal, or 2 guardians already have.
+pub const ALREADY_APPROVED: &str = "ALREADY_APPROVED";
+/// Only the giver (the account that created the jar) can cancel an emergency payment.
+pub const NOT_THE_GIVER: &str = "NOT_THE_GIVER";
+/// The giver cancelled this emergency proposal.
+pub const EMERGENCY_CANCELLED: &str = "EMERGENCY_CANCELLED";
+/// The proposal's public delay has passed: it can no longer be cancelled.
+pub const DELAY_PASSED: &str = "DELAY_PASSED";
+/// The emergency proposal has fewer than 2 approvals, so its public delay has not started.
+pub const EMERGENCY_NOT_APPROVED: &str = "EMERGENCY_NOT_APPROVED";
+/// The proposal's public delay has not passed; the message says how long is left.
+pub const DELAY_NOT_PASSED: &str = "DELAY_NOT_PASSED";
 /// `request_spend`'s address is not a native segwit v0 address on the contract's network.
 pub const INVALID_ADDRESS: &str = "INVALID_ADDRESS";
 /// `request_spend`'s amount is below the jar's 1,000-sat dust floor.

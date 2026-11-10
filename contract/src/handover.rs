@@ -538,6 +538,8 @@ impl SatsJar {
         let mut jar = self.jar(&jar_id).clone();
         let by = env::predecessor_account_id();
         let now = env::block_timestamp_ms() / 1_000;
+        // Before the reset forgets the delay's end: a proposal that lapsed then stays lapsed.
+        self.lapse_emergency(&jar_id, &mut jar, now);
         jar.handover.cancel(&by, &jar.args.guardians, now);
         self.jars.insert(jar_id.clone(), jar);
         self.record(
@@ -581,6 +583,8 @@ impl SatsJar {
             _ => None,
         };
         if let Some(child_btc_pubkey) = first_call {
+            // While the handover still reads confirmed: an open proposal lapsed at the delay's end.
+            self.lapse_emergency(&jar_id, &mut jar, now);
             let (address, locktime) = self.rehome_to(&mut jar, &child_btc_pubkey, now);
             // Nothing is pending, so every coin not yet spent is free and moves.
             let coins = u32::try_from(free.len()).unwrap_or_else(|_| env::abort());

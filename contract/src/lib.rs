@@ -4,6 +4,7 @@ mod approvals;
 mod coins;
 #[cfg(feature = "dev-escape")]
 mod dev_escape;
+mod emergency;
 mod error;
 mod events;
 mod handover;
@@ -734,6 +735,7 @@ impl SatsJar {
             PaymentKind::Allowance { period } => ("allowance", Some(U64(period))),
             PaymentKind::Rehoming => ("rehoming", None),
             PaymentKind::Spend => ("spend", None),
+            PaymentKind::Emergency { .. } => ("emergency", None),
         };
         let signed_tx = (!payment.signatures.is_empty())
             .then(|| self.signed_tx(payment, &payment.signatures).ok())

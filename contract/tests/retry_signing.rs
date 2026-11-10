@@ -139,7 +139,25 @@ async fn a_signing_stuck_past_its_window_is_retried_and_its_late_answer_changes_
         .transact_async()
         .await
         .unwrap();
-    jars.worker.fast_forward(3).await.unwrap();
+    // Wait for the retry to land: under load it can take more than a few blocks.
+    let mut landed = false;
+    for _ in 0..50 {
+        jars.worker.fast_forward(1).await.unwrap();
+        if jars
+            .history_events(&second.id)
+            .await
+            .last()
+            .map(String::as_str)
+            == Some("payment_signing_retried")
+        {
+            landed = true;
+            break;
+        }
+    }
+    assert!(
+        landed,
+        "the second payment's retry never reached the contract"
+    );
     let first_signed = jars.get_payment(&first_id).await;
     assert_eq!(first_signed["status"], "signed");
     let second_retrying = jars.get_payment(&second_id).await;

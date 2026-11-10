@@ -109,6 +109,47 @@ pub enum SatsJarEvent {
         jar_id: String,
         child_account: AccountId,
     },
+    /// A guardian proposed an emergency payment of `amount` sats to the child's address; the
+    /// proposer is its first approval.
+    #[event_version("1.0.0")]
+    EmergencyProposed {
+        jar_id: String,
+        proposal_id: u32,
+        guardian: AccountId,
+        amount: U64,
+    },
+    /// A guardian approved the proposal; the 2nd approval starts the public delay, which ends
+    /// at `delay_ends_at` (unix seconds), null before then.
+    #[event_version("1.0.0")]
+    EmergencyApproved {
+        jar_id: String,
+        proposal_id: u32,
+        guardian: AccountId,
+        delay_ends_at: Option<U64>,
+    },
+    /// The giver cancelled the proposal.
+    #[event_version("1.0.0")]
+    EmergencyCancelled { jar_id: String, proposal_id: u32 },
+    /// The contract built the emergency payment and asked the signer for each input. `txid`
+    /// in display hex; amounts in sats.
+    #[event_version("1.0.0")]
+    EmergencyExecuted {
+        jar_id: String,
+        proposal_id: u32,
+        payment_id: U64,
+        amount: U64,
+        fee: U64,
+        txid: String,
+    },
+    /// The proposal was still open when a handover's public delay ended at `lapsed_at` (unix
+    /// seconds). Logged by the `cancel_handover` or first `complete_handover` that follows,
+    /// since nothing runs at that moment.
+    #[event_version("1.0.0")]
+    EmergencyLapsed {
+        jar_id: String,
+        proposal_id: u32,
+        lapsed_at: U64,
+    },
     /// The holder's spend of `amount` sats to `to`; `fee` in sats, `txid` in display hex.
     #[event_version("1.0.0")]
     SpendRequested {

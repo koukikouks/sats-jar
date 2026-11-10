@@ -284,6 +284,9 @@ pub enum PaymentKind {
     Rehoming,
     /// The holder's own spend after handover: the payee first, then any change.
     Spend,
+    Emergency {
+        proposal_id: u32,
+    },
 }
 
 /// Moves only forward: signing → signed or signing failed, signed → confirmed. A failed or
@@ -326,11 +329,13 @@ impl Payment {
         )
     }
 
-    /// The change back to the jar, if the payment has one: an allowance's second output. A
-    /// re-homing has none; its one output is the value it moves.
+    /// The change back to the jar, if the payment has one: an allowance's or emergency
+    /// payment's second output. A re-homing has none; its one output is the value it moves.
     pub fn change(&self) -> Option<&Output> {
         match self.kind {
-            PaymentKind::Allowance { .. } | PaymentKind::Spend => self.outputs.get(1),
+            PaymentKind::Allowance { .. } | PaymentKind::Spend | PaymentKind::Emergency { .. } => {
+                self.outputs.get(1)
+            }
             PaymentKind::Rehoming => None,
         }
     }
@@ -341,7 +346,7 @@ impl Payment {
 pub struct PaymentView {
     pub payment_id: U64,
     pub jar_id: String,
-    /// `"allowance"`, `"rehoming"` or `"spend"`.
+    /// `"allowance"`, `"rehoming"`, `"spend"` or `"emergency"`.
     pub kind: String,
     /// An allowance's period; null for any other kind.
     pub period: Option<U64>,
