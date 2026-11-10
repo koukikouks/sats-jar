@@ -2,7 +2,6 @@
 //! at a time, for a handover, a transfer (ADR 0009: one code path covers both) and strays
 //! (top-ups to an address the jar has moved away from).
 
-use crate::coins::Coin;
 use crate::error::{self, refuse};
 use crate::events::SatsJarEvent;
 use crate::handover::Handover;
@@ -72,22 +71,14 @@ impl SatsJar {
         coins: &[FreeCoin],
         fee_rate: u64,
     ) -> Promise {
-        let inputs: Vec<Coin> = coins
-            .iter()
-            .take(payment::MAX_INPUTS)
-            .map(|coin| self.coin(jar_id, coin.index))
-            .collect();
+        let coins = &coins[..coins.len().min(payment::MAX_INPUTS)];
+        // Every caller has at least one coin to move.
+        if coins.is_empty() {
+            env::abort();
+        }
         let to = jar.script_pubkey();
-        let shape = payment::Shape {
-            payee_script_len: to.len() as u64,
-            change_script_len: 0,
-            witness_script_len: inputs
-                .iter()
-                .map(|coin| jar.address_at(coin.address).witness_script.len() as u64)
-                .max()
-                // Every caller has at least one coin to move.
-                .unwrap_or_else(|| env::abort()),
-        };
+        // Sized exactly as `rehoming_batch` sized it when choosing the coins.
+        let shape = rehoming_shape(&jar, coins);
         let plan = payment::plan_rehoming(coins, fee_rate, &shape).unwrap_or_else(
             |shortfall| match shortfall {
                 RehomingShortfall::FeeTooHigh { fee, bound } => refuse(
@@ -196,8 +187,8 @@ impl SatsJar {
     }
 }
 
-/// The size inputs of a re-homing of `coins` to the jar's current address, as `start_rehoming`
-/// measures them: one output, the longest input script.
+/// The size inputs of a re-homing of `coins` to the jar's current address, for both the carrier
+/// check and `start_rehoming`: one output, the longest input script.
 fn rehoming_shape(jar: &Jar, coins: &[FreeCoin]) -> payment::Shape {
     payment::Shape {
         payee_script_len: jar.script_pubkey().len() as u64,
