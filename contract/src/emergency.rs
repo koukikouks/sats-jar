@@ -493,6 +493,7 @@ impl SatsJar {
         // what stop other transactions before the callback.
         let (payment_id, txid, sighashes) = self.start_payment(
             &jar_id,
+            &jar,
             &plan.inputs,
             outputs,
             plan.fee,

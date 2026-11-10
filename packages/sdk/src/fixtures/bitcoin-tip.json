@@ -1,0 +1,17 @@
+{
+ "recorded_at": "2026-11-10T01:35:05.218Z",
+ "note": "Live mempool.space testnet3 tip height.",
+ "exchanges": [
+  {
+   "request": {
+    "method": "GET",
+    "url": "https://mempool.space/testnet/api/blocks/tip/height",
+    "body": null
+   },
+   "response": {
+    "status": 200,
+    "body": 5323144
+   }
+  }
+ ]
+}

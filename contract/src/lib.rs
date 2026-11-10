@@ -16,6 +16,7 @@ mod nft;
 mod payment;
 mod rule;
 mod signer;
+mod spend;
 mod svg;
 mod topup;
 
@@ -224,12 +225,19 @@ impl SatsJar {
             .then(
                 Self::ext(env::current_account_id())
                     .with_static_gas(light_client::CALLBACK_GAS)
-                    .on_topup_proven(jar_id, topup.txid, topup.vout, U64(topup.value)),
+                    .on_topup_proven(
+                        jar_id,
+                        topup.txid,
+                        topup.vout,
+                        U64(topup.value),
+                        jar.address_index(),
+                    ),
             )
     }
 
     /// Reads the light client's answer to `prove_topup`. Nothing was reserved before the call,
-    /// so a refusal here simply fails the transaction.
+    /// so a refusal here simply fails the transaction. `address` is the index of the jar address
+    /// the output was checked against: the jar may have moved to a new one since.
     #[private]
     pub fn on_topup_proven(
         &mut self,
@@ -237,6 +245,7 @@ impl SatsJar {
         txid: [u8; 32],
         vout: u32,
         value: U64,
+        address: u32,
         #[callback_result] inclusion: Result<Option<TxInclusionInfo>, PromiseError>,
     ) {
         let info = included(inclusion);
@@ -259,7 +268,7 @@ impl SatsJar {
         jar.clock
             .started_at
             .get_or_insert(U64(env::block_timestamp_ms() / 1_000));
-        self.add_coin(&jar_id, index, txid, vout, value.0);
+        self.add_coin(&jar_id, index, txid, vout, value.0, address);
         self.jars.insert(jar_id.clone(), jar);
         self.record(
             &jar_id,
@@ -308,6 +317,12 @@ impl SatsJar {
                 refuse(error::UNKNOWN_JAR, &format!("there is no jar {jar_id}"))
             });
         let now = env::block_timestamp_ms() / 1_000;
+        if matches!(jar.handover, handover::Handover::Done { .. }) {
+            refuse(
+                error::HANDOVER_DONE,
+                "this jar has been handed over, so its allowances have ended",
+            );
+        }
         if jar.handover.payouts_stopped(now) {
             refuse(
                 error::HANDOVER_IN_PROGRESS,
@@ -406,15 +421,16 @@ impl SatsJar {
                 script_pubkey: change_script,
             });
         }
-        // The guard goes in before the calls: other transactions run before the callback, and
-        // the reservation and the paid period are what stop them.
         let (payment_id, txid, sighashes) = self.start_payment(
             &jar_id,
+            &jar,
             &plan.inputs,
             outputs,
             plan.fee,
             PaymentKind::Allowance { period },
         );
+        // With the reservation, the paid period is what stops a second request before the
+        // callback.
         jar.allowance
             .record(cap, period, plan.amount, plan.fee, payment_id);
         self.jars.insert(jar_id.clone(), jar);
@@ -621,29 +637,38 @@ impl SatsJar {
                 .unwrap_or_else(|| env::abort());
             self.coins.insert((jar_id.clone(), index), coin);
         }
-        let change = payment.change().map_or(0, |output| output.value);
-        if change > 0 {
+        // Every output to one of the jar's addresses is the jar's again, as a coin at that
+        // address: an allowance's change, a re-homed coin.
+        for (vout, output) in payment.outputs.iter().enumerate() {
+            let Some(address) = jar.address_index_of(&output.script_pubkey) else {
+                continue;
+            };
             let index = jar.coin_count;
             jar.coin_count = index.checked_add(1).unwrap_or_else(|| env::abort());
             jar.proven_balance = jar
                 .proven_balance
-                .checked_add(change)
+                .checked_add(output.value)
                 .unwrap_or_else(|| env::abort());
-            // The change is always output 1.
-            self.add_coin(&jar_id, index, payment.txid, 1, change);
+            let vout = u32::try_from(vout).unwrap_or_else(|_| env::abort());
+            self.add_coin(&jar_id, index, payment.txid, vout, output.value, address);
         }
+        let handed_over = jar.handover.count_down(&payment.inputs);
         self.jars.insert(jar_id.clone(), jar);
+        let change = payment.change().map_or(0, |output| output.value);
         payment.status = PaymentStatus::Confirmed;
         let txid = hex::display(&payment.txid);
         self.payments.insert(payment_id.0, payment);
         self.record(&jar_id, history::Event::PaymentConfirmed { payment_id });
         SatsJarEvent::PaymentConfirmed {
-            jar_id,
+            jar_id: jar_id.clone(),
             payment_id,
             txid,
             change: U64(change),
         }
         .emit();
+        if handed_over {
+            self.finish_handover(&jar_id, env::block_timestamp_ms() / 1_000);
+        }
     }
 
     /// The payment's signed transaction (hex), re-encoded from its stored signatures with no
@@ -693,6 +718,7 @@ impl SatsJar {
         let (status, failure) = payment.status.view();
         let (kind, period) = match payment.kind {
             PaymentKind::Allowance { period } => ("allowance", Some(U64(period))),
+            PaymentKind::Rehoming => ("rehoming", None),
             PaymentKind::Emergency { .. } => ("emergency", None),
         };
         let signed_tx = (!payment.signatures.is_empty())
@@ -727,73 +753,22 @@ impl SatsJar {
     }
 
     pub fn get_jar(&self, jar_id: String) -> Option<JarView> {
-        self.jars
-            .get(&jar_id)
-            .map(|jar| jar.view(&jar_id, self.network, env::block_timestamp_ms() / 1_000))
+        let jar = self.jars.get(&jar_id)?;
+        let coins_to_move = jar.handover.fixed_below().map_or(0, |below| {
+            let free = self.free_coins.get(&jar_id).map_or(&[][..], Vec::as_slice);
+            // At most every coin the jar has, which fits a u32.
+            free.iter().filter(|coin| coin.index < below).count() as u32
+        });
+        Some(jar.view(
+            &jar_id,
+            self.network,
+            env::block_timestamp_ms() / 1_000,
+            coins_to_move,
+        ))
     }
 }
 
 impl SatsJar {
-    /// Stores a new payment of the jar's `chosen` coins to `outputs`, leaving `fee`, and reserves
-    /// those coins, taking each off the free list by its index. Returns the payment id, its txid
-    /// and the sighash of each input, for `sign_round`.
-    fn start_payment(
-        &mut self,
-        jar_id: &str,
-        chosen: &[FreeCoin],
-        outputs: Vec<Output>,
-        fee: u64,
-        kind: PaymentKind,
-    ) -> (u64, [u8; 32], Vec<[u8; 32]>) {
-        let witness_script = self
-            .jars
-            .get(jar_id)
-            .map(|jar| jar.address.witness_script.clone())
-            .unwrap_or_else(|| env::abort());
-        let inputs: Vec<Coin> = chosen
-            .iter()
-            .map(|free| self.coin(jar_id, free.index))
-            .collect();
-        let tx = unsigned_tx(&inputs, &outputs);
-        let txid = tx.txid();
-        let sighashes: Vec<[u8; 32]> = inputs
-            .iter()
-            .enumerate()
-            .map(|(i, coin)| {
-                tx.sighash_all(i, &witness_script, coin.value)
-                    .unwrap_or_else(|_| env::abort())
-            })
-            .collect();
-
-        let payment_id = self.next_payment_id;
-        self.next_payment_id += 1;
-        for (free, mut coin) in chosen.iter().zip(inputs) {
-            coin.status = CoinStatus::Reserved(payment_id);
-            self.coins.insert((jar_id.to_owned(), free.index), coin);
-        }
-        let mut free = self.free_coins.get(jar_id).cloned().unwrap_or_default();
-        free.retain(|coin| !chosen.iter().any(|taken| taken.index == coin.index));
-        self.free_coins.insert(jar_id.to_owned(), free);
-        self.payments.insert(
-            payment_id,
-            Payment {
-                jar_id: jar_id.to_owned(),
-                kind,
-                inputs: chosen.iter().map(|free| free.index).collect(),
-                outputs,
-                txid,
-                sighashes: sighashes.clone(),
-                fee,
-                attempt: 0,
-                signing_started_at: env::block_height(),
-                status: PaymentStatus::Signing,
-                signatures: Vec::new(),
-            },
-        );
-        self.payment_txids.insert(txid, payment_id);
-        (payment_id, txid, sighashes)
-    }
-
     /// One signing round: a `sign` request per sighash, joined, then the checking callback,
     /// which acts only if the payment is still in round `attempt`.
     fn sign_round(
@@ -814,6 +789,64 @@ impl SatsJar {
                 .with_unused_gas_weight(0)
                 .on_payment_signed(U64(payment_id), attempt),
         )
+    }
+
+    /// Reserves `chosen` for a new payment of `kind` to `outputs`, removing each from the jar's
+    /// free list by its index (a re-homing picks a filtered subset, never a prefix), and records
+    /// the payment and its txid. Returns the payment id, the txid and each input's sighash. The
+    /// guard goes in before the signer is called: other transactions run before the callback,
+    /// and the reservation is what stops them.
+    fn start_payment(
+        &mut self,
+        jar_id: &str,
+        jar: &Jar,
+        chosen: &[FreeCoin],
+        outputs: Vec<Output>,
+        fee: u64,
+        kind: PaymentKind,
+    ) -> (u64, [u8; 32], Vec<[u8; 32]>) {
+        let inputs: Vec<Coin> = chosen
+            .iter()
+            .map(|free| self.coin(jar_id, free.index))
+            .collect();
+        let tx = unsigned_tx(&inputs, &outputs);
+        let txid = tx.txid();
+        // Each input signs with its own address's script.
+        let sighashes: Vec<[u8; 32]> = inputs
+            .iter()
+            .enumerate()
+            .map(|(i, coin)| {
+                tx.sighash_all(i, &jar.address_at(coin.address).witness_script, coin.value)
+                    .unwrap_or_else(|_| env::abort())
+            })
+            .collect();
+        let payment_id = self.next_payment_id;
+        self.next_payment_id += 1;
+        for (free, mut coin) in chosen.iter().zip(inputs) {
+            coin.status = CoinStatus::Reserved(payment_id);
+            self.coins.insert((jar_id.to_owned(), free.index), coin);
+        }
+        let mut free = self.free_coins.get(jar_id).cloned().unwrap_or_default();
+        free.retain(|coin| chosen.iter().all(|taken| taken.index != coin.index));
+        self.free_coins.insert(jar_id.to_owned(), free);
+        self.payments.insert(
+            payment_id,
+            Payment {
+                jar_id: jar_id.to_owned(),
+                kind,
+                inputs: chosen.iter().map(|free| free.index).collect(),
+                outputs,
+                txid,
+                sighashes: sighashes.clone(),
+                fee,
+                attempt: 0,
+                signing_started_at: env::block_height(),
+                status: PaymentStatus::Signing,
+                signatures: Vec::new(),
+            },
+        );
+        self.payment_txids.insert(txid, payment_id);
+        (payment_id, txid, sighashes)
     }
 
     /// Appends `event` to the jar's history, written at once so `create_jar` can measure it.
@@ -850,15 +883,24 @@ impl SatsJar {
             .unwrap_or_else(|| env::abort())
     }
 
-    /// Records a newly proven coin as confirmed and free, and its outpoint as seen for good.
-    fn add_coin(&mut self, jar_id: &str, index: u32, txid: [u8; 32], vout: u32, value: u64) {
+    /// Records a newly proven coin at the jar's address `address` as confirmed and free, and its
+    /// outpoint as seen for good.
+    fn add_coin(
+        &mut self,
+        jar_id: &str,
+        index: u32,
+        txid: [u8; 32],
+        vout: u32,
+        value: u64,
+        address: u32,
+    ) {
         self.coins.insert(
             (jar_id.to_owned(), index),
             Coin {
                 txid,
                 vout,
                 value,
-                address: 0,
+                address,
                 status: CoinStatus::Confirmed,
             },
         );
@@ -908,9 +950,13 @@ impl SatsJar {
             .iter()
             .map(|&index| self.coin(&payment.jar_id, index))
             .collect();
+        // Each input spends with its own address's script (a re-homing spends an old address).
         let witnesses = signatures
             .iter()
-            .map(|sig| btc::jar_witness(&sig.r, &sig.s, &jar.address.witness_script))
+            .zip(&inputs)
+            .map(|(sig, coin)| {
+                btc::jar_witness(&sig.r, &sig.s, &jar.address_at(coin.address).witness_script)
+            })
             .collect::<Result<Vec<_>, _>>()
             .map_err(|_| "a signature is not a valid secp256k1 signature".to_owned())?;
         unsigned_tx(&inputs, &payment.outputs)

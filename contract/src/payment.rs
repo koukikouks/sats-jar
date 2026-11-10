@@ -9,6 +9,12 @@ use near_sdk::near;
 pub const MAX_INPUTS: usize = 10;
 /// A strict-DER signature with SIGHASH_ALL is at most 72 bytes once S is low (BIP-146).
 const MAX_SIGNATURE_LEN: u64 = 72;
+/// Bitcoin Core's dust limit for a P2WSH output at its default dust relay fee: the smallest
+/// re-homed output that relays.
+pub const P2WSH_DUST: u64 = 330;
+/// A re-homing may pay this share of the value it moves (in percent), or the cost at 1 sat/vB
+/// if that is higher.
+const REHOMING_FEE_PERCENT: u64 = 5;
 
 /// A coin free to spend, as the jar's free list keeps it: largest first.
 #[near(serializers = [borsh])]
@@ -144,6 +150,46 @@ pub fn plan(
     })
 }
 
+/// Why a re-homing payment cannot be built.
+#[derive(Debug, PartialEq, Eq)]
+pub enum RehomingShortfall {
+    /// The fee at the proposed rate is over the re-homing's bound.
+    FeeTooHigh { fee: u64, bound: u64 },
+    /// What is left after the fee would not relay.
+    OutputBelowDust { amount: u64 },
+}
+
+/// Plans a re-homing of `coins` (at most the first 10) into one output with a script of
+/// `shape.payee_script_len` bytes, at `fee_rate` sat/vB. The fee is at most 5% of the value
+/// moved, or the cost at 1 sat/vB if that is higher, so even a single small coin can move.
+pub fn plan_rehoming(
+    coins: &[FreeCoin],
+    fee_rate: u64,
+    shape: &Shape,
+) -> Result<Plan, RehomingShortfall> {
+    let inputs = &coins[..coins.len().min(MAX_INPUTS)];
+    // 21 M BTC fits a u64, so the sum of proven coins cannot overflow.
+    let total = inputs
+        .iter()
+        .fold(0u64, |sum, coin| sum.saturating_add(coin.value));
+    let size = vsize(inputs.len(), &[shape.payee_script_len], shape);
+    let fee = fee_rate.saturating_mul(size);
+    let bound = (total.saturating_mul(REHOMING_FEE_PERCENT) / 100).max(size);
+    if fee > bound {
+        return Err(RehomingShortfall::FeeTooHigh { fee, bound });
+    }
+    let amount = total.saturating_sub(fee);
+    if amount < P2WSH_DUST {
+        return Err(RehomingShortfall::OutputBelowDust { amount });
+    }
+    Ok(Plan {
+        inputs: inputs.to_vec(),
+        amount,
+        change: 0,
+        fee,
+    })
+}
+
 /// The largest virtual size (BIP-141) of a payment with `inputs` jar inputs and outputs with
 /// these scripts, signed down the MPC branch: weight = 4 × base + witness, rounded up.
 pub fn vsize(inputs: usize, output_script_lens: &[u64], shape: &Shape) -> u64 {
@@ -200,8 +246,14 @@ pub struct Payment {
 #[near(serializers = [borsh])]
 #[derive(Debug, Clone)]
 pub enum PaymentKind {
-    Allowance { period: u64 },
-    Emergency { proposal_id: u32 },
+    Allowance {
+        period: u64,
+    },
+    /// Moves coins to the jar's new address, whose exit branch is the new holder's key.
+    Rehoming,
+    Emergency {
+        proposal_id: u32,
+    },
 }
 
 /// Moves only forward: signing → signed or signing failed, signed → confirmed. A failed or
@@ -244,9 +296,13 @@ impl Payment {
         )
     }
 
-    /// The change back to the jar, if the payment has one (always the second output).
+    /// The change back to the jar, if the payment has one: an allowance's or emergency
+    /// payment's second output. A re-homing has none; its one output is the value it moves.
     pub fn change(&self) -> Option<&Output> {
-        self.outputs.get(1)
+        match self.kind {
+            PaymentKind::Allowance { .. } | PaymentKind::Emergency { .. } => self.outputs.get(1),
+            PaymentKind::Rehoming => None,
+        }
     }
 }
 
@@ -255,16 +311,16 @@ impl Payment {
 pub struct PaymentView {
     pub payment_id: U64,
     pub jar_id: String,
-    /// `"allowance"` or `"emergency"`.
+    /// `"allowance"`, `"rehoming"` or `"emergency"`.
     pub kind: String,
-    /// The allowance's period; null for an emergency payment.
+    /// An allowance's period; null for a re-homing or an emergency payment.
     pub period: Option<U64>,
     pub status: StatusView,
     /// Why signing failed, for a `signing_failed` payment.
     pub failure: Option<String>,
     /// Display hex.
     pub txid: String,
-    /// Sats paid to the payee.
+    /// Sats paid to the payee (for a re-homing, to the jar's new address).
     pub amount: U64,
     /// Sats the payment leaves for miners, from the jar.
     pub fee: U64,
