@@ -1,3 +1,5 @@
+export { createSatsJar } from "./app.ts";
+export { browserStorage } from "./storage.ts";
 export { FULL_PERIOD, SatsJarRefusal } from "./api.ts";
 export type {
   Allowance,

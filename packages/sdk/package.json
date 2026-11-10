@@ -5,5 +5,10 @@
   "exports": "./src/index.ts",
   "scripts": {
     "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@sats-jar/device-keys": "workspace:*",
+    "@sats-jar/proof": "workspace:*",
+    "near-api-js": "7.4.0"
   }
 }
