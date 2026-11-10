@@ -104,3 +104,23 @@ pub const PAYMENT_ALREADY_SIGNED: &str = "PAYMENT_ALREADY_SIGNED";
 pub const SIGNING_IN_PROGRESS: &str = "SIGNING_IN_PROGRESS";
 /// The payment has no stored signatures, so there is nothing to rebuild.
 pub const PAYMENT_NOT_SIGNED: &str = "PAYMENT_NOT_SIGNED";
+/// `claim_handover` was sent by another account than the child's account it names.
+pub const NOT_THE_CHILD_ACCOUNT: &str = "NOT_THE_CHILD_ACCOUNT";
+/// The child's Bitcoin key is not a compressed secp256k1 public key.
+pub const INVALID_CHILD_KEY: &str = "INVALID_CHILD_KEY";
+/// A handover claim is already open (not cancelled, not lapsed), so no other claim can be made.
+pub const CLAIM_OPEN: &str = "CLAIM_OPEN";
+/// The caller is not one of the jar's guardians.
+pub const NOT_A_GUARDIAN: &str = "NOT_A_GUARDIAN";
+/// No handover claim is open: none was made, or it was cancelled or lapsed.
+pub const NO_OPEN_CLAIM: &str = "NO_OPEN_CLAIM";
+/// This guardian already confirmed the claim, or 2 guardians already have.
+pub const CLAIM_ALREADY_CONFIRMED: &str = "CLAIM_ALREADY_CONFIRMED";
+/// Only a guardian or the claimer can cancel a handover claim.
+pub const NOT_GUARDIAN_OR_CLAIMER: &str = "NOT_GUARDIAN_OR_CLAIMER";
+/// The account a guardian confirms is not the open claim's: the claim changed after the
+/// guardian checked the code, so it must be checked again.
+pub const CLAIM_CHANGED: &str = "CLAIM_CHANGED";
+/// The handover's public delay has ended: no allowance runs until the handover completes or
+/// the claim is cancelled.
+pub const HANDOVER_IN_PROGRESS: &str = "HANDOVER_IN_PROGRESS";

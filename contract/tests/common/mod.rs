@@ -2,8 +2,11 @@
 //! `jar.<root>`, the account the live `derived_public_key` vectors were recorded for.
 #![allow(dead_code)]
 
+mod handover;
 mod payment;
 mod topup;
+#[allow(unused_imports)]
+pub use handover::*;
 #[allow(unused_imports)]
 pub use payment::*;
 #[allow(unused_imports)]
