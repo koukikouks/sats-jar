@@ -1,0 +1,73 @@
+{
+  "about": "Testnet check of T15 (koukikouks/sats-jar#18): accounts made by the backend's sponsor from device keys, each with exactly one key (the device's) as read from NEAR RPC view_access_key_list, and a jar created from the giver's own funded account. Written by backend/src/verify-testnet.ts.",
+  "at": "2026-11-10T00:49:36.577Z",
+  "sponsor": "sats-jar-app.testnet",
+  "contract": "sats-jar-dev.testnet",
+  "accounts": [
+    {
+      "role": "giver",
+      "account": "116192b82fcb34a34a31.sats-jar-app.testnet",
+      "device_public_key": "ed25519:5UmPYoHtpEGF3g1Q9hcJz1Z9jQmJQ7D5vFC3k3oA7MEv",
+      "access_keys_on_chain": [
+        {
+          "access_key": {
+            "nonce": 276995992000000,
+            "permission": "FullAccess"
+          },
+          "public_key": "ed25519:5UmPYoHtpEGF3g1Q9hcJz1Z9jQmJQ7D5vFC3k3oA7MEv"
+        }
+      ],
+      "balance_yocto": "250000000000000000000000",
+      "transactions": [
+        "E2h6UsVgdXWoWQMeV4TBHBMpsAmuL5yayw1Bj2rz81mH"
+      ]
+    },
+    {
+      "role": "guardian 1",
+      "account": "68afa47a357c7f55fabd.sats-jar-app.testnet",
+      "device_public_key": "ed25519:5rqrdn87s9bciUcTD4mfoSvw2KQyPoBGdaj1nVW7HT3w",
+      "access_keys_on_chain": [
+        {
+          "access_key": {
+            "nonce": 276995996000000,
+            "permission": "FullAccess"
+          },
+          "public_key": "ed25519:5rqrdn87s9bciUcTD4mfoSvw2KQyPoBGdaj1nVW7HT3w"
+        }
+      ],
+      "balance_yocto": "250000000000000000000000",
+      "transactions": [
+        "8XqZa7MHSJE96raKpW9VzgYtU7WbXiFKsM7rs5y33jTL"
+      ]
+    },
+    {
+      "role": "guardian 2",
+      "account": "55545d01cfa4662eb358.sats-jar-app.testnet",
+      "device_public_key": "ed25519:GWYLz693MiiqUoB4SqNp7MX2qaiNW5qmiL3BnsGogJNr",
+      "access_keys_on_chain": [
+        {
+          "access_key": {
+            "nonce": 276996000000000,
+            "permission": "FullAccess"
+          },
+          "public_key": "ed25519:GWYLz693MiiqUoB4SqNp7MX2qaiNW5qmiL3BnsGogJNr"
+        }
+      ],
+      "balance_yocto": "250000000000000000000000",
+      "transactions": [
+        "37unBsQ68jRaHsP9uy4w224BbS64iRxvDLpCZD5m8mP1"
+      ]
+    }
+  ],
+  "create_jar": {
+    "near_tx": "EzMfNipDDPKfNm4cEtuGyQhF2TysNFhxL9rVeXPY55f9",
+    "explorer": "https://testnet.nearblocks.io/txns/EzMfNipDDPKfNm4cEtuGyQhF2TysNFhxL9rVeXPY55f9",
+    "jar_id": "3",
+    "guardians": [
+      "68afa47a357c7f55fabd.sats-jar-app.testnet",
+      "55545d01cfa4662eb358.sats-jar-app.testnet"
+    ],
+    "giver_balance_after_yocto": "239359975753013500000000"
+  },
+  "draft_cleared": true
+}

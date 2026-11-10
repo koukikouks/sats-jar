@@ -1,0 +1,17 @@
+{
+  "name": "@sats-jar/backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "start": "node src/server.ts"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.4.0",
+    "@scure/base": "2.4.0",
+    "near-api-js": "7.4.0"
+  },
+  "devDependencies": {
+    "@sats-jar/device-keys": "workspace:*"
+  }
+}
