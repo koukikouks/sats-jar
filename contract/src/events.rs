@@ -60,6 +60,30 @@ pub enum SatsJarEvent {
     #[cfg_attr(not(feature = "dev-escape"), allow(dead_code))]
     #[event_version("1.0.0")]
     PaymentCancelled { jar_id: String, payment_id: U64 },
+    /// The child's account claimed the jar; `child_btc_pubkey` in hex, `lapses_at` in unix
+    /// seconds (unless 2 guardians confirm first).
+    #[event_version("1.0.0")]
+    HandoverClaimed {
+        jar_id: String,
+        child_account: AccountId,
+        child_btc_pubkey: String,
+        lapses_at: U64,
+    },
+    /// A guardian confirmed the claim; the 2nd confirmation starts the public delay, which ends
+    /// at `delay_ends_at` (unix seconds), null before then.
+    #[event_version("1.0.0")]
+    HandoverConfirmed {
+        jar_id: String,
+        guardian: AccountId,
+        delay_ends_at: Option<U64>,
+    },
+    /// A guardian or the claimer cancelled the claim.
+    #[event_version("1.0.0")]
+    HandoverCancelled { jar_id: String, by: AccountId },
+    /// A claim short of 2 confirmations lapsed at `lapsed_at` (unix seconds). Logged by the
+    /// claim that replaces it, since nothing runs at the moment it lapses.
+    #[event_version("1.0.0")]
+    HandoverLapsed { jar_id: String, lapsed_at: U64 },
 }
 
 #[near(serializers = [json])]

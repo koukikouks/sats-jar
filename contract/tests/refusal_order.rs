@@ -1,5 +1,5 @@
 //! The spec's refusal order for `request_allowance`, checked where two refusals both apply:
-//! not funded → already paid → payment pending → fee too low → insufficient balance → fee over
+//! handover in progress (handover_allowance.rs) → not funded → already paid → payment pending → fee too low → insufficient balance → fee over
 //! budget → payment too small → change below dust → not enough gas.
 
 mod common;
