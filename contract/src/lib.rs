@@ -3,6 +3,7 @@
 mod coins;
 #[cfg(feature = "dev-escape")]
 mod dev_escape;
+mod emergency;
 mod error;
 mod events;
 mod handover;
@@ -395,11 +396,6 @@ impl SatsJar {
         });
         refuse_short_gas(plan.inputs.len());
 
-        let inputs: Vec<Coin> = plan
-            .inputs
-            .iter()
-            .map(|free| self.coin(&jar_id, free.index))
-            .collect();
         let mut outputs = vec![Output {
             value: plan.amount,
             script_pubkey: child_script,
@@ -410,47 +406,18 @@ impl SatsJar {
                 script_pubkey: change_script,
             });
         }
-        let tx = unsigned_tx(&inputs, &outputs);
-        let txid = tx.txid();
-        let sighashes: Vec<[u8; 32]> = inputs
-            .iter()
-            .enumerate()
-            .map(|(i, coin)| {
-                tx.sighash_all(i, &jar.address.witness_script, coin.value)
-                    .unwrap_or_else(|_| env::abort())
-            })
-            .collect();
-
         // The guard goes in before the calls: other transactions run before the callback, and
         // the reservation and the paid period are what stop them.
-        let payment_id = self.next_payment_id;
-        self.next_payment_id += 1;
-        for (free, mut coin) in plan.inputs.iter().zip(inputs) {
-            coin.status = CoinStatus::Reserved(payment_id);
-            self.coins.insert((jar_id.clone(), free.index), coin);
-        }
-        self.free_coins
-            .insert(jar_id.clone(), free[plan.inputs.len()..].to_vec());
+        let (payment_id, txid, sighashes) = self.start_payment(
+            &jar_id,
+            &plan.inputs,
+            outputs,
+            plan.fee,
+            PaymentKind::Allowance { period },
+        );
         jar.allowance
             .record(cap, period, plan.amount, plan.fee, payment_id);
         self.jars.insert(jar_id.clone(), jar);
-        self.payments.insert(
-            payment_id,
-            Payment {
-                jar_id: jar_id.clone(),
-                kind: PaymentKind::Allowance { period },
-                inputs: plan.inputs.iter().map(|free| free.index).collect(),
-                outputs,
-                txid,
-                sighashes: sighashes.clone(),
-                fee: plan.fee,
-                attempt: 0,
-                signing_started_at: env::block_height(),
-                status: PaymentStatus::Signing,
-                signatures: Vec::new(),
-            },
-        );
-        self.payment_txids.insert(txid, payment_id);
         self.record(
             &jar_id,
             history::Event::AllowanceRequested {
@@ -724,7 +691,10 @@ impl SatsJar {
     pub fn get_payment(&self, payment_id: U64) -> Option<PaymentView> {
         let payment = self.payments.get(&payment_id.0)?;
         let (status, failure) = payment.status.view();
-        let PaymentKind::Allowance { period } = payment.kind;
+        let (kind, period) = match payment.kind {
+            PaymentKind::Allowance { period } => ("allowance", Some(U64(period))),
+            PaymentKind::Emergency { .. } => ("emergency", None),
+        };
         let signed_tx = (!payment.signatures.is_empty())
             .then(|| self.signed_tx(payment, &payment.signatures).ok())
             .flatten()
@@ -732,8 +702,8 @@ impl SatsJar {
         Some(PaymentView {
             payment_id,
             jar_id: payment.jar_id.clone(),
-            kind: "allowance".to_owned(),
-            period: U64(period),
+            kind: kind.to_owned(),
+            period,
             status,
             failure,
             txid: hex::display(&payment.txid),
@@ -764,6 +734,66 @@ impl SatsJar {
 }
 
 impl SatsJar {
+    /// Stores a new payment of the jar's `chosen` coins to `outputs`, leaving `fee`, and reserves
+    /// those coins, taking each off the free list by its index. Returns the payment id, its txid
+    /// and the sighash of each input, for `sign_round`.
+    fn start_payment(
+        &mut self,
+        jar_id: &str,
+        chosen: &[FreeCoin],
+        outputs: Vec<Output>,
+        fee: u64,
+        kind: PaymentKind,
+    ) -> (u64, [u8; 32], Vec<[u8; 32]>) {
+        let witness_script = self
+            .jars
+            .get(jar_id)
+            .map(|jar| jar.address.witness_script.clone())
+            .unwrap_or_else(|| env::abort());
+        let inputs: Vec<Coin> = chosen
+            .iter()
+            .map(|free| self.coin(jar_id, free.index))
+            .collect();
+        let tx = unsigned_tx(&inputs, &outputs);
+        let txid = tx.txid();
+        let sighashes: Vec<[u8; 32]> = inputs
+            .iter()
+            .enumerate()
+            .map(|(i, coin)| {
+                tx.sighash_all(i, &witness_script, coin.value)
+                    .unwrap_or_else(|_| env::abort())
+            })
+            .collect();
+
+        let payment_id = self.next_payment_id;
+        self.next_payment_id += 1;
+        for (free, mut coin) in chosen.iter().zip(inputs) {
+            coin.status = CoinStatus::Reserved(payment_id);
+            self.coins.insert((jar_id.to_owned(), free.index), coin);
+        }
+        let mut free = self.free_coins.get(jar_id).cloned().unwrap_or_default();
+        free.retain(|coin| !chosen.iter().any(|taken| taken.index == coin.index));
+        self.free_coins.insert(jar_id.to_owned(), free);
+        self.payments.insert(
+            payment_id,
+            Payment {
+                jar_id: jar_id.to_owned(),
+                kind,
+                inputs: chosen.iter().map(|free| free.index).collect(),
+                outputs,
+                txid,
+                sighashes: sighashes.clone(),
+                fee,
+                attempt: 0,
+                signing_started_at: env::block_height(),
+                status: PaymentStatus::Signing,
+                signatures: Vec::new(),
+            },
+        );
+        self.payment_txids.insert(txid, payment_id);
+        (payment_id, txid, sighashes)
+    }
+
     /// One signing round: a `sign` request per sighash, joined, then the checking callback,
     /// which acts only if the payment is still in round `attempt`.
     fn sign_round(

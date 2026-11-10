@@ -1,5 +1,6 @@
 //! One jar: the giver's create args, kept exactly as sent, and what the contract derives from them.
 
+use crate::emergency::{Emergency, EmergencyView};
 use crate::error::{self, refuse};
 use crate::handover::{Handover, HandoverView};
 use crate::mpc_key::{self, PointBytes};
@@ -16,7 +17,7 @@ const FULL_PERIOD: u64 = 30 * DAY;
 const EXIT_DELAY: u64 = 730 * DAY;
 /// The largest one-input allowance (72-byte signature, five-byte locktime, child plus change)
 /// in vbytes. The fee budget (cap / 10) must pay it at 1 sat/vB, or the jar could never pay.
-const LARGEST_ONE_INPUT_PAYMENT_VSIZE: u64 = 163;
+pub const LARGEST_ONE_INPUT_PAYMENT_VSIZE: u64 = 163;
 /// Short enough for demo timing in the sandbox, long enough that a period always means something.
 const MIN_PERIOD: u64 = 60;
 const MIN_GUARDIANS: usize = 2;
@@ -77,6 +78,7 @@ pub struct Jar {
     pub proven_balance: u64,
     /// Carry-over, the fee budget and the last allowance (the rule's ledger).
     pub allowance: Ledger,
+    pub emergency: Emergency,
 }
 
 #[near(serializers = [json])]
@@ -106,6 +108,8 @@ pub struct JarView {
     /// Unix seconds from which the next allowance may be requested (in the past when one is
     /// due now); null before the first top-up.
     pub next_allowance_at: Option<U64>,
+    /// The latest emergency payment proposal.
+    pub emergency: EmergencyView,
 }
 
 /// Whether a jar runs on shortened time; derived from its period, never set by the caller.
@@ -213,6 +217,7 @@ impl Jar {
             coin_count: 0,
             proven_balance: 0,
             allowance: Ledger::default(),
+            emergency: Emergency::default(),
         }
     }
 
@@ -273,6 +278,7 @@ impl Jar {
             available_allowance: U64(available_allowance),
             fee_budget_left: U64(fee_budget_left),
             next_allowance_at: next_allowance_at.map(U64),
+            emergency: self.emergency.view(now, &self.handover),
         }
     }
 }

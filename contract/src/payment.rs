@@ -201,6 +201,7 @@ pub struct Payment {
 #[derive(Debug, Clone)]
 pub enum PaymentKind {
     Allowance { period: u64 },
+    Emergency { proposal_id: u32 },
 }
 
 /// Moves only forward: signing → signed or signing failed, signed → confirmed. A failed or
@@ -254,9 +255,10 @@ impl Payment {
 pub struct PaymentView {
     pub payment_id: U64,
     pub jar_id: String,
-    /// `"allowance"`.
+    /// `"allowance"` or `"emergency"`.
     pub kind: String,
-    pub period: U64,
+    /// The allowance's period; null for an emergency payment.
+    pub period: Option<U64>,
     pub status: StatusView,
     /// Why signing failed, for a `signing_failed` payment.
     pub failure: Option<String>,
