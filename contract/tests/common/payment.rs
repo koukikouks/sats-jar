@@ -1,7 +1,7 @@
 //! Allowance helpers: funded jars, payment requests, and payments broadcast, mined and proven
 //! on regtest.
 
-use super::{block_of, topup_proof, Jars};
+use super::{topup_proof, Jars};
 use bitcoin::{Address, Network, ScriptBuf, Transaction};
 use near_workspaces::result::ExecutionFinalResult;
 use near_workspaces::types::Gas;
@@ -133,9 +133,11 @@ impl Jars {
         let txid = regtest.rpc("sendrawtransaction", &[json!(to_hex(&raw))]);
         let txid = txid.as_str().unwrap();
         regtest.mine(3);
-        // The payment pays the child, a wallet address, so the wallet knows its block.
-        let block = block_of(regtest, txid);
+        // A re-homing pays no wallet address, so the block is found in Core's chain, not the
+        // wallet: it is the first of the three just mined.
         let tip = regtest.rpc("getblockcount", &[]).as_u64().unwrap();
+        let block = regtest.rpc("getblockhash", &[json!(tip - 2)]);
+        let block = block.as_str().unwrap().to_owned();
         self.register_block(regtest, &block, tip).await;
         topup_proof(regtest, &block, txid)
     }

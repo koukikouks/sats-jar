@@ -55,6 +55,20 @@ pub enum Event {
     HandoverLapsed {
         lapsed_at: U64,
     },
+    /// The first `complete_handover`: the jar's new `address`, whose exit branch opens at
+    /// `locktime` (unix seconds), and how many coins are fixed to move there.
+    RehomingStarted {
+        address: String,
+        locktime: u32,
+        coins: u32,
+    },
+    RehomingRequested {
+        payment_id: U64,
+    },
+    /// Every fixed coin moved and confirmed: the jar NFT moved to `child_account`.
+    HandoverCompleted {
+        child_account: AccountId,
+    },
 }
 
 #[near(serializers = [borsh])]

@@ -84,6 +84,31 @@ pub enum SatsJarEvent {
     /// claim that replaces it, since nothing runs at the moment it lapses.
     #[event_version("1.0.0")]
     HandoverLapsed { jar_id: String, lapsed_at: U64 },
+    /// The first `complete_handover` moved the jar to its new `address`, whose exit branch is
+    /// the child's key from `locktime` (unix seconds); `coins` are fixed to move there.
+    #[event_version("1.0.0")]
+    RehomingStarted {
+        jar_id: String,
+        address: String,
+        locktime: u32,
+        coins: u32,
+    },
+    /// The contract built a re-homing payment and asked the signer for each input. `txid` in
+    /// display hex; `amount` (to the new address) and `fee` in sats.
+    #[event_version("1.0.0")]
+    RehomingRequested {
+        jar_id: String,
+        payment_id: U64,
+        amount: U64,
+        fee: U64,
+        txid: String,
+    },
+    /// Every fixed coin moved and confirmed: the jar NFT moved to `child_account`.
+    #[event_version("1.0.0")]
+    HandoverCompleted {
+        jar_id: String,
+        child_account: AccountId,
+    },
 }
 
 #[near(serializers = [json])]
@@ -92,9 +117,19 @@ pub struct NftMintData {
     pub token_ids: Vec<String>,
 }
 
-/// NEP-171's events (version 1.0.0 is the one that defines `nft_mint`).
+/// NEP-171's `nft_transfer` data; `authorized_id` and `memo` are left out (never set).
+#[near(serializers = [json])]
+pub struct NftTransferData {
+    pub old_owner_id: AccountId,
+    pub new_owner_id: AccountId,
+    pub token_ids: Vec<String>,
+}
+
+/// NEP-171's events (version 1.0.0 defines `nft_mint` and `nft_transfer`).
 #[near(event_json(standard = "nep171"))]
 pub enum Nep171Event {
     #[event_version("1.0.0")]
     NftMint(Vec<NftMintData>),
+    #[event_version("1.0.0")]
+    NftTransfer(Vec<NftTransferData>),
 }
