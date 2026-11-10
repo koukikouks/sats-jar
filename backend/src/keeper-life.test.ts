@@ -96,8 +96,16 @@ describe("handover, continued", () => {
       (dev: Dev) => setJar(dev, { create_args: { ...dev.jar.create_args, unlock_at: String(2 ** 31) } }),
       0,
     ],
-    ["once every fixed coin is in a payment", (dev: Dev) => setJar(dev, completing(0)), 0],
-    ["once the handover is done", (dev: Dev) => setJar(dev, { handover: { done: { completed_at: "1" } } }), 0],
+    [
+      "once every fixed coin is in a payment (dev2-get-jar-completing)",
+      (dev: Dev) => setJar(dev, { handover: fixture<JarView>("dev2-get-jar-completing.json").handover }),
+      0,
+    ],
+    [
+      "once the handover is done (dev2-get-jar-done)",
+      (dev: Dev) => setJar(dev, { handover: fixture<JarView>("dev2-get-jar-done.json").handover }),
+      0,
+    ],
     [
       "while a payment of the jar is unfinished",
       (dev: Dev) => dev.payments.push({ ...newPayment(dev, "spend"), status: "signing", signed_tx: null }),
