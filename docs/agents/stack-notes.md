@@ -171,6 +171,7 @@ Proof building follows `merkle_proof_calculator`: duplicate the last element on 
 - **Cost:** storage is 10^19 yocto per byte (1e-5 NEAR/byte, live protocol config). **Measured:** a sub-account with one full-access key uses **182 bytes**, and creating it with a **0 NEAR** transfer succeeded in the sandbox. That is NEP-448 zero-balance accounts: accounts with `storage_usage <= 770` (4 full-access plus 2 function-call keys) need no balance ([NEP-448](https://github.com/near/NEPs/blob/master/neps/nep-0448.md), Final).
 
 **Gotchas**
-1. A zero-balance account can't pay gas. User actions must go through the sponsor as meta-transactions (NEP-366 `DelegateAction`), or the account needs a small transfer.
+1. Every account is funded; no relaying (ADR 0009). A zero-balance account could not pay gas, and a relayed meta-transaction (NEP-366) still takes any attached deposit from the sender's own balance, so the 1 yoctoNEAR calls and `create_jar`'s storage deposit need a funded account anyway.
 2. Adding keys or contract state beyond 770 bytes makes the account need balance for all of its storage (NEP-448).
 3. The account's only key is the device key. The app account must never add its own key, so it can't recover the account (ADR 0007/0009).
+4. **Measured (T15, 2026-11-09):** a call must hold its prepaid gas up front at 0.001 NEAR per Tgas (10x the 1e8 gas price; the unused part is refunded): 30 Tgas needs 0.031 NEAR plus the deposit, 300 Tgas 0.301 NEAR. The backend funds each account with 0.25 NEAR. The giver's `create_jar` at 30 Tgas with 0.02 NEAR attached cost 0.0106 NEAR in all (storage plus burnt gas).
