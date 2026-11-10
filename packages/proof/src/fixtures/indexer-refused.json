@@ -1,0 +1,19 @@
+{
+ "recorded_at": "2026-11-10T00:42:22+00:00",
+ "note": "A live non-2xx answer from the FastNEAR tx API (a request without account_id), recorded with curl.",
+ "exchanges": [
+  {
+   "request": {
+    "method": "POST",
+    "url": "https://tx.test.fastnear.com/v0/account",
+    "body": {
+     "limit": 200
+    }
+   },
+   "response": {
+    "status": 400,
+    "body": "Json deserialize error: missing field `account_id` at line 1 column 13"
+   }
+  }
+ ]
+}
