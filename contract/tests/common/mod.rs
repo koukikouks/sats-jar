@@ -43,6 +43,8 @@ pub enum Build {
     LightClient,
     /// The MPC signer stand-in (`tests/stand-ins/signer`).
     Signer,
+    /// An approved account's NEP-178 receiver (`tests/stand-ins/approval-receiver`).
+    ApprovalReceiver,
 }
 
 static WASM: Mutex<Option<HashMap<Build, Vec<u8>>>> = Mutex::new(None);
@@ -66,6 +68,10 @@ pub fn wasm(build: Build) -> Vec<u8> {
         Build::Signer => (
             "signer",
             format!("{root}/tests/stand-ins/signer/Cargo.toml"),
+        ),
+        Build::ApprovalReceiver => (
+            "approval-receiver",
+            format!("{root}/tests/stand-ins/approval-receiver/Cargo.toml"),
         ),
     };
     let opts = cargo_near_build::BuildOpts {
@@ -170,7 +176,7 @@ pub async fn start_paying(build: Build, network: &str) -> Jars {
     sandbox
 }
 
-async fn stand_in(root: &Account, name: &str, build: Build) -> Contract {
+pub async fn stand_in(root: &Account, name: &str, build: Build) -> Contract {
     root.create_subaccount(name)
         .initial_balance(NearToken::from_near(10))
         .transact()

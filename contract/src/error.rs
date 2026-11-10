@@ -142,9 +142,9 @@ pub const HANDOVER_DONE: &str = "HANDOVER_DONE";
 /// `request_spend` before handover, from anyone: only the allowance and an emergency payment
 /// pay out, and only to the child's address.
 pub const SPEND_BEFORE_HANDOVER: &str = "SPEND_BEFORE_HANDOVER";
-/// Approvals after handover are not in this build yet (T12 replaces this).
-pub const APPROVALS_UNAVAILABLE: &str = "APPROVALS_UNAVAILABLE";
 /// `request_spend`'s address is not a native segwit v0 address on the contract's network.
 pub const INVALID_ADDRESS: &str = "INVALID_ADDRESS";
 /// `request_spend`'s amount is below the jar's 1,000-sat dust floor.
 pub const AMOUNT_BELOW_DUST: &str = "AMOUNT_BELOW_DUST";
+/// `nft_approve` of an 11th account: a jar has at most 10 approved accounts.
+pub const TOO_MANY_APPROVALS: &str = "TOO_MANY_APPROVALS";

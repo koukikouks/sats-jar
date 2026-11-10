@@ -494,6 +494,6 @@ async fn after_handover_the_family_account_is_not_the_holder_and_nothing_restart
         .transact()
         .await
         .unwrap();
-    let reason = refusal(&approve);
-    assert!(reason.contains("APPROVALS_UNAVAILABLE: "), "{reason}");
+    // Approvals open once the jar is the child's (tests/approvals.rs).
+    assert!(approve.is_success(), "{:?}", approve.failures());
 }

@@ -119,6 +119,22 @@ pub enum SatsJarEvent {
         fee: U64,
         txid: String,
     },
+    /// The holder approved `account_id` (NEP-178) under `approval_id`.
+    #[event_version("1.0.0")]
+    ApprovalAdded {
+        jar_id: String,
+        account_id: AccountId,
+        approval_id: U64,
+    },
+    /// The holder revoked `account_id`'s approval.
+    #[event_version("1.0.0")]
+    ApprovalRevoked {
+        jar_id: String,
+        account_id: AccountId,
+    },
+    /// The holder revoked every approval.
+    #[event_version("1.0.0")]
+    ApprovalsRevoked { jar_id: String },
 }
 
 #[near(serializers = [json])]

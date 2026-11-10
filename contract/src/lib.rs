@@ -1,5 +1,6 @@
 //! The Sats Jar contract: one contract holds every jar.
 
+mod approvals;
 mod coins;
 #[cfg(feature = "dev-escape")]
 mod dev_escape;
@@ -74,6 +75,7 @@ enum StorageKey {
     HolderJars { account_hash: [u8; 32] },
     History,
     HistoryLengths,
+    Approvals,
 }
 
 #[near(contract_state)]
@@ -103,6 +105,8 @@ pub struct SatsJar {
     history: LookupMap<(String, u32), history::Record>,
     /// How many records each jar's history holds.
     history_lengths: LookupMap<String, u32>,
+    /// Each jar's NEP-178 approvals, at most 10 accounts, cleared on every move.
+    approvals: LookupMap<String, approvals::Approvals>,
 }
 
 #[near]
@@ -137,6 +141,7 @@ impl SatsJar {
             holders: LookupMap::new(StorageKey::Holders),
             history: LookupMap::new(StorageKey::History),
             history_lengths: LookupMap::new(StorageKey::HistoryLengths),
+            approvals: LookupMap::new(StorageKey::Approvals),
         }
     }
 

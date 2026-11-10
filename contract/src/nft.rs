@@ -1,16 +1,15 @@
-//! The jar as an NFT: NEP-171 core, NEP-177 metadata, NEP-178 approvals and NEP-181
-//! enumeration. The token id is the jar id and the holder is `Jar.owner_id`.
+//! The jar as an NFT: NEP-171 core, NEP-177 metadata and NEP-181 enumeration (NEP-178
+//! approvals live in `approvals.rs`). The token id is the jar id and the holder is `Jar.owner_id`.
 
 use crate::error::{self, refuse};
 use crate::events::{Nep171Event, NftTransferData};
-use crate::handover::Handover;
 use crate::jar::Jar;
 use crate::svg::{self, Picture};
 use crate::{SatsJar, SatsJarExt, StorageKey};
 use near_sdk::base64::{engine::general_purpose::STANDARD, Engine};
 use near_sdk::json_types::{Base64VecU8, U128};
 use near_sdk::store::IterableSet;
-use near_sdk::{assert_one_yocto, env, near, AccountId, Promise, PromiseOrValue};
+use near_sdk::{assert_one_yocto, env, near, AccountId, PromiseOrValue};
 use std::collections::HashMap;
 
 /// At most this many tokens per enumeration page (each one carries its picture).
@@ -71,7 +70,9 @@ impl SatsJar {
     }
 
     pub fn nft_token(&self, token_id: String) -> Option<Token> {
-        self.jars.get(&token_id).map(|jar| token(&token_id, jar))
+        self.jars
+            .get(&token_id)
+            .map(|jar| token(&token_id, jar, self.approved_account_ids(&token_id)))
     }
 
     /// Refused: a jar moves only through `start_transfer`. Payable so a wallet's 1 yoctoNEAR
@@ -102,59 +103,6 @@ impl SatsJar {
         refuse_plain_transfer()
     }
 
-    /// Refused before handover (spec #1), so nobody approved by an adult can take the jar.
-    /// Approvals after handover arrive with T12.
-    #[payable]
-    #[allow(unused_variables)]
-    pub fn nft_approve(
-        &mut self,
-        token_id: String,
-        account_id: AccountId,
-        msg: Option<String>,
-    ) -> Option<Promise> {
-        let jar = self.jar(&token_id);
-        // Exhaustive on purpose: each new handover state must decide whether approvals open.
-        match jar.handover {
-            Handover::None
-            | Handover::Claimed { .. }
-            | Handover::Confirmed { .. }
-            | Handover::Completing { .. } => refuse(
-                error::APPROVAL_BEFORE_HANDOVER,
-                "a jar takes no approvals before handover",
-            ),
-            // Placeholder until T12 builds approvals after handover; it must be gone before T14.
-            Handover::Done { .. } => refuse(
-                error::APPROVALS_UNAVAILABLE,
-                "this contract does not take approvals yet",
-            ),
-        }
-    }
-
-    /// The holder only, with 1 yoctoNEAR. Nothing to clear: no jar has an approval before
-    /// handover.
-    #[payable]
-    #[allow(unused_variables)]
-    pub fn nft_revoke(&mut self, token_id: String, account_id: AccountId) {
-        self.check_holder(&token_id);
-    }
-
-    /// As `nft_revoke`, for every approved account.
-    #[payable]
-    pub fn nft_revoke_all(&mut self, token_id: String) {
-        self.check_holder(&token_id);
-    }
-
-    /// No jar has an approval before handover.
-    #[allow(unused_variables)]
-    pub fn nft_is_approved(
-        &self,
-        token_id: String,
-        approved_account_id: AccountId,
-        approval_id: Option<u64>,
-    ) -> bool {
-        false
-    }
-
     /// Jars are never burned, so the supply is the number of jars created.
     pub fn nft_total_supply(&self) -> U128 {
         U128(u128::from(self.next_jar_id - 1))
@@ -170,7 +118,9 @@ impl SatsJar {
         (start..end)
             .filter_map(|i| {
                 let jar_id = (i + 1).to_string();
-                self.jars.get(&jar_id).map(|jar| token(&jar_id, jar))
+                self.jars
+                    .get(&jar_id)
+                    .map(|jar| token(&jar_id, jar, self.approved_account_ids(&jar_id)))
             })
             .collect()
     }
@@ -198,7 +148,11 @@ impl SatsJar {
         held.iter()
             .skip(start)
             .take(usize::try_from(page(limit)).unwrap_or(0))
-            .filter_map(|jar_id| self.jars.get(jar_id).map(|jar| token(jar_id, jar)))
+            .filter_map(|jar_id| {
+                self.jars
+                    .get(jar_id)
+                    .map(|jar| token(jar_id, jar, self.approved_account_ids(jar_id)))
+            })
             .collect()
     }
 }
@@ -213,7 +167,7 @@ impl SatsJar {
 
     /// Refuses unless the caller holds the jar and attached exactly 1 yoctoNEAR (a full-access
     /// key signed it).
-    fn check_holder(&self, jar_id: &str) {
+    pub(crate) fn check_holder(&self, jar_id: &str) {
         assert_one_yocto();
         if self.jar(jar_id).owner_id != env::predecessor_account_id() {
             refuse(
@@ -224,8 +178,9 @@ impl SatsJar {
     }
 
     /// Moves the jar to `to`: its holder, both holders' sets and NEP-171's `nft_transfer` event
-    /// change together. The caller writes `jar` back.
+    /// change together, and every approval is cleared (story 59). The caller writes `jar` back.
     pub(crate) fn move_jar(&mut self, jar_id: &str, jar: &mut Jar, to: AccountId) {
+        self.clear_approvals(jar_id);
         let from = std::mem::replace(&mut jar.owner_id, to.clone());
         let emptied = self.holders.get_mut(&from).is_some_and(|held| {
             held.remove(jar_id);
@@ -270,13 +225,12 @@ fn page(limit: Option<u64>) -> u64 {
     limit.unwrap_or(MAX_TOKENS_PAGE).min(MAX_TOKENS_PAGE)
 }
 
-fn token(jar_id: &str, jar: &Jar) -> Token {
+fn token(jar_id: &str, jar: &Jar, approved_account_ids: HashMap<AccountId, u64>) -> Token {
     Token {
         token_id: jar_id.to_owned(),
         owner_id: jar.owner_id.clone(),
         metadata: Some(metadata(jar_id, jar)),
-        // Approvals open only after handover (T12); until then there are none.
-        approved_account_ids: Some(HashMap::new()),
+        approved_account_ids: Some(approved_account_ids),
     }
 }
 
