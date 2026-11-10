@@ -1,6 +1,7 @@
 import { accountIdFor } from "./accounts.ts";
 import type { Chain } from "./chain.ts";
 import { drafts } from "./drafts.ts";
+import type { Keeper } from "./keeper.ts";
 import { Refusal } from "./refusal.ts";
 import type { Store } from "./store.ts";
 
@@ -13,10 +14,21 @@ type Route = {
 };
 
 /** The backend as one fetch-standard handler: no server, file system or timers inside. */
-export function createBackend(deps: { chain: Chain; store: Store; appAccount: string }): Backend {
+export function createBackend(deps: {
+  chain: Chain;
+  store: Store;
+  appAccount: string;
+  keeper: Keeper;
+}): Backend {
   const pending = drafts(deps.store);
 
   const routes: Route[] = [
+    {
+      // "Run now": one keeper pass; its report says what it did.
+      method: "POST",
+      path: /^\/keeper\/run$/,
+      run: async () => Response.json(await deps.keeper.run()),
+    },
     {
       method: "POST",
       path: /^\/accounts$/,
