@@ -146,14 +146,28 @@ export function createKeeper(deps: { chain: KeeperChain; bitcoin: Bitcoin; now: 
       );
       if (step.code === "SIGNING_IN_PROGRESS") step.result = "waiting";
       if (!outcome?.ok) return [step];
+      // The call succeeds even when the signing fails again (the callback records it), so the
+      // next retry waits for a later run: at most one retry per payment per run.
       const after = await chain.payment(id);
-      return [step, ...(after ? await settle(after, now) : [])];
+      if (after?.status === "signed") return [step, ...(await settle(after, now))];
+      holds.set(`retry_signing:${id}`, {
+        fingerprint: after?.status ?? payment.status,
+        tip: 0,
+        time: 0,
+        block: now.block + 1,
+        code: null,
+        message: "the retried signing did not complete; retrying next run",
+      });
+      return [step];
     }
     if (payment.status !== "signed") return [];
     const status = await bitcoin.status(payment.txid);
     if (!status.confirmed) {
+      if (payment.signed_tx === null) {
+        return [{ action: "broadcast", ...about, result: "failed", message: "get_payment shows no signed transaction" }];
+      }
       // Sent again every run until it is in a block: costs nothing, and covers a dropped tx.
-      const sent = await bitcoin.broadcast(payment.signed_tx ?? "");
+      const sent = await bitcoin.broadcast(payment.signed_tx);
       if (sent === "sent") return [{ action: "broadcast", ...about, result: "done" }];
       if (sent === "known") {
         return [{ action: "broadcast", ...about, result: "waiting", message: "Bitcoin already has it" }];
@@ -285,7 +299,8 @@ async function guarded(
   try {
     await work();
   } catch (error) {
-    steps.push({ action: "check", ...about, result: "failed", message: (error as Error).message });
+    const message = error instanceof Error ? error.message : String(error);
+    steps.push({ action: "check", ...about, result: "failed", message });
   }
 }
 

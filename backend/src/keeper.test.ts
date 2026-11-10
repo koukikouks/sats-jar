@@ -216,6 +216,52 @@ describe("failed signings", () => {
     ]);
   });
 
+  it("a retry whose signing fails again is sent once per run, not again in the same run", async () => {
+    // on_payment_signed returns the payment id even when it records SigningFailed (T04), so the
+    // retry call itself succeeds while the payment stays signing_failed.
+    const dev = signedPayment();
+    dev.payments[0] = { ...dev.payments[0]!, status: "signing_failed", signed_tx: null };
+    const keeper = keeperFor(dev);
+
+    const report = await keeper.run();
+    expect(dev.sent.map((c) => c.method)).toEqual(["retry_signing"]);
+    expect(dev.btc.broadcasts).toEqual([]);
+    expect(report.steps.map((s) => [s.action, s.result])).toEqual([["retry_signing", "done"]]);
+
+    await keeper.run();
+    expect(dev.sent.length).toBe(1);
+
+    dev.state.block += 1;
+    await keeper.run();
+    expect(dev.sent.map((c) => c.method)).toEqual(["retry_signing", "retry_signing"]);
+  });
+
+  it("a request whose signing fails is retried once in the same run", async () => {
+    const { dev, now } = allowanceDue();
+    // Synthetic: the contract answers with payment 2, whose signing failed.
+    const failed = { ...dev.payments[0]!, payment_id: "2", status: "signing_failed" as const, signed_tx: null };
+    dev.answers.push((call) => {
+      if (call.method !== "request_allowance") return undefined;
+      dev.payments.push(failed);
+      return { ok: true, hash: "requested", value: "2" };
+    });
+
+    await keeperFor(dev, now).run();
+
+    expect(dev.sent.map((c) => c.method)).toEqual(["request_allowance", "retry_signing"]);
+  });
+
+  it("a signed payment without its transaction is not broadcast", async () => {
+    const dev = signedPayment();
+    dev.payments[0] = { ...dev.payments[0]!, signed_tx: null };
+    dev.btc.statuses.set(PAYMENT_TXID, { confirmed: false });
+
+    const report = await keeperFor(dev).run();
+
+    expect(dev.btc.broadcasts).toEqual([]);
+    expect(report.steps).toEqual([expect.objectContaining({ action: "broadcast", paymentId: "1", result: "failed" })]);
+  });
+
   it("a signing still in flight waits for the block the contract names", async () => {
     const dev = signedPayment();
     dev.payments[0] = { ...dev.payments[0]!, status: "signing", signed_tx: null };
