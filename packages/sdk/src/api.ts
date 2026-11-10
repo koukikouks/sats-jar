@@ -212,6 +212,11 @@ export type DeviceRefusalCode =
   /** The jar's rule refused for a reason this SDK version has no message for. */
   | "REFUSED"
   /**
+   * An earlier call of this kind on this jar, whose answer was lost, went through, so this one was
+   * not sent. Look at the jar again before deciding (`explorerUrl` is the earlier one).
+   */
+  | "PREVIOUS_SEND_LANDED"
+  /**
    * The claimed account is not one phone's own: it has another key, or its name is not the one the
    * app gives its key. Its code would prove nothing (handover check).
    */
@@ -239,7 +244,7 @@ export type DeviceRefusalCode =
  */
 export class SatsJarRefusal extends Error {
   readonly code: RefusalCode;
-  /** The refused transaction on a public explorer, when one was sent. */
+  /** The refused transaction on a public explorer, when one was sent (PREVIOUS_SEND_LANDED: the one that went through). */
   readonly explorerUrl: string | null;
   // No parameter properties: Node's type stripping (the testnet script) cannot run them.
   constructor(code: RefusalCode, message: string, explorerUrl: string | null = null) {

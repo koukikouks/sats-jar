@@ -99,6 +99,7 @@ const MESSAGES: Record<RefusalCode, string> = {
   UNAVAILABLE: "We could not reach the network just now. Try again shortly.",
   TRANSACTION_FAILED: "That did not go through before the jar's rule could answer. Try again.",
   REFUSED: "The jar's rule did not allow that.",
+  PREVIOUS_SEND_LANDED: "Your earlier request went through, so this one was not sent. Look at the jar again before trying anything else.",
   CLAIM_ACCOUNT_HAS_OTHER_KEYS: "This claim was not made with one phone's own keys alone, so its code proves nothing. Cancel this claim.",
   NO_RECOVERY_PHRASE: "Only a phone set up with a recovery phrase can do that.",
   WRONG_RECOVERY_WORDS: "Those words do not match your recovery phrase. Look at it again.",

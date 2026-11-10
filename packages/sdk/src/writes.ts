@@ -4,7 +4,7 @@ import type { DeviceStorage } from "./api.ts";
 import type { BackendClient } from "./backend-client.ts";
 import type { deviceKeys } from "./device.ts";
 import { Rejected, nearTransactionUrl, result, type FunctionCall, type Near, type Outcome, type SignedCall } from "./near.ts";
-import { refusal } from "./refusals.ts";
+import { refusal, unavailable } from "./refusals.ts";
 
 /** Prepaid gas for a call that signs nothing (findings-t15: keep each person's prepaid gas low). */
 export const CALL_GAS = 30_000_000_000_000n;
@@ -43,7 +43,8 @@ export type Serial = ReturnType<typeof serial>;
  * under the method and jar; any later call of that method on that jar first settles them. A
  * landed transaction (its answer lost) is taken as the answer; one never seen is sent again as
  * the same bytes (one nonce, so at most one can land); only bytes the chain now rejects and
- * neither RPC nor the full-history indexer has seen are given up before signing anew.
+ * neither RPC nor the full-history indexer has seen are given up before signing anew. A call with
+ * other arguments whose stored predecessor went through is refused PREVIOUS_SEND_LANDED.
  */
 export function writer(deps: {
   near: Near;
@@ -75,15 +76,20 @@ export function writer(deps: {
     }
   }
 
-  async function send(call: FunctionCall): Promise<Written> {
+  async function send(call: FunctionCall, purpose: Purpose): Promise<Written> {
     const { near: key } = await keys.keys();
-    const slot = `${SENDING}${call.method}:${String(call.args.jar_id)}`;
+    const slot = `${SENDING}${purpose === "try-it" ? "try-it:" : ""}${call.method}:${String(call.args.jar_id)}`;
     const text = await storage.get(slot);
     if (text !== null) {
-      const stored = JSON.parse(text) as Sending;
+      const stored = parse(text);
       const outcome = await settle(stored);
       await storage.delete(slot);
       if (outcome && canonical(stored.args) === canonical(call.args)) return answer(outcome);
+      // The earlier call went through while its answer was lost: the caller decides again, knowing
+      // that, rather than this call going out on top of it (a second spend, say).
+      if (outcome && !("refusal" in result(outcome, contract))) {
+        throw refusal("PREVIOUS_SEND_LANDED", nearTransactionUrl(outcome.transaction_outcome.id));
+      }
     }
     const signerId = await keys.ensureAccount(backend);
     const signed = await near.sign({ accountId: signerId, secretKey: key.secretKey }, call);
@@ -101,7 +107,21 @@ export function writer(deps: {
     return answer(outcome);
   }
 
-  return (call: FunctionCall): Promise<Written> => run(() => send(call));
+  /** Try-it calls keep their own records, so they never settle or clear a real call's. */
+  return (call: FunctionCall, purpose: Purpose = "act"): Promise<Written> => run(() => send(call, purpose));
+}
+
+type Purpose = "act" | "try-it";
+
+/** The stored record; a damaged one is UNAVAILABLE, never signed over. */
+function parse(text: string): Sending {
+  try {
+    const stored = JSON.parse(text) as Sending;
+    if (typeof stored.signedTx !== "string" || typeof stored.hash !== "string" || typeof stored.signerId !== "string") throw new Error("damaged");
+    return stored;
+  } catch {
+    throw unavailable();
+  }
 }
 
 export type Write = ReturnType<typeof writer>;

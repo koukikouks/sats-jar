@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
 import { createApp } from "./app.ts";
 import { base58check } from "./receive-code.ts";
-import { BACKEND, CONTRACT, fixture, liveSuccess, memoryStorage, testNetwork, type Fixture } from "./test-network.ts";
+import { BACKEND, CONTRACT, LIVE_SUCCESS_HASH, fixture, liveSuccess, memoryStorage, refusedWith, testNetwork, type Fixture } from "./test-network.ts";
 
 // The holder after handover: the child's phone, restored from BIP-39's published phrase
 // (account 572dd… by T15's rule, Bitcoin key 02e7ab… by BIP-84's vector).
@@ -55,7 +55,7 @@ describe("the holder's spend", () => {
     expect(net.sent[0]?.args.fee_rate).toBe("6"); // the live answer's "3": 5.531
   });
 
-  test("a spend whose answer was lost is settled (sent again as the same bytes) before a changed spend is signed", async () => {
+  test("a changed spend never goes out while an earlier one, its answer lost, may have landed: it says the earlier one went through", async () => {
     let attempt = 0;
     const net = testNetwork({
       views: [coinsView([coin(60_000, "confirmed", 1)])],
@@ -70,11 +70,41 @@ describe("the holder's spend", () => {
     await app.child.restore({ words: PHRASE.split(" "), pin: "771204" });
 
     await expect(app.holder.spend("7", { to: PAYEE, amount: 50_000 })).rejects.toMatchObject({ code: "UNAVAILABLE" });
-    await app.holder.spend("7", { to: PAYEE, amount: 20_000 });
-
-    expect(net.sent.map((c) => c.args.amount)).toEqual(["50000", "50000", "20000"]);
+    // The stored 50,000-sat spend is sent again as the same bytes and lands: the 20,000 one is not signed.
+    await expect(app.holder.spend("7", { to: PAYEE, amount: 20_000 })).rejects.toMatchObject({
+      code: "PREVIOUS_SEND_LANDED",
+      explorerUrl: `https://testnet.nearblocks.io/txns/${LIVE_SUCCESS_HASH}`,
+    });
+    expect(net.sent.map((c) => c.args.amount)).toEqual(["50000", "50000"]);
     expect(net.sent[1]?.signedTx).toBe(net.sent[0]?.signedTx);
+    expect(net.signings()).toBe(1);
+
+    // Told, the holder decides again: a new spend is signed afresh.
+    await app.holder.spend("7", { to: PAYEE, amount: 20_000 });
+    expect(net.sent.map((c) => c.args.amount)).toEqual(["50000", "50000", "20000"]);
     expect(net.signings()).toBe(2);
+  });
+
+  test("a try-it spend never settles or clears a real spend still waiting for its answer", async () => {
+    let attempt = 0;
+    const net = testNetwork({
+      views: [coinsView([coin(60_000, "confirmed", 1)])],
+      fixtures: [fixture("part2-live")],
+      sendTx: () => {
+        attempt += 1;
+        if (attempt === 1) throw new Error("connection reset");
+        return attempt === 2 ? refusedWith("SPEND_BEFORE_HANDOVER: before handover only the allowance and an emergency payment can pay out") : liveSuccess();
+      },
+    });
+    const app = createApp({ contract: CONTRACT, backendUrl: BACKEND, storage: memoryStorage() }, net.fetch);
+    await app.child.restore({ words: PHRASE.split(" "), pin: "771204" });
+    await expect(app.holder.spend("7", { to: PAYEE, amount: 50_000 })).rejects.toMatchObject({ code: "UNAVAILABLE" });
+
+    await app.tryIt.earlySpend("7");
+    expect(net.sent.map((c) => c.args.amount)).toEqual(["50000", "1000"]);
+
+    await app.holder.spend("7", { to: PAYEE, amount: 50_000 });
+    expect(net.sent[2]?.signedTx).toBe(net.sent[0]?.signedTx); // the real spend's own bytes, resent
   });
 
   test("a fee rate the holder names is sent as given; gas covers at most 10 inputs over every page of coins", async () => {

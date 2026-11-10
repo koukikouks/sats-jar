@@ -138,4 +138,11 @@ describe("part 2's writes", () => {
     for (const write of writes(app)) await expect(write()).rejects.toMatchObject({ code: "LOCKED" });
     expect(net.sent).toHaveLength(0);
   });
+
+  test("a damaged stored record reads as UNAVAILABLE and nothing is signed", async () => {
+    const { net, app, storage } = await phone({ sendTx: () => liveSuccess() });
+    await storage.set("sats-jar:sending:claim_handover:7", "{not json");
+    await expect(app.child.claim("7")).rejects.toMatchObject({ code: "UNAVAILABLE" });
+    expect(net.signings()).toBe(0);
+  });
 });

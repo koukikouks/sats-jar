@@ -15,7 +15,7 @@ const TRY_IT_PAYEE = "tb1q6rz28mcfaxtmd6v789l9rrlrusdprr9pqcpvkl";
 export function tryIt(write: Write): TryIt {
   async function refused(method: string, args: Record<string, unknown>): Promise<TriedRefusal> {
     try {
-      await write({ method, args, gas: CALL_GAS, deposit: ONE_YOCTO });
+      await write({ method, args, gas: CALL_GAS, deposit: ONE_YOCTO }, "try-it");
     } catch (error) {
       if (error instanceof SatsJarRefusal && error.explorerUrl !== null && error.code !== "TRANSACTION_FAILED") {
         return { code: error.code, message: error.message, explorerUrl: error.explorerUrl };
