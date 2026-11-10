@@ -152,7 +152,22 @@ impl Jars {
         key: &str,
         fee_rate: u64,
     ) -> Value {
-        let result = self.accept_transfer(caller, jar_id, key, fee_rate).await;
+        self.signed_transfer_batch_with(caller, jar_id, key, fee_rate, ONE_YOCTO)
+            .await
+    }
+
+    /// `signed_transfer_batch` with the deposit given.
+    pub async fn signed_transfer_batch_with(
+        &self,
+        caller: &Account,
+        jar_id: &str,
+        key: &str,
+        fee_rate: u64,
+        deposit: NearToken,
+    ) -> Value {
+        let result = self
+            .accept_transfer_with(caller, jar_id, key, fee_rate, deposit)
+            .await;
         let id: String = result.json().expect("payment id");
         let payment = self.get_payment(&id).await;
         assert_eq!(payment["status"], "signed", "{payment}");

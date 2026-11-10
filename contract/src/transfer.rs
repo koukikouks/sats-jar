@@ -184,7 +184,9 @@ impl SatsJar {
     /// timelocked two years ahead, and fixes the coins to move: every coin the jar holds. Each
     /// call builds one re-homing payment of up to 10 of them; once accepted, anyone may call
     /// again with the same key until every coin has moved. The result is the payment id, or
-    /// null when the jar was empty and moved to the receiver in this call. 1 yoctoNEAR.
+    /// null when the jar was empty and moved to the receiver in this call. 1 yoctoNEAR to
+    /// accept; later batches take any deposit and need none, so a keeper's function-call key
+    /// can send them.
     #[payable]
     pub fn accept_transfer(
         &mut self,
@@ -192,7 +194,15 @@ impl SatsJar {
         btc_pubkey: String,
         fee_rate: U64,
     ) -> PromiseOrValue<Option<U64>> {
-        assert_one_yocto();
+        // Only a later batch of an accepted transfer goes without 1 yoctoNEAR; every other call
+        // checks it first, as before.
+        let accepted = self
+            .jars
+            .get(&jar_id)
+            .is_some_and(|jar| matches!(jar.transfer, Transfer::Accepted { .. }));
+        if !accepted {
+            assert_one_yocto();
+        }
         let mut jar = self.jar(&jar_id).clone();
         let key = match &jar.transfer {
             Transfer::None => refuse(error::NO_OPEN_TRANSFER, "no transfer of this jar is open"),

@@ -467,9 +467,16 @@ async fn a_coin_too_small_to_rehome_alone_moves_with_a_carrier_and_anyone_drives
     let reason = refusal(&other_key);
     assert!(reason.contains("KEY_CHANGED: "), "{reason}");
 
-    // Anyone continues with the stored key: a stranger (the keeper) sends the last batch.
+    // Anyone continues with the stored key: a stranger (the keeper, whose function-call key
+    // attaches no deposit) sends the last batch.
     let second = jars
-        .signed_transfer_batch(&family.stranger, &jar.id, &buyer_key(), 1)
+        .signed_transfer_batch_with(
+            &family.stranger,
+            &jar.id,
+            &buyer_key(),
+            1,
+            NearToken::from_yoctonear(0),
+        )
         .await;
 
     let raw = from_hex(second["signed_tx"].as_str().unwrap());
@@ -494,4 +501,62 @@ async fn a_coin_too_small_to_rehome_alone_moves_with_a_carrier_and_anyone_drives
         .into_result()
         .expect("second batch confirmed");
     assert_eq!(jars.get_jar(&jar.id).await["owner_id"], json!(buyer.id()));
+}
+
+#[tokio::test]
+async fn later_batches_need_no_deposit_and_the_receiver_may_still_attach_one() {
+    let regtest = Regtest::start();
+    let jars = start_paying(Build::Locked, "regtest").await;
+    let family = jars.family().await;
+    let buyer = buyer(&jars).await;
+    let jar = jars.handed_over(&regtest, &family, &[2_000]).await;
+    // 20 top-ups join the re-homed coin: 21 coins, so three batches of at most 10.
+    let address = jars.get_jar(&jar.id).await["address"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    for _ in 0..20 {
+        let topup = jars.confirmed_topup(&regtest, &address, 2_000).await;
+        jars.prove(&jars.giver, &jar.id, &topup)
+            .await
+            .into_result()
+            .expect("top-up proven");
+    }
+    jars.start_transfer(&family.child, &jar.id, &buyer)
+        .await
+        .into_result()
+        .expect("started");
+
+    let first = jars
+        .signed_transfer_batch(&buyer, &jar.id, &buyer_key(), 1)
+        .await;
+    jars.confirmed(&regtest, &first)
+        .await
+        .into_result()
+        .expect("first batch confirmed");
+    // A keeper's function-call key can attach no deposit.
+    let second = jars
+        .signed_transfer_batch_with(
+            &family.stranger,
+            &jar.id,
+            &buyer_key(),
+            1,
+            NearToken::from_yoctonear(0),
+        )
+        .await;
+    jars.confirmed(&regtest, &second)
+        .await
+        .into_result()
+        .expect("second batch confirmed");
+    // The receiver's app may still attach 1 yoctoNEAR.
+    let third = jars
+        .signed_transfer_batch(&buyer, &jar.id, &buyer_key(), 1)
+        .await;
+    jars.confirmed(&regtest, &third)
+        .await
+        .into_result()
+        .expect("third batch confirmed");
+
+    assert_eq!(jars.get_jar(&jar.id).await["owner_id"], json!(buyer.id()));
+    assert_eq!(jars.transfer_state(&jar.id).await, json!("none"));
 }
