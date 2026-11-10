@@ -270,6 +270,11 @@ describe("emergency", () => {
     ["with one approval (no delay yet)", (dev: Dev) => setJar(dev, { emergency: fixture<JarView>("dev2-get-jar-emergency-proposed.json").emergency }), 0],
     ["while its delay runs", (dev: Dev) => void dev, -120],
     [
+      "once it has lapsed (dev2-get-jar-emergency-lapsed)",
+      (dev: Dev) => setJar(dev, { emergency: fixture<JarView>("dev2-get-jar-emergency-lapsed.json").emergency }),
+      0,
+    ],
+    [
       "once the handover delay has ended",
       (dev: Dev) => setJar(dev, { handover: { confirmed: { delay_ends_at: "1" } } }),
       0,
