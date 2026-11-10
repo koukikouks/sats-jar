@@ -21,18 +21,30 @@ export interface Chain {
   jarGuardians(jarId: string): Promise<string[] | undefined>;
 }
 
-/** `get_jar`'s answer, the fields the keeper reads (U64 as strings). */
+/** `get_jar`'s answer, the fields the keeper reads (U64 as strings, counts as numbers). */
 export type JarView = {
   jar_id: string;
   address: string;
-  create_args: { cap: string; period: string };
+  /** The addresses the jar moved away from; a top-up sent to one is a stray. */
+  old_addresses: string[];
+  create_args: { cap: string; period: string; unlock_at: string };
   clock: { started_at: string | null };
   handover:
     | "none"
     | { claimed: object }
     | { confirmed: { delay_ends_at: string } }
-    | { completing: object }
+    | { completing: { delay_ends_at: string; coins_to_move: number; coins_left: number } }
     | { done: object };
+  transfer:
+    | "none"
+    | { started: object }
+    | { accepted: { btc_pubkey: string; coins_to_move: number; coins_left: number } };
+  emergency:
+    | "none"
+    | { open: { proposal_id: number; amount: string; delay_ends_at: string | null } }
+    | { cancelled: object }
+    | { executed: object }
+    | { lapsed: object };
   proven_balance: string;
   available_allowance: string;
   fee_budget_left: string;
@@ -54,7 +66,15 @@ export type PaymentView = {
 };
 
 /** The contract methods the keeper calls; each is one anyone may call. */
-export type KeeperMethod = "prove_topup" | "request_allowance" | "retry_signing" | "confirm_payment";
+export type KeeperMethod =
+  | "prove_topup"
+  | "request_allowance"
+  | "retry_signing"
+  | "confirm_payment"
+  | "complete_handover"
+  | "rehome_stray"
+  | "execute_emergency"
+  | "accept_transfer";
 
 /** A call's final outcome. A refusal carries the contract's code (null if it gave none). */
 export type CallOutcome =

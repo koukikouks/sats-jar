@@ -2,7 +2,7 @@
 // No server, file system or timers here; `server.ts` schedules it and `POST /keeper/run` runs it.
 import { topupProof } from "@sats-jar/scripts/src/merkle.ts";
 import type { Bitcoin, TxStatus } from "./bitcoin.ts";
-import type { CallOutcome, JarView, KeeperChain, KeeperMethod, PaymentView } from "./chain.ts";
+import type { CallOutcome, CoinView, JarView, KeeperChain, KeeperMethod, PaymentView } from "./chain.ts";
 
 /** Confirmations the contract counts on testnet (findings T03), on the light client's tip. */
 const CONFIRMATIONS = 3;
@@ -21,6 +21,8 @@ const MAX_INPUTS = 10;
  * testnet3 block storm nor repeated "run now" presses resend it at every tip.
  */
 const PROOF_HOLD_SECONDS = 3_600;
+/** Refusals that only say the time named in `get_jar` has not yet come by the block's clock. */
+const TIME_REFUSALS = new Set(["BEFORE_UNLOCK", "HANDOVER_DELAY_RUNNING", "DELAY_NOT_PASSED"]);
 const PROOF_HOLD_TIPS = 6;
 
 export type Step = {
@@ -93,35 +95,61 @@ export function createKeeper(deps: { chain: KeeperChain; bitcoin: Bitcoin; now: 
       await guarded(steps, { jarId }, async () => {
         const jar = await chain.jar(jarId);
         if (!jar) return;
-        const proofs = await proveTopups(jar, now, paymentTxids);
+        const coins = await chain.coins(jarId);
+        const { steps: proofs, atOldAddresses } = await proveTopups(jar, coins, now, paymentTxids);
         steps.push(...proofs);
-        if (busy.has(jarId)) return;
-        // A proven top-up changes the balance the allowance is paid from.
-        const fresh = proofs.some((s) => s.result === "done") ? await chain.jar(jarId) : jar;
+        // A proven top-up changes the balance new payments are paid from, and may be a stray.
+        const proven = proofs.some((s) => s.result === "done");
+        const fresh = proven ? await chain.jar(jarId) : jar;
+        if (!fresh) return;
+        // A stray is a free coin at an old address; a coin in a sweep is reserved, not free.
+        const strays = (proven ? await chain.coins(jarId) : coins)
+          .map((c) => ({ ...c, outpoint: `${c.txid}:${c.vout}` }))
+          .filter((c) => c.status === "confirmed" && atOldAddresses.has(c.outpoint))
+          .map((c) => c.outpoint);
         // The clock is read again: a proof just made starts the jar's clock at its block time.
         const at = { ...now, time: deps.now() };
-        if (fresh && allowanceDue(fresh, at.time)) steps.push(...(await requestAllowance(fresh, at)));
+        for (const work of dueWork(fresh, at.time, strays)) {
+          // One payment at a time: a jar with a payment in flight starts no other this run.
+          if (busy.has(jarId)) return;
+          const started = await startPayment(fresh, work, at);
+          steps.push(...started.steps);
+          if (started.paymentId) busy.add(jarId);
+        }
       });
     }
     return report;
   }
 
-  async function requestAllowance(jar: JarView, now: Now): Promise<Step[]> {
+  /**
+   * Sends one call that starts a payment from the jar, then settles the new payment at once
+   * (broadcasts it). A refusal is held until what the call depends on changes.
+   */
+  async function startPayment(
+    jar: JarView,
+    work: Work,
+    now: Now,
+  ): Promise<{ steps: Step[]; paymentId?: string }> {
     const feeRate = Math.max(1, Math.ceil(await bitcoin.minimumFee()));
-    const period = Math.floor((now.time - Number(jar.clock.started_at)) / Number(jar.create_args.period));
-    const depends = [period, jar.next_allowance_at, jar.proven_balance, jar.available_allowance, feeRate];
     const { step, outcome } = await send(
-      { key: `request_allowance:${jar.jar_id}`, fingerprint: depends.join("|"), now },
-      () => ({ tip: Infinity, time: Infinity, block: Infinity }),
-      "request_allowance",
-      { jar_id: jar.jar_id, fee_rate: String(feeRate) },
+      { key: `${work.method}:${jar.jar_id}`, fingerprint: [...work.depends, feeRate].join("|"), now },
+      // A refusal for time not yet passed comes from the host's clock running ahead of block
+      // time: try again on a later run. Any other waits for the jar to change.
+      (refused) =>
+        refused.code !== null && TIME_REFUSALS.has(refused.code)
+          ? { tip: 0, time: now.time + 1, block: 0 }
+          : { tip: Infinity, time: Infinity, block: Infinity },
+      work.method,
+      { jar_id: jar.jar_id, ...work.args, fee_rate: String(feeRate) },
       MAX_INPUTS * SIGN_TGAS + CALLBACK_TGAS,
       { jarId: jar.jar_id },
     );
-    if (!outcome?.ok) return [step];
+    // null: an empty jar moved in this call, with no payment.
+    if (!outcome?.ok || outcome.value === null) return { steps: [step] };
     // The callback has run: the payment is signed (broadcast it now) or its signing failed.
-    const payment = await chain.payment(String(outcome.value));
-    return [step, ...(payment ? await settle(payment, now) : [])];
+    const paymentId = String(outcome.value);
+    const payment = await chain.payment(paymentId);
+    return { steps: [step, ...(payment ? await settle(payment, now) : [])], paymentId };
   }
 
   /**
@@ -187,11 +215,22 @@ export function createKeeper(deps: { chain: KeeperChain; bitcoin: Bitcoin; now: 
     return [step];
   }
 
-  async function proveTopups(jar: JarView, now: Now, paymentTxids: Set<string>): Promise<Step[]> {
+  /** Proves the jar's unproven top-ups; also answers which outputs sit at its old addresses. */
+  async function proveTopups(
+    jar: JarView,
+    coins: CoinView[],
+    now: Now,
+    paymentTxids: Set<string>,
+  ): Promise<{ steps: Step[]; atOldAddresses: Set<string> }> {
     const steps: Step[] = [];
     const jarId = jar.jar_id;
-    const known = new Set((await chain.coins(jarId)).map((c) => `${c.txid}:${c.vout}`));
-    for (const output of await bitcoin.outputs(jar.address)) {
+    const known = new Set(coins.map((c) => `${c.txid}:${c.vout}`));
+    const current = await bitcoin.outputs(jar.address);
+    // A top-up to an address the jar moved away from (a stray) is proven like any other.
+    const old = [];
+    for (const address of jar.old_addresses) old.push(...(await bitcoin.outputs(address)));
+    const atOldAddresses = new Set(old.map((o) => `${o.txid}:${o.vout}`));
+    for (const output of [...current, ...old]) {
       const target = `${output.txid}:${output.vout}`;
       if (known.has(target) || paymentTxids.has(output.txid) || output.value < DUST_FLOOR) continue;
       const proof = await deepProof(output.txid, output.status, now.tip);
@@ -207,7 +246,7 @@ export function createKeeper(deps: { chain: KeeperChain; bitcoin: Bitcoin; now: 
       );
       steps.push(step);
     }
-    return steps;
+    return { steps, atOldAddresses };
   }
 
   /**
@@ -308,15 +347,75 @@ function finished(payment: PaymentView): boolean {
   return payment.status === "confirmed" || payment.status === "cancelled";
 }
 
+/** A call that starts a payment from a jar, and the jar state its refusal depends on. */
+type Work = {
+  method: "complete_handover" | "accept_transfer" | "rehome_stray" | "execute_emergency" | "request_allowance";
+  args: Record<string, unknown>;
+  depends: unknown[];
+};
+
 /**
- * Whether an allowance is due at `now` (unix s) as far as `get_jar` shows. The contract's own
- * checks are finer (fee budget, dust, size); a refusal it gives is reported and held.
+ * The payments due from a jar at `now` (unix s) as far as `get_jar` shows, in the order they
+ * are tried. The contract's own checks are finer (fee budget, dust, size); a refusal it gives
+ * is reported and held.
  */
+function dueWork(jar: JarView, now: number, strays: string[]): Work[] {
+  const work: Work[] = [];
+  const { handover, transfer } = jar;
+  if (typeof handover === "object") {
+    // The first call needs the delay over and the jar unlocked; later ones, a fixed coin left.
+    const first =
+      "confirmed" in handover &&
+      Number(handover.confirmed.delay_ends_at) <= now &&
+      Number(jar.create_args.unlock_at) <= now;
+    const next = "completing" in handover && handover.completing.coins_to_move > 0;
+    if (first || next) {
+      const { coins_to_move: toMove, coins_left: left } = next ? handover.completing : { coins_to_move: 0, coins_left: 0 };
+      work.push({
+        method: "complete_handover",
+        args: {},
+        depends: [first ? "confirmed" : "completing", toMove, left, jar.proven_balance],
+      });
+    }
+  }
+  if (typeof transfer === "object" && "accepted" in transfer && transfer.accepted.coins_to_move > 0) {
+    // Once accepted, anyone sends the next batch with the stored key, and no deposit.
+    const { btc_pubkey: key, coins_to_move: toMove, coins_left: left } = transfer.accepted;
+    work.push({ method: "accept_transfer", args: { btc_pubkey: key }, depends: ["accepted", toMove, left, jar.proven_balance] });
+  }
+  // While a handover completes or a transfer is accepted, its own batches move every coin.
+  const rehoming =
+    (typeof handover === "object" && "completing" in handover) || (typeof transfer === "object" && "accepted" in transfer);
+  if (strays.length > 0 && !rehoming) {
+    work.push({ method: "rehome_stray", args: {}, depends: [...strays].sort() });
+  }
+  const { emergency } = jar;
+  if (typeof emergency === "object" && "open" in emergency && !payoutsStopped(jar, now)) {
+    const { proposal_id: id, amount, delay_ends_at: ends } = emergency.open;
+    if (ends !== null && Number(ends) <= now) {
+      work.push({ method: "execute_emergency", args: {}, depends: [id, amount, ends, jar.proven_balance] });
+    }
+  }
+  if (allowanceDue(jar, now)) {
+    const period = Math.floor((now - Number(jar.clock.started_at)) / Number(jar.create_args.period));
+    work.push({
+      method: "request_allowance",
+      args: {},
+      depends: [period, jar.next_allowance_at, jar.proven_balance, jar.available_allowance],
+    });
+  }
+  return work;
+}
+
 function allowanceDue(jar: JarView, now: number): boolean {
   if (jar.next_allowance_at === null || Number(jar.next_allowance_at) > now) return false;
   if (Number(jar.available_allowance) === 0 || Number(jar.proven_balance) === 0) return false;
-  // From the end of a confirmed handover's delay, no allowance runs (Handover::payouts_stopped).
+  return !payoutsStopped(jar, now);
+}
+
+/** From the end of a confirmed handover's delay, no allowance or emergency payment runs. */
+function payoutsStopped(jar: JarView, now: number): boolean {
   const { handover } = jar;
-  if (handover === "none" || "claimed" in handover) return true;
-  return "confirmed" in handover && Number(handover.confirmed.delay_ends_at) > now;
+  if (handover === "none" || "claimed" in handover) return false;
+  return !("confirmed" in handover && Number(handover.confirmed.delay_ends_at) > now);
 }

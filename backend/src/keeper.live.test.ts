@@ -51,3 +51,25 @@ describe.skipIf(!live)("keeper adapters on testnet", () => {
     expect(outcome).toMatchObject({ ok: false, code: "PAYMENT_ALREADY_CONFIRMED", message: "this payment is already confirmed" });
   }, 60_000);
 });
+
+describe.skipIf(!live)("keeper adapter on the fresh dev contract (T17)", () => {
+  // Views only; the key just has to parse.
+  const chain = live
+    ? nearKeeperChain({
+        keeperAccountId: process.env.KEEPER_ACCOUNT_ID ?? "",
+        keeperPrivateKey: process.env.KEEPER_PRIVATE_KEY ?? "",
+        contractAccountId: "sats-jar-dev-2.testnet",
+      })
+    : (undefined as never);
+
+  it("reads the handover demo jar with the fields T10 to T13 added", async () => {
+    const recorded = fixture<JarView>("dev2-get-jar-new.json");
+    const jar = await chain.jar("1");
+
+    expect(jar).toMatchObject({ jar_id: "1", create_args: recorded.create_args });
+    expect(jar?.old_addresses).toEqual(expect.any(Array));
+    expect(jar).toHaveProperty("transfer");
+    expect(jar).toHaveProperty("emergency");
+  });
+});
+

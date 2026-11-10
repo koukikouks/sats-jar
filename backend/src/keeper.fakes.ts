@@ -103,7 +103,10 @@ export function fakeBitcoin() {
 export function devJar() {
   const chain = fakeChain();
   const btc = fakeBitcoin();
-  const jar = fixture<JarView>("near-get-jar-1.json");
+  // Recorded before T10, T12 and T13 added old_addresses, transfer and emergency (synthetic:
+  // the fields as they were then).
+  const recorded = fixture<JarView>("near-get-jar-1.json");
+  const jar: JarView = { ...recorded, old_addresses: [], transfer: "none", emergency: "none" };
   chain.jars.set("1", jar);
   chain.coins.set("1", fixture<CoinView[]>("near-get-coins-1.json"));
   chain.payments.push(fixture<PaymentView>("near-get-payment-1.json"));
