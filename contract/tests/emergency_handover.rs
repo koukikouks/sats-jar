@@ -138,3 +138,46 @@ async fn a_handover_cancelled_before_its_delay_ends_leaves_the_proposal_open() {
     );
     assert_eq!(core_verdict(&regtest, &raw)["allowed"], true);
 }
+
+#[tokio::test]
+async fn the_first_complete_handover_records_the_lapse_of_an_open_proposal() {
+    let jars = start("regtest").await;
+    let family = jars.family().await;
+    let mut args = jars
+        .demo_args(&family, &child_address(bitcoin::Network::Regtest))
+        .await;
+    let unlock_at = now(&jars.worker).await + 240;
+    args["unlock_at"] = json!(unlock_at.to_string());
+    let jar: String = jars.create_jar(&args).await.json().expect("jar id");
+    let id = jars.approved_emergency(&family, &jar, JAR_CAP).await;
+    jars.confirmed_claim(&family, &jar).await;
+    let delay_ends_at = handover_delay_ends_at(&jars, &jar).await;
+    jars.wait_until(delay_ends_at.max(unlock_at)).await;
+
+    let completed = jars.complete_handover(&family.stranger, &jar, 1).await;
+
+    assert!(completed.is_success(), "{:?}", completed.failures());
+    assert_eq!(
+        satsjar_events(&completed)[0],
+        json!({
+            "standard": "satsjar",
+            "version": "1.0.0",
+            "event": "emergency_lapsed",
+            "data": {
+                "jar_id": jar,
+                "proposal_id": id,
+                "lapsed_at": delay_ends_at.to_string(),
+            },
+        })
+    );
+    let history = jars.history_events(&jar).await;
+    let lapsed = history
+        .iter()
+        .position(|e| e == "emergency_lapsed")
+        .unwrap();
+    assert_eq!(history[lapsed + 1], "rehoming_started");
+    assert_eq!(
+        jars.emergency(&jar).await,
+        json!({ "lapsed": { "proposal_id": id } })
+    );
+}

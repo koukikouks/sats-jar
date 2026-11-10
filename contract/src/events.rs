@@ -142,7 +142,8 @@ pub enum SatsJarEvent {
         txid: String,
     },
     /// The proposal was still open when a handover's public delay ended at `lapsed_at` (unix
-    /// seconds). Logged by the `cancel_handover` that follows, since nothing runs at that moment.
+    /// seconds). Logged by the `cancel_handover` or first `complete_handover` that follows,
+    /// since nothing runs at that moment.
     #[event_version("1.0.0")]
     EmergencyLapsed {
         jar_id: String,

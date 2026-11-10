@@ -589,6 +589,8 @@ impl SatsJar {
             _ => None,
         };
         if let Some(child_btc_pubkey) = first_call {
+            // While the handover still reads confirmed: an open proposal lapsed at the delay's end.
+            self.lapse_emergency(&jar_id, &mut jar, now);
             // HASH160 of the child's key: the exit branch's key hash (`OP_HASH160` checks it).
             let exit_key_hash = env::ripemd160_array(env::sha256_array(child_btc_pubkey));
             let locktime = now

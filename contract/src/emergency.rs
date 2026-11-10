@@ -65,8 +65,8 @@ pub enum Proposal {
     /// Paid by payment `payment_id`.
     Executed { id: u32, payment_id: u64 },
     /// Still open when a handover's public delay ended at `lapsed_at` (unix seconds). Recorded
-    /// when that handover is cancelled; until then an open proposal reads as lapsed from the
-    /// delay's end.
+    /// when that handover is cancelled or starts completing; until then an open proposal reads
+    /// as lapsed from the delay's end.
     Lapsed { id: u32, lapsed_at: u64 },
 }
 
@@ -523,8 +523,8 @@ impl SatsJar {
 
 impl SatsJar {
     /// Records the lapse of `jar`'s open proposal if a handover's public delay has ended by
-    /// `now`; `cancel_handover` calls it before it forgets that delay, so the cancel can never
-    /// revive the proposal.
+    /// `now`. `cancel_handover` calls it before it forgets that delay, so the cancel can never
+    /// revive the proposal, and the first `complete_handover` before the handover moves on.
     pub(crate) fn lapse_emergency(&mut self, jar_id: &str, jar: &mut Jar, now: u64) {
         let Some((proposal_id, lapsed_at)) = jar.emergency.lapse(&jar.handover, now) else {
             return;

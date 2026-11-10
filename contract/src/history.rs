@@ -90,7 +90,7 @@ pub enum Event {
         payment_id: U64,
     },
     /// Still open when a handover's public delay ended at `lapsed_at` (unix seconds); recorded
-    /// by the `cancel_handover` that follows.
+    /// by the `cancel_handover` or first `complete_handover` that follows.
     EmergencyLapsed {
         proposal_id: u32,
         lapsed_at: U64,
