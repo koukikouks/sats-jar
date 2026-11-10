@@ -1,4 +1,4 @@
-export { MONTH, SatsJarRefusal } from "./api.ts";
+export { FULL_PERIOD, SatsJarRefusal } from "./api.ts";
 export type {
   Allowance,
   BackendRefusalCode,

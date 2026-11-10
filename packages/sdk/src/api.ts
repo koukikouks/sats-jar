@@ -12,8 +12,8 @@ export type UnixSeconds = number;
 /** Whole satoshis. */
 export type Sats = number;
 
-/** One period of ADR 0005's monthly allowance: 30 days, in seconds. Shorter periods are demo timing. */
-export const MONTH = 2_592_000;
+/** A full period (ADR 0005), 30 days in seconds, as the contract counts it. Shorter periods are demo timing. */
+export const FULL_PERIOD = 2_592_000;
 
 // ---------------------------------------------------------------------------------------------
 // Setup
@@ -95,7 +95,7 @@ export interface Sent {
  */
 export type RefusalCode = ContractRefusalCode | BackendRefusalCode | DeviceRefusalCode;
 
-/** Refusals from the jar contract. */
+/** Refusals from the jar contract. T12's transfer refusals are added in T19, when its codes exist. */
 export type ContractRefusalCode =
   // create_jar
   | "INVALID_CHILD_ADDRESS"
@@ -243,7 +243,11 @@ export class SatsJarRefusal extends Error {
 /** "new": no keys yet; "locked": keys stored, PIN needed; "unlocked": ready to act. */
 export type DeviceState = "new" | "locked" | "unlocked";
 
-/** An adult's device: a key made here and locked with a PIN (ADR 0009). No phrase is shown. */
+/**
+ * This device's keys, locked with a PIN (ADR 0009). An adult's device holds a key made here and
+ * shows no phrase (`setUp`); the child's phone holds its recovery phrase instead (`child.startSetUp`,
+ * `child.restore`). `state`, `unlock` and `lock` work the same for both.
+ */
 export interface Device {
   /**
    * @example
@@ -340,7 +344,7 @@ export interface CreateJarInput {
   childAddress: string;
   /** Most the child receives per period. */
   cap: Sats;
-  /** Seconds per period: `MONTH`, or shorter for a demo-timing jar. */
+  /** Seconds per period: `FULL_PERIOD`, or shorter for a demo-timing jar. */
   period: number;
   /** Earliest handover, suggested as the 18th birthday. */
   unlockAt: UnixSeconds;
@@ -349,7 +353,7 @@ export interface CreateJarInput {
 /** How this device's person relates to a jar. "child": this device's account made the open claim. */
 export type Role = "giver" | "guardian" | "holder" | "child";
 
-/** A jar in a list. */
+/** A jar in a list; `JarStatus` adds the rest. */
 export interface JarSummary {
   jarId: string;
   nickname: string;
@@ -358,29 +362,21 @@ export interface JarSummary {
   balance: Sats;
   /** The jar's on-chain picture, a `data:image/svg+xml;base64,` URI. */
   picture: string;
+  /** Shortened timing; show the "Demo timing" badge wherever this jar shows (spec). */
   demoTiming: boolean;
 }
 
 /** One jar, as its screen shows it. */
-export interface JarStatus {
-  jarId: string;
-  nickname: string;
-  roles: Role[];
+export interface JarStatus extends JarSummary {
   /** The jar's Bitcoin address, for topping up. */
   address: string;
   /** BIP-21 URI for the top-up QR code (`bitcoin:<address>`). */
   qrPayload: string;
-  /** Proven sats in the jar. */
-  balance: Sats;
-  /** The jar's on-chain picture, a `data:image/svg+xml;base64,` URI. */
-  picture: string;
   childAddress: string;
   cap: Sats;
   /** Seconds per period. */
   period: number;
   unlockAt: UnixSeconds;
-  /** Shortened timing; show the "Demo timing" badge wherever this jar shows (spec). */
-  demoTiming: boolean;
   /** What an allowance requested now could pay, carry-over included. */
   availableAllowance: Sats;
   /** When the next allowance may go out; null before the first top-up. */
@@ -402,19 +398,21 @@ export interface JarStatus {
 
 /**
  * A top-up seen at the jar's address. "on_the_way": in no block yet; "confirming": in a block,
- * not yet counted; "counted": proven to the jar; "too_small": under the 1,000-sat dust floor, so
- * it never counts (story 18).
+ * not yet counted (it counts from 3 confirmations on testnet, story 20); "counted": proven to the
+ * jar; "too_small": under the 1,000-sat dust floor, so it never counts (story 18).
  */
 export interface TopUp {
   txid: string;
   value: Sats;
   status: "on_the_way" | "confirming" | "counted" | "too_small";
+  /** Bitcoin confirmations so far while "confirming"; null otherwise. */
+  confirmations: number | null;
   /** When it was counted; null until then. */
   countedAt: UnixSeconds | null;
   explorerUrl: string;
 }
 
-/** An allowance payment and how far it has got. */
+/** An allowance payment and how far it has got. Emergency payments are not listed here; they show in `JarStatus.emergency`. */
 export interface Allowance {
   amount: Sats;
   /** Paid from the jar, never from the child's amount (story 26). */
@@ -442,21 +440,21 @@ export interface Jars {
    *   draftId: draft.draftId,
    *   childAddress: "tb1q6rz28mcfaxtmd6v789l9rrlrusdprr9pqcpvkl",
    *   cap: 20_000,
-   *   period: MONTH,
+   *   period: FULL_PERIOD,
    *   unlockAt: Date.UTC(2040, 4, 1) / 1000,
    * });
    * showQr(qrPayload);
    */
   create(input: CreateJarInput): Promise<{ jarId: string; address: string; qrPayload: string }>;
   /**
-   * The jars this device's person holds or guards.
+   * The jars this device's person gave, holds, guards or (as the child) has claimed.
    *
    * @example
    * for (const jar of await app.jars.mine()) addCard(jar.nickname, jar.picture);
    */
   mine(): Promise<JarSummary[]>;
   /**
-   * One jar's status. Refuses JAR_NOT_FOUND.
+   * One jar's status. Refuses UNKNOWN_JAR.
    *
    * @example
    * const jar = await app.jars.status("7");
@@ -548,8 +546,9 @@ export interface Child {
    */
   guardianCode(): Promise<string>;
   /**
-   * Claims the jar for this phone's account with the phrase's Bitcoin key. Refuses CLAIM_OPEN,
-   * NO_RECOVERY_PHRASE, LOCKED.
+   * Claims the jar for this phone's account with the phrase's Bitcoin key. The jar id comes from
+   * the family's "Set up my jar" link (the app puts it there); the SDK does not look it up.
+   * Refuses CLAIM_OPEN, NO_RECOVERY_PHRASE, LOCKED.
    *
    * @example
    * await app.child.claim("7");
@@ -600,7 +599,7 @@ export interface Handover {
 // Part 2: emergency payment (PROVISIONAL, T13)
 // ---------------------------------------------------------------------------------------------
 
-/** The jar's emergency proposal. Only one is open at a time. */
+/** PROVISIONAL (T13): the jar's emergency proposal. Only one is open at a time. */
 export type EmergencyStatus =
   | { state: "none" }
   | {
@@ -618,7 +617,7 @@ export type EmergencyStatus =
   | { state: "executed"; proposalId: number }
   | { state: "lapsed"; proposalId: number };
 
-/** Guardians propose and approve; the giver may cancel during the delay (stories 33-39). */
+/** PROVISIONAL (T13): guardians propose and approve; the giver may cancel during the delay (stories 33-39). */
 export interface Emergency {
   /**
    * Proposes paying the child `amount` (at most 3 x cap). Refuses NOT_A_GUARDIAN,
@@ -650,13 +649,16 @@ export interface Emergency {
 // Part 2: the holder after handover (PROVISIONAL, T12)
 // ---------------------------------------------------------------------------------------------
 
-/** An open transfer of the jar. "offered": started, not yet accepted; "moving": accepted, the Bitcoin re-homes to the receiver's key. */
+/**
+ * PROVISIONAL (T12): an open transfer of the jar. "offered": started, not yet accepted; "moving":
+ * accepted, the Bitcoin re-homes to the receiver's key.
+ */
 export type TransferStatus =
   | { state: "none" }
   | { state: "offered"; toMe: boolean }
   | { state: "moving"; toMe: boolean; coinsToMove: number; coinsLeft: number };
 
-/** The holder spends or transfers the jar (stories 55-58a). */
+/** PROVISIONAL (T12): the holder spends or transfers the jar (stories 55-58a). */
 export interface Holder {
   /**
    * Sends the jar's Bitcoin anywhere. The fee rate (sat/vB) defaults to a public explorer's
@@ -692,7 +694,8 @@ export interface Holder {
   cancelTransfer(jarId: string): Promise<Sent>;
   /**
    * The receiver accepts with their own recovery-phrase key; the Bitcoin re-homes to it before
-   * the jar moves. Refuses NO_RECOVERY_PHRASE.
+   * the jar moves. The jar id comes from the holder, in the link the app makes for the transfer.
+   * Refuses NO_RECOVERY_PHRASE.
    *
    * @example
    * await app.holder.acceptTransfer("7");
