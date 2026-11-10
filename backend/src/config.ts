@@ -7,6 +7,9 @@ export type Config = {
   contractAccountId: string;
   draftsFile: string;
   port: number;
+  /** The keeper: an account whose only key is a function-call key on the contract. */
+  keeperAccountId: string;
+  keeperPrivateKey: string;
 };
 
 const NAMES = [
@@ -15,6 +18,8 @@ const NAMES = [
   "CONTRACT_ACCOUNT_ID",
   "DRAFTS_FILE",
   "PORT",
+  "KEEPER_ACCOUNT_ID",
+  "KEEPER_PRIVATE_KEY",
 ] as const;
 
 export function loadConfig(env: Record<string, string | undefined>): Config {
@@ -27,5 +32,7 @@ export function loadConfig(env: Record<string, string | undefined>): Config {
     contractAccountId: value("CONTRACT_ACCOUNT_ID"),
     draftsFile: value("DRAFTS_FILE"),
     port: Number(value("PORT")),
+    keeperAccountId: value("KEEPER_ACCOUNT_ID"),
+    keeperPrivateKey: value("KEEPER_PRIVATE_KEY"),
   };
 }

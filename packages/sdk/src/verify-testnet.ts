@@ -33,6 +33,8 @@ const backend = createBackend({
   chain: nearChain({ sponsorAccountId: SPONSOR, sponsorPrivateKey: process.env.SPONSOR_PRIVATE_KEY, contractAccountId: CONTRACT }),
   store: fileStore(join(mkdtempSync(join(tmpdir(), "sats-jar-sdk-check-")), "drafts.json")),
   appAccount: SPONSOR,
+  // The keeper is not part of the app's flows; it does nothing here.
+  keeper: { run: async () => ({ startedAt: 0, steps: [] }) },
 });
 let failCloses = 0;
 const http: typeof fetch = async (input, init) => {
