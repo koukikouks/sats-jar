@@ -1,0 +1,593 @@
+{
+ "recorded_at": "2026-11-10",
+ "note": "The real jar contract's own JSON (T19): get_jar and get_coins views and refusal texts, recorded once from a near-workspaces sandbox run (locked build, regtest network) by a scratch test using contract/tests/common helpers; the scratch file was not kept. Accounts are sandbox names (*.test.near). The two FEE_TOO_HIGH texts give the contract's own re-homing bound and size for the transfer jars below.",
+ "views": {
+  "jar_none": {
+   "jar_id": "1",
+   "giver": "giver.test.near",
+   "owner_id": "parent.test.near",
+   "create_args": {
+    "child_address": "bcrt1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080",
+    "cap": "20000",
+    "period": "60",
+    "unlock_at": "1825824053",
+    "guardians": [
+     "grandma.test.near",
+     "uncle.test.near",
+     "aunt.test.near"
+    ],
+    "family_account": "parent.test.near",
+    "nickname": "Little Bear"
+   },
+   "address": "bcrt1qd3ky8yaeyzyf437ng6mf7wahj23dj86p8890cn5gwkgh4c5el5fsezxv3q",
+   "old_addresses": [],
+   "witness_script": "632103413aeb883b8636f76530006423536d27a4bfe6e17d9401fe94c155c5c6be03ddac67046507d46cb17576a914751e76e8199196d454941c45d1b3a323f1433bd688ac68",
+   "public_key": "secp256k1:2JeCDfmRbxMfpuKi7YkrZMRsdz5mx5XdH79zCHJrKy6hDBV4LsHNRJ9k5cGNUoMB6CZ7MJ9WGqonJcJRYYqMYFJt",
+   "locktime": 1825834853,
+   "demo_timing": true,
+   "clock": {
+    "started_at": null
+   },
+   "handover": "none",
+   "proven_balance": "0",
+   "available_allowance": "0",
+   "fee_budget_left": "2000",
+   "next_allowance_at": null,
+   "transfer": "none",
+   "emergency": "none"
+  },
+  "propose_value": 1,
+  "emergency_open_1": {
+   "jar_id": "1",
+   "giver": "giver.test.near",
+   "owner_id": "parent.test.near",
+   "create_args": {
+    "child_address": "bcrt1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080",
+    "cap": "20000",
+    "period": "60",
+    "unlock_at": "1825824053",
+    "guardians": [
+     "grandma.test.near",
+     "uncle.test.near",
+     "aunt.test.near"
+    ],
+    "family_account": "parent.test.near",
+    "nickname": "Little Bear"
+   },
+   "address": "bcrt1qd3ky8yaeyzyf437ng6mf7wahj23dj86p8890cn5gwkgh4c5el5fsezxv3q",
+   "old_addresses": [],
+   "witness_script": "632103413aeb883b8636f76530006423536d27a4bfe6e17d9401fe94c155c5c6be03ddac67046507d46cb17576a914751e76e8199196d454941c45d1b3a323f1433bd688ac68",
+   "public_key": "secp256k1:2JeCDfmRbxMfpuKi7YkrZMRsdz5mx5XdH79zCHJrKy6hDBV4LsHNRJ9k5cGNUoMB6CZ7MJ9WGqonJcJRYYqMYFJt",
+   "locktime": 1825834853,
+   "demo_timing": true,
+   "clock": {
+    "started_at": null
+   },
+   "handover": "none",
+   "proven_balance": "0",
+   "available_allowance": "0",
+   "fee_budget_left": "2000",
+   "next_allowance_at": null,
+   "transfer": "none",
+   "emergency": {
+    "open": {
+     "proposal_id": 1,
+     "amount": "2000",
+     "approved_by": [
+      "grandma.test.near"
+     ],
+     "proposed_at": "1794288054",
+     "delay_ends_at": null
+    }
+   }
+  },
+  "emergency_open_2": {
+   "jar_id": "1",
+   "giver": "giver.test.near",
+   "owner_id": "parent.test.near",
+   "create_args": {
+    "child_address": "bcrt1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080",
+    "cap": "20000",
+    "period": "60",
+    "unlock_at": "1825824053",
+    "guardians": [
+     "grandma.test.near",
+     "uncle.test.near",
+     "aunt.test.near"
+    ],
+    "family_account": "parent.test.near",
+    "nickname": "Little Bear"
+   },
+   "address": "bcrt1qd3ky8yaeyzyf437ng6mf7wahj23dj86p8890cn5gwkgh4c5el5fsezxv3q",
+   "old_addresses": [],
+   "witness_script": "632103413aeb883b8636f76530006423536d27a4bfe6e17d9401fe94c155c5c6be03ddac67046507d46cb17576a914751e76e8199196d454941c45d1b3a323f1433bd688ac68",
+   "public_key": "secp256k1:2JeCDfmRbxMfpuKi7YkrZMRsdz5mx5XdH79zCHJrKy6hDBV4LsHNRJ9k5cGNUoMB6CZ7MJ9WGqonJcJRYYqMYFJt",
+   "locktime": 1825834853,
+   "demo_timing": true,
+   "clock": {
+    "started_at": null
+   },
+   "handover": "none",
+   "proven_balance": "0",
+   "available_allowance": "0",
+   "fee_budget_left": "2000",
+   "next_allowance_at": null,
+   "transfer": "none",
+   "emergency": {
+    "open": {
+     "proposal_id": 1,
+     "amount": "2000",
+     "approved_by": [
+      "grandma.test.near",
+      "uncle.test.near"
+     ],
+     "proposed_at": "1794288054",
+     "delay_ends_at": "1794289854"
+    }
+   }
+  },
+  "approve_by_stranger_failure": "NOT_A_GUARDIAN: stranger.test.near is not a guardian of jar 1",
+  "emergency_cancelled": {
+   "jar_id": "1",
+   "giver": "giver.test.near",
+   "owner_id": "parent.test.near",
+   "create_args": {
+    "child_address": "bcrt1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080",
+    "cap": "20000",
+    "period": "60",
+    "unlock_at": "1825824053",
+    "guardians": [
+     "grandma.test.near",
+     "uncle.test.near",
+     "aunt.test.near"
+    ],
+    "family_account": "parent.test.near",
+    "nickname": "Little Bear"
+   },
+   "address": "bcrt1qd3ky8yaeyzyf437ng6mf7wahj23dj86p8890cn5gwkgh4c5el5fsezxv3q",
+   "old_addresses": [],
+   "witness_script": "632103413aeb883b8636f76530006423536d27a4bfe6e17d9401fe94c155c5c6be03ddac67046507d46cb17576a914751e76e8199196d454941c45d1b3a323f1433bd688ac68",
+   "public_key": "secp256k1:2JeCDfmRbxMfpuKi7YkrZMRsdz5mx5XdH79zCHJrKy6hDBV4LsHNRJ9k5cGNUoMB6CZ7MJ9WGqonJcJRYYqMYFJt",
+   "locktime": 1825834853,
+   "demo_timing": true,
+   "clock": {
+    "started_at": null
+   },
+   "handover": "none",
+   "proven_balance": "0",
+   "available_allowance": "0",
+   "fee_budget_left": "2000",
+   "next_allowance_at": null,
+   "transfer": "none",
+   "emergency": {
+    "cancelled": {
+     "proposal_id": 1
+    }
+   }
+  },
+  "handover_claimed_0": {
+   "jar_id": "1",
+   "giver": "giver.test.near",
+   "owner_id": "parent.test.near",
+   "create_args": {
+    "child_address": "bcrt1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080",
+    "cap": "20000",
+    "period": "60",
+    "unlock_at": "1825824053",
+    "guardians": [
+     "grandma.test.near",
+     "uncle.test.near",
+     "aunt.test.near"
+    ],
+    "family_account": "parent.test.near",
+    "nickname": "Little Bear"
+   },
+   "address": "bcrt1qd3ky8yaeyzyf437ng6mf7wahj23dj86p8890cn5gwkgh4c5el5fsezxv3q",
+   "old_addresses": [],
+   "witness_script": "632103413aeb883b8636f76530006423536d27a4bfe6e17d9401fe94c155c5c6be03ddac67046507d46cb17576a914751e76e8199196d454941c45d1b3a323f1433bd688ac68",
+   "public_key": "secp256k1:2JeCDfmRbxMfpuKi7YkrZMRsdz5mx5XdH79zCHJrKy6hDBV4LsHNRJ9k5cGNUoMB6CZ7MJ9WGqonJcJRYYqMYFJt",
+   "locktime": 1825834853,
+   "demo_timing": true,
+   "clock": {
+    "started_at": null
+   },
+   "handover": {
+    "claimed": {
+     "child_account": "child.test.near",
+     "child_btc_pubkey": "02e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c319",
+     "claimed_at": "1794288056",
+     "lapses_at": "1794288476",
+     "confirmed_by": []
+    }
+   },
+   "proven_balance": "0",
+   "available_allowance": "0",
+   "fee_budget_left": "2000",
+   "next_allowance_at": null,
+   "transfer": "none",
+   "emergency": {
+    "cancelled": {
+     "proposal_id": 1
+    }
+   }
+  },
+  "handover_claimed_1": {
+   "jar_id": "1",
+   "giver": "giver.test.near",
+   "owner_id": "parent.test.near",
+   "create_args": {
+    "child_address": "bcrt1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080",
+    "cap": "20000",
+    "period": "60",
+    "unlock_at": "1825824053",
+    "guardians": [
+     "grandma.test.near",
+     "uncle.test.near",
+     "aunt.test.near"
+    ],
+    "family_account": "parent.test.near",
+    "nickname": "Little Bear"
+   },
+   "address": "bcrt1qd3ky8yaeyzyf437ng6mf7wahj23dj86p8890cn5gwkgh4c5el5fsezxv3q",
+   "old_addresses": [],
+   "witness_script": "632103413aeb883b8636f76530006423536d27a4bfe6e17d9401fe94c155c5c6be03ddac67046507d46cb17576a914751e76e8199196d454941c45d1b3a323f1433bd688ac68",
+   "public_key": "secp256k1:2JeCDfmRbxMfpuKi7YkrZMRsdz5mx5XdH79zCHJrKy6hDBV4LsHNRJ9k5cGNUoMB6CZ7MJ9WGqonJcJRYYqMYFJt",
+   "locktime": 1825834853,
+   "demo_timing": true,
+   "clock": {
+    "started_at": null
+   },
+   "handover": {
+    "claimed": {
+     "child_account": "child.test.near",
+     "child_btc_pubkey": "02e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c319",
+     "claimed_at": "1794288056",
+     "lapses_at": "1794288476",
+     "confirmed_by": [
+      "grandma.test.near"
+     ]
+    }
+   },
+   "proven_balance": "0",
+   "available_allowance": "0",
+   "fee_budget_left": "2000",
+   "next_allowance_at": null,
+   "transfer": "none",
+   "emergency": {
+    "cancelled": {
+     "proposal_id": 1
+    }
+   }
+  },
+  "handover_confirmed": {
+   "jar_id": "1",
+   "giver": "giver.test.near",
+   "owner_id": "parent.test.near",
+   "create_args": {
+    "child_address": "bcrt1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080",
+    "cap": "20000",
+    "period": "60",
+    "unlock_at": "1825824053",
+    "guardians": [
+     "grandma.test.near",
+     "uncle.test.near",
+     "aunt.test.near"
+    ],
+    "family_account": "parent.test.near",
+    "nickname": "Little Bear"
+   },
+   "address": "bcrt1qd3ky8yaeyzyf437ng6mf7wahj23dj86p8890cn5gwkgh4c5el5fsezxv3q",
+   "old_addresses": [],
+   "witness_script": "632103413aeb883b8636f76530006423536d27a4bfe6e17d9401fe94c155c5c6be03ddac67046507d46cb17576a914751e76e8199196d454941c45d1b3a323f1433bd688ac68",
+   "public_key": "secp256k1:2JeCDfmRbxMfpuKi7YkrZMRsdz5mx5XdH79zCHJrKy6hDBV4LsHNRJ9k5cGNUoMB6CZ7MJ9WGqonJcJRYYqMYFJt",
+   "locktime": 1825834853,
+   "demo_timing": true,
+   "clock": {
+    "started_at": null
+   },
+   "handover": {
+    "confirmed": {
+     "child_account": "child.test.near",
+     "child_btc_pubkey": "02e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c319",
+     "claimed_at": "1794288056",
+     "confirmed_by": [
+      "grandma.test.near",
+      "uncle.test.near"
+     ],
+     "delay_ends_at": "1794288236"
+    }
+   },
+   "proven_balance": "0",
+   "available_allowance": "0",
+   "fee_budget_left": "2000",
+   "next_allowance_at": null,
+   "transfer": "none",
+   "emergency": {
+    "cancelled": {
+     "proposal_id": 1
+    }
+   }
+  },
+  "spend_before_handover_failure": "SPEND_BEFORE_HANDOVER: before handover only the allowance and an emergency payment can pay out, and only to the child's address",
+  "handover_completing": {
+   "jar_id": "2",
+   "giver": "giver.test.near",
+   "owner_id": "parent.test.near",
+   "create_args": {
+    "child_address": "bcrt1q8wr4twqja6u35dmksl76qqkqxnanlkszwd2ukq",
+    "cap": "20000",
+    "period": "60",
+    "unlock_at": "1794288297",
+    "guardians": [
+     "grandma.test.near",
+     "uncle.test.near",
+     "aunt.test.near"
+    ],
+    "family_account": "parent.test.near",
+    "nickname": "Little Bear"
+   },
+   "address": "bcrt1qgzj98gjqdt0a04y4k9dhmm8t9ejhglzm0vk5k98xkz9cgpq0wh3qutmc7a",
+   "old_addresses": [
+    "bcrt1qw6khlahjmfrzclj3km3tjrln62ad2vnvpatcyd8msttgmctccl7sm3a9uh"
+   ],
+   "witness_script": "6321038aca39c70aa08ed3494d6ad0fa86b1d4bcf79d69a6ec4941d90321d594564577ac6704dcd4f26ab17576a914d0c4a3ef09e997b6e99e397e518fe3e41a118ca188ac68",
+   "public_key": "secp256k1:3mwccQWVbfJjqFWtqTmBBy5sKoKXXy1cbauZnxCyDpbTCQpkRVKmkqygPzcfGaSSCES8Uwx2avuYnPARPBCr8NSn",
+   "locktime": 1794299100,
+   "demo_timing": true,
+   "clock": {
+    "started_at": "1794288059"
+   },
+   "handover": {
+    "completing": {
+     "child_account": "child.test.near",
+     "child_btc_pubkey": "02e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c319",
+     "confirmed_by": [
+      "grandma.test.near",
+      "uncle.test.near"
+     ],
+     "delay_ends_at": "1794288242",
+     "coins_to_move": 0,
+     "coins_left": 2
+    }
+   },
+   "proven_balance": "80000",
+   "available_allowance": "60000",
+   "fee_budget_left": "2000",
+   "next_allowance_at": "1794288299",
+   "transfer": "none",
+   "emergency": "none"
+  },
+  "handover_done": {
+   "jar_id": "3",
+   "giver": "giver.test.near",
+   "owner_id": "child.test.near",
+   "create_args": {
+    "child_address": "bcrt1qx0dp6x72vunkd7s4ck6fu3zyfwgadzpfa8qttf",
+    "cap": "20000",
+    "period": "60",
+    "unlock_at": "1794288540",
+    "guardians": [
+     "grandma.test.near",
+     "uncle.test.near",
+     "aunt.test.near"
+    ],
+    "family_account": "parent.test.near",
+    "nickname": "Little Bear"
+   },
+   "address": "bcrt1qvkayrvacrgghw6uhtt5tvcz9cstkxjfeqj4nke0hajrcfcyhdg2sxe2g6r",
+   "old_addresses": [
+    "bcrt1qqh8wl5l6uhqr7kf5q2zz493uacu7dhvslvurv5dwcksywpmumvjqmyfaax"
+   ],
+   "witness_script": "632102a6f6a1d4225a9f645ae6b6a06095cd31c3ed47936d403f442cc81a4e392ce047ac6704d0d5f26ab17576a914d0c4a3ef09e997b6e99e397e518fe3e41a118ca188ac68",
+   "public_key": "secp256k1:4LcUru1iyzcWw7LJosizdYmtaMj25Azyk1u6E7Y12uGMPyMgBv43bqJV6Lx6rQA4pFjDuGpWc946qpRtXhjk64fX",
+   "locktime": 1794299344,
+   "demo_timing": true,
+   "clock": {
+    "started_at": "1794288303"
+   },
+   "handover": {
+    "done": {
+     "child_account": "child.test.near",
+     "completed_at": "1794288545"
+    }
+   },
+   "proven_balance": "99868",
+   "available_allowance": "60000",
+   "fee_budget_left": "2000",
+   "next_allowance_at": "1794288543",
+   "transfer": "none",
+   "emergency": "none"
+  },
+  "spend_not_holder_failure": "NOT_THE_HOLDER: the caller is not the holder of jar 3",
+  "transfer_started": {
+   "jar_id": "3",
+   "giver": "giver.test.near",
+   "owner_id": "child.test.near",
+   "create_args": {
+    "child_address": "bcrt1qx0dp6x72vunkd7s4ck6fu3zyfwgadzpfa8qttf",
+    "cap": "20000",
+    "period": "60",
+    "unlock_at": "1794288540",
+    "guardians": [
+     "grandma.test.near",
+     "uncle.test.near",
+     "aunt.test.near"
+    ],
+    "family_account": "parent.test.near",
+    "nickname": "Little Bear"
+   },
+   "address": "bcrt1qvkayrvacrgghw6uhtt5tvcz9cstkxjfeqj4nke0hajrcfcyhdg2sxe2g6r",
+   "old_addresses": [
+    "bcrt1qqh8wl5l6uhqr7kf5q2zz493uacu7dhvslvurv5dwcksywpmumvjqmyfaax"
+   ],
+   "witness_script": "632102a6f6a1d4225a9f645ae6b6a06095cd31c3ed47936d403f442cc81a4e392ce047ac6704d0d5f26ab17576a914d0c4a3ef09e997b6e99e397e518fe3e41a118ca188ac68",
+   "public_key": "secp256k1:4LcUru1iyzcWw7LJosizdYmtaMj25Azyk1u6E7Y12uGMPyMgBv43bqJV6Lx6rQA4pFjDuGpWc946qpRtXhjk64fX",
+   "locktime": 1794299344,
+   "demo_timing": true,
+   "clock": {
+    "started_at": "1794288303"
+   },
+   "handover": {
+    "done": {
+     "child_account": "child.test.near",
+     "completed_at": "1794288545"
+    }
+   },
+   "proven_balance": "99868",
+   "available_allowance": "60000",
+   "fee_budget_left": "2000",
+   "next_allowance_at": "1794288543",
+   "transfer": {
+    "started": {
+     "receiver": "buyer.test.near",
+     "started_at": "1794288546"
+    }
+   },
+   "emergency": "none"
+  },
+  "transfer_coins": [
+   {
+    "txid": "93b631eb70222f1f1de0deba5cc9e9e9daa8b5064def772d0596075298f88ced",
+    "vout": 1,
+    "value": "100000",
+    "status": "spent",
+    "payment_id": "2"
+   },
+   {
+    "txid": "8efdd5f136ee7f4d04f35e05e9cb578e321b3457d30cf635d3342d0fd1d9e9ed",
+    "vout": 0,
+    "value": "99868",
+    "status": "confirmed",
+    "payment_id": null
+   }
+  ],
+  "accept_fee_too_high_failure": "FEE_TOO_HIGH: the fee would be 132000 sats, over the 4993 sats a re-homing may pay (5% of the value it moves, or the cost at 1 sat/vB if that is higher)",
+  "transfer_accepted": {
+   "jar_id": "3",
+   "giver": "giver.test.near",
+   "owner_id": "child.test.near",
+   "create_args": {
+    "child_address": "bcrt1qx0dp6x72vunkd7s4ck6fu3zyfwgadzpfa8qttf",
+    "cap": "20000",
+    "period": "60",
+    "unlock_at": "1794288540",
+    "guardians": [
+     "grandma.test.near",
+     "uncle.test.near",
+     "aunt.test.near"
+    ],
+    "family_account": "parent.test.near",
+    "nickname": "Little Bear"
+   },
+   "address": "bcrt1qw5eumqmx837dlhk974gft55lwtzqy0pcleelhanw4tp74hxrr4hstwkx3v",
+   "old_addresses": [
+    "bcrt1qqh8wl5l6uhqr7kf5q2zz493uacu7dhvslvurv5dwcksywpmumvjqmyfaax",
+    "bcrt1qvkayrvacrgghw6uhtt5tvcz9cstkxjfeqj4nke0hajrcfcyhdg2sxe2g6r"
+   ],
+   "witness_script": "632102a6f6a1d4225a9f645ae6b6a06095cd31c3ed47936d403f442cc81a4e392ce047ac6704d3d5f26ab17576a91414db4138d56a2ecfb10881a9be394d9f321985b288ac68",
+   "public_key": "secp256k1:4LcUru1iyzcWw7LJosizdYmtaMj25Azyk1u6E7Y12uGMPyMgBv43bqJV6Lx6rQA4pFjDuGpWc946qpRtXhjk64fX",
+   "locktime": 1794299347,
+   "demo_timing": true,
+   "clock": {
+    "started_at": "1794288303"
+   },
+   "handover": {
+    "done": {
+     "child_account": "child.test.near",
+     "completed_at": "1794288545"
+    }
+   },
+   "proven_balance": "99868",
+   "available_allowance": "60000",
+   "fee_budget_left": "2000",
+   "next_allowance_at": "1794288543",
+   "transfer": {
+    "accepted": {
+     "receiver": "buyer.test.near",
+     "btc_pubkey": "0324653eac434488002cc06bbfb7f10fe18991e35f9fe4302dbea6d2353dc0ab1c",
+     "accepted_at": "1794288547",
+     "coins_to_move": 0,
+     "coins_left": 1
+    }
+   },
+   "emergency": "none"
+  },
+  "buyer_key": "0324653eac434488002cc06bbfb7f10fe18991e35f9fe4302dbea6d2353dc0ab1c",
+  "accounts": {
+   "parent": "parent.test.near",
+   "giver": "giver.test.near",
+   "child": "child.test.near",
+   "buyer": "buyer.test.near",
+   "guardians": [
+    "grandma.test.near",
+    "uncle.test.near",
+    "aunt.test.near"
+   ],
+   "stranger": "stranger.test.near"
+  },
+  "small_coins": [
+   {
+    "txid": "fe43ef9953e4deb1d7ce8eb755ff280f3cd1760fa76c7edc97f84c6247209c78",
+    "vout": 0,
+    "value": "1000",
+    "status": "spent",
+    "payment_id": "4"
+   },
+   {
+    "txid": "b3681a7b2f494490ab4c0a07fd4fdd117a20ede1695f7bb2be369c2a119d6425",
+    "vout": 0,
+    "value": "868",
+    "status": "confirmed",
+    "payment_id": null
+   }
+  ],
+  "small_jar": {
+   "jar_id": "4",
+   "giver": "giver.test.near",
+   "owner_id": "child.test.near",
+   "create_args": {
+    "child_address": "bcrt1qz6wyjxwrq5ca5yvzqfagchxtrffvy79l93cgr2",
+    "cap": "20000",
+    "period": "60",
+    "unlock_at": "1794288788",
+    "guardians": [
+     "grandma.test.near",
+     "uncle.test.near",
+     "aunt.test.near"
+    ],
+    "family_account": "parent.test.near",
+    "nickname": "Little Bear"
+   },
+   "address": "bcrt1q5e3mmxfj4dhtt8vtmwgyxal3etp6ycke8l6qee7detvwf9eduvlq5phc6p",
+   "old_addresses": [
+    "bcrt1q8763c9m3t8uz2t32g0detaqe5ppdeaa86gadflsfcek0fenapqtsx0azta"
+   ],
+   "witness_script": "6321022361b18f482feb056de549098051ddc83c193ba2ad0920ffaaa3f43a1fb0f776ac6704c5d6f26ab17576a914d0c4a3ef09e997b6e99e397e518fe3e41a118ca188ac68",
+   "public_key": "secp256k1:i2fdiiMxDwgZoDJrf585moKnEn6KYdnZ9PYjYXmsrN5kDaSqovFZPn2GBHeLLsNof9bDSTwt244qLQJf2qvexR9",
+   "locktime": 1794299589,
+   "demo_timing": true,
+   "clock": {
+    "started_at": "1794288550"
+   },
+   "handover": {
+    "done": {
+     "child_account": "child.test.near",
+     "completed_at": "1794288791"
+    }
+   },
+   "proven_balance": "868",
+   "available_allowance": "60000",
+   "fee_budget_left": "2000",
+   "next_allowance_at": "1794288790",
+   "transfer": {
+    "started": {
+     "receiver": "buyer.test.near",
+     "started_at": "1794288791"
+    }
+   },
+   "emergency": "none"
+  },
+  "small_accept_fee_too_high_failure": "FEE_TOO_HIGH: the fee would be 132000 sats, over the 132 sats a re-homing may pay (5% of the value it moves, or the cost at 1 sat/vB if that is higher)",
+  "small_accept_rate_2": "FEE_TOO_HIGH: the fee would be 264 sats, over the 132 sats a re-homing may pay (5% of the value it moves, or the cost at 1 sat/vB if that is higher)"
+ }
+}

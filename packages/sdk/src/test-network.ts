@@ -16,6 +16,7 @@ export const APP = "sats-jar-app.testnet";
 export const CONTRACT = "sats-jar-dev.testnet";
 export const BACKEND = "https://backend.test";
 const NEAR_RPC = "https://rpc.testnet.fastnear.com";
+const FASTNEAR_TRANSACTIONS = "https://tx.test.fastnear.com/v0/transactions";
 
 export interface Exchange {
   request: { method: string; url: string; body: unknown };
@@ -62,6 +63,8 @@ export interface TestNetwork {
   fetch: typeof fetch;
   /** Every send_tx, in order (a rebroadcast of the same bytes counts again). */
   sent: SentCall[];
+  /** How many transactions the SDK signed (each signing reads its key's nonce once). */
+  signings(): number;
   /** Accounts the backend's sponsor made. */
   accounts: Map<string, string>;
   /** Jar guardians as the backend's chain reads them (filled from create_jar calls that succeed). */
@@ -78,6 +81,10 @@ export function testNetwork(options: {
   sendTx?: SendTx;
   /** tx status answers by hash; unknown hashes get the recorded UNKNOWN_TRANSACTION. */
   txStatus?: (hash: string) => unknown | undefined;
+  /** Synthetic access-key lists (labelled in the test) by account; others are recorded or unrecorded. */
+  accessKeys?: (accountId: string) => unknown[] | undefined;
+  /** FastNEAR /v0/transactions rows by hash; others get the recorded answer for that hash, or the recorded empty one. */
+  indexed?: (hash: string) => unknown | undefined;
 }): TestNetwork {
   const accounts = new Map<string, string>();
   const jars = new Map<string, string[]>();
@@ -106,7 +113,9 @@ export function testNetwork(options: {
   const backend = createBackend({ chain, store, appAccount: APP, keeper });
   const exchanges = [...(options.fixtures ?? []), fixture("near")].flatMap((f) => f.exchanges);
   const sent: SentCall[] = [];
+  let signings = 0;
   const near = fixture("near");
+  const live = fixture("part2-live");
 
   async function rpc(body: RpcBody): Promise<unknown> {
     const { method, params } = body;
@@ -120,6 +129,12 @@ export function testNetwork(options: {
       const answer = options.txStatus?.(params.tx_hash as string);
       if (answer !== undefined) return answer;
       return recordedIn(near, (b) => b.method === "tx" && b.params.wait_until === "NONE");
+    }
+    if (params.request_type === "view_access_key") signings += 1;
+    if (params.request_type === "view_access_key_list") {
+      const keys = options.accessKeys?.(params.account_id as string);
+      if (keys) return { jsonrpc: "2.0", id: "sdk", result: { block_height: 1, block_hash: "x", keys } };
+      return recordedIn(live, (b) => b?.params?.request_type === "view_access_key_list" && b.params.account_id === params.account_id);
     }
     if (method === "block" || params.request_type === "view_access_key") {
       // Signing needs a nonce and a recent block; any recorded one serves.
@@ -151,6 +166,18 @@ export function testNetwork(options: {
     if (url.startsWith(BACKEND)) {
       return backend(new Request(url.replace(BACKEND, "http://backend.test"), init));
     }
+    if (url === FASTNEAR_TRANSACTIONS) {
+      const hashes = (JSON.parse(String(init?.body)) as { tx_hashes: string[] }).tx_hashes;
+      const rows = hashes.flatMap((hash) => {
+        const row = options.indexed?.(hash);
+        if (row !== undefined) return [row];
+        const hit = live.exchanges.find(
+          (e) => e.request.url === FASTNEAR_TRANSACTIONS && (e.request.body as { tx_hashes: string[] }).tx_hashes[0] === hash,
+        );
+        return (hit?.response.body as { transactions: unknown[] } | undefined)?.transactions ?? [];
+      });
+      return new Response(JSON.stringify({ transactions: rows }), { status: 200 });
+    }
     if (url === NEAR_RPC) {
       const body = JSON.parse(String(init?.body)) as RpcBody;
       const answer = await rpc(body);
@@ -165,6 +192,7 @@ export function testNetwork(options: {
   return {
     fetch: http,
     sent,
+    signings: () => signings,
     accounts,
     jars,
     breakBackend(times) {
@@ -213,4 +241,51 @@ function canonical(value: unknown): string {
     return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${canonical(v)}`).join(",")}}`;
   }
   return JSON.stringify(value);
+}
+
+// Live outcomes (src/fixtures/near.json): T15's create_jar that made jar 3, T06's ALREADY_PAID refusal.
+type LiveOutcome = {
+  status: { Failure?: unknown; SuccessValue?: string };
+  transaction_outcome: { id: string };
+  receipts_outcome: { outcome: { executor_id: string; status: { Failure?: unknown; SuccessValue?: string } } }[];
+};
+const liveTx = (hash: string) =>
+  (recorded("near", (b) => b.method === "tx" && b.params.tx_hash === hash) as { result: LiveOutcome }).result;
+export const LIVE_SUCCESS_HASH = "EzMfNipDDPKfNm4cEtuGyQhF2TysNFhxL9rVeXPY55f9";
+export const LIVE_REFUSED_HASH = "HXdy5TkMDTf3u7iy1FPZ7U8EEhshmVDRyMZEW6NCRNUP";
+
+/** The live send_tx answer for a transaction the chain rejected before it ran. */
+export function liveRejected(): unknown {
+  return recorded("near", (b) => b.method === "send_tx");
+}
+
+/** The send's answer never arrives (the connection drops after the transaction left). */
+export function lost(): never {
+  throw new Error("connection reset");
+}
+
+/** T15's live successful create_jar as a send_tx answer body. */
+export function liveSuccess(): unknown {
+  return { jsonrpc: "2.0", id: "sdk", result: liveTx(LIVE_SUCCESS_HASH) };
+}
+
+/** Synthetic, labelled: the live success with another return value (JSON), as a send_tx answer body. */
+export function succeededWith(value: unknown): unknown {
+  const live = liveTx(LIVE_SUCCESS_HASH);
+  return { jsonrpc: "2.0", id: "sdk", result: { ...live, status: { SuccessValue: btoa(JSON.stringify(value)) } } };
+}
+
+/** Synthetic, labelled: T06's live refusal with another panic in the contract's receipt, as a send_tx answer body. */
+export function refusedWith(panic: string): unknown {
+  const live = liveTx(LIVE_REFUSED_HASH);
+  const failure = { ActionError: { index: 0, kind: { FunctionCallError: { ExecutionError: `Smart contract panicked: ${panic}` } } } };
+  return {
+    jsonrpc: "2.0",
+    id: "sdk",
+    result: {
+      ...live,
+      status: { Failure: failure },
+      receipts_outcome: live.receipts_outcome.map((r, i) => (i === 0 ? { ...r, outcome: { ...r.outcome, status: { Failure: failure } } } : r)),
+    },
+  };
 }

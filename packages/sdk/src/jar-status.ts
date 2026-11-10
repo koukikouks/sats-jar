@@ -10,6 +10,7 @@ import {
   type JarSummary,
   type Role,
   type TopUp,
+  type TransferStatus,
 } from "./api.ts";
 import type { Near } from "./near.ts";
 import { refusal, unavailable } from "./refusals.ts";
@@ -27,8 +28,10 @@ interface ViewJar {
   create_args: { guardians: string[]; nickname: string; unlock_at: string };
   proven_balance: string;
   demo_timing: boolean;
+  locktime: number;
   handover: unknown;
-  emergency?: unknown;
+  emergency: unknown;
+  transfer: unknown;
 }
 
 export function jarReader(deps: { http: typeof fetch; near: Near; contract: string; me: () => Promise<string | null> }) {
@@ -43,13 +46,15 @@ export function jarReader(deps: { http: typeof fetch; near: Near; contract: stri
   }
 
   async function status(jarId: string): Promise<JarStatus> {
-    // The proof reader keeps no emergency field, so the jar's own view is read alongside it.
+    // The proof reader drops the part-2 fields (findings-t18), so the jar's own view is read alongside it.
     const [jar, view, me] = await Promise.all([read(jarId), deps.near.view<ViewJar | null>("get_jar", { jar_id: jarId }), deps.me()]);
+    if (!view) throw refusal("UNKNOWN_JAR");
     const now = Math.floor(Date.now() / 1000);
+    const handedOver = typeof view.handover === "object" && view.handover !== null && "done" in view.handover;
     return {
       jarId: jar.jarId,
       nickname: jar.nickname,
-      roles: roles(me, { giver: jar.giver, holder: jar.holder, guardians: jar.guardians, handover: jar.handover }),
+      roles: roles(me, { giver: jar.giver, holder: jar.holder, guardians: jar.guardians, handover: view.handover }),
       balance: jar.provenBalance,
       picture: jar.nft.media,
       demoTiming: jar.demoTiming,
@@ -62,13 +67,17 @@ export function jarReader(deps: { http: typeof fetch; near: Near; contract: stri
       availableAllowance: jar.availableAllowance,
       nextAllowanceAt: jar.nextAllowanceAt,
       exit: {
-        opensAt: jar.locktime,
+        opensAt: view.locktime,
         childAddress: jar.childAddress,
-        note: `If no handover happens, the Bitcoin-only exit opens on ${day(jar.locktime)} and pays the child's address, which a parent controls.`,
+        // Story 62: after handover the jar's Bitcoin sits at an address whose exit branch is the
+        // holder's own recovery-phrase key, so the exit never returns to an adult.
+        note: handedOver
+          ? `If NEAR's signing network ever stops, the Bitcoin-only exit opens on ${day(view.locktime)}, and only the holder's recovery phrase can use it.`
+          : `If no handover happens, the Bitcoin-only exit opens on ${day(view.locktime)} and pays the child's address, which a parent controls.`,
       },
-      handover: handover(jar.handover, me, now, jar.unlockAt, jar.demoTiming),
-      emergency: emergency(view?.emergency, me),
-      transfer: { state: "none" },
+      handover: handover(view.handover, me, now, jar.unlockAt, jar.demoTiming),
+      emergency: emergency(view.emergency, me),
+      transfer: transfer(view.transfer, me),
     };
   }
 
@@ -233,7 +242,6 @@ function handover(view: unknown, me: string | null, now: number, unlockAt: numbe
       const delayEndsAt = Number(raw.delay_ends_at);
       return { state, claimedAt: Number(raw.claimed_at), delayEndsAt, confirmedByMe, pausesAllowancesEarly: delayEndsAt < unlockAt };
     }
-    // PROVISIONAL (T10's plan).
     case "completing":
       return { state, coinsToMove: Number(raw.coins_to_move), coinsLeft: Number(raw.coins_left) };
     case "done":
@@ -243,7 +251,20 @@ function handover(view: unknown, me: string | null, now: number, unlockAt: numbe
   }
 }
 
-/** PROVISIONAL (T13's view): absent until T13 merges. */
+function transfer(view: unknown, me: string | null): TransferStatus {
+  if (typeof view !== "object" || view === null) return { state: "none" };
+  const [[state, raw] = ["none", {}]] = Object.entries(view as Record<string, Raw>);
+  const toMe = me !== null && raw.receiver === me;
+  switch (state) {
+    case "started":
+      return { state: "offered", toMe };
+    case "accepted":
+      return { state: "moving", toMe, coinsToMove: Number(raw.coins_to_move), coinsLeft: Number(raw.coins_left) };
+    default:
+      return { state: "none" };
+  }
+}
+
 function emergency(view: unknown, me: string | null): EmergencyStatus {
   if (typeof view !== "object" || view === null) return { state: "none" };
   const [[state, raw] = ["none", {}]] = Object.entries(view as Record<string, Raw>);

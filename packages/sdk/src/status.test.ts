@@ -103,7 +103,7 @@ describe("jar status", () => {
     expect(claimed.handover).toMatchObject({ state: "claimed", claimedAt: 1794269000, lapsesAt: 1794269420, confirmations: 1, confirmedByMe: false });
   });
 
-  test("shows an open emergency proposal in T13's view shape (PROVISIONAL)", async () => {
+  test("shows an open emergency proposal with one approval and no delay yet", async () => {
     // Synthetic, labelled: jar 1's live view with T13's emergency field (t13 worktree, EmergencyView).
     const view = recordedJar1();
     const net = testNetwork({
@@ -118,6 +118,73 @@ describe("jar status", () => {
       approvedByMe: false,
       proposedAt: 1794270000,
       delayEndsAt: null,
+    });
+  });
+
+  describe("the handover, emergency and transfer, in the real contract's view shapes", () => {
+    // The real contract's part-2 fields (src/fixtures/sandbox-views.json), put on jar 1's live
+    // view (synthetic, labelled): the sandbox names (*.test.near) stand for this jar's people.
+    const sandbox = (JSON.parse(readFileSync(new URL("./fixtures/sandbox-views.json", import.meta.url), "utf8")) as {
+      views: Record<string, Record<string, unknown>>;
+    }).views;
+    const part2 = (from: string) => {
+      const { handover, emergency, transfer, locktime } = sandbox[from] ?? {};
+      return { handover, emergency, transfer, locktime };
+    };
+    async function statusWith(fields: Record<string, unknown>, me?: (account: string) => Record<string, unknown>) {
+      const views: { method: string; args: Record<string, unknown>; result: unknown }[] = [];
+      const net = testNetwork({ fixtures: recordings, views });
+      const { someone, account } = await withAccount(net);
+      views.push({ method: "get_jar", args: { jar_id: "1" }, result: { ...recordedJar1(), ...fields, ...(me?.(account) ?? {}) } });
+      return someone.jars.status("1");
+    }
+
+    test("confirmed: the public delay's end; then completing: the re-homing's progress", async () => {
+      expect((await statusWith(part2("handover_confirmed"))).handover).toEqual({
+        state: "confirmed",
+        claimedAt: 1794288056,
+        delayEndsAt: 1794288236,
+        confirmedByMe: false,
+        pausesAllowancesEarly: true, // the delay ends long before jar 1's unlock date
+      });
+      expect((await statusWith(part2("handover_completing"))).handover).toEqual({ state: "completing", coinsToMove: 0, coinsLeft: 2 });
+    });
+
+    test("done: the exit now answers only to the holder's recovery phrase (story 62), from the new address's locktime", async () => {
+      const fields = part2("handover_done");
+      const status = await statusWith(fields);
+      expect(status.handover).toEqual({ state: "done", completedAt: 1794288545 });
+      expect(status.exit.opensAt).toBe(fields.locktime);
+      expect(status.exit.note).toMatch(/recovery phrase/);
+      expect(status.exit.note).not.toMatch(/parent/);
+    });
+
+    test("a transfer offered to this device, then moving to it coin by coin", async () => {
+      const toMe = (key: "started" | "accepted") => (account: string) => {
+        const transfer = sandbox[key === "started" ? "transfer_started" : "transfer_accepted"]?.transfer as Record<string, Record<string, unknown>>;
+        return { transfer: { [key]: { ...transfer[key], receiver: account } } };
+      };
+      expect((await statusWith(part2("transfer_started"), toMe("started"))).transfer).toEqual({ state: "offered", toMe: true });
+      expect((await statusWith(part2("transfer_accepted"), toMe("accepted"))).transfer).toEqual({
+        state: "moving",
+        toMe: true,
+        coinsToMove: 0,
+        coinsLeft: 1,
+      });
+      expect((await statusWith(part2("transfer_started"))).transfer).toEqual({ state: "offered", toMe: false });
+    });
+
+    test("an emergency proposal with two approvals shows when its public delay ends; a cancelled one says so", async () => {
+      expect((await statusWith(part2("emergency_open_2"))).emergency).toEqual({
+        state: "open",
+        proposalId: 1,
+        amount: 2_000,
+        approvals: 2,
+        approvedByMe: false,
+        proposedAt: 1794288054,
+        delayEndsAt: 1794289854,
+      });
+      expect((await statusWith(part2("emergency_cancelled"))).emergency).toEqual({ state: "cancelled", proposalId: 1 });
     });
   });
 

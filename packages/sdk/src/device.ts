@@ -1,12 +1,15 @@
 import {
+  InvalidRecoveryPhraseError,
   WrongPinError,
   createDeviceKey,
+  keysFromRecoveryPhrase,
   lock,
   unlock,
   type DeviceKeys,
   type LockedKeys,
 } from "@sats-jar/device-keys";
 import type { Device, DeviceState, DeviceStorage } from "./api.ts";
+import type { BackendClient } from "./backend-client.ts";
 import { refusal, unavailable } from "./refusals.ts";
 
 const DEVICE = "sats-jar:device";
@@ -17,6 +20,8 @@ interface DeviceRecord {
   publicKey: string;
   /** Set once the backend made (or found) the account for this key. */
   accountId: string | null;
+  /** The child's phone: the locked secret is a recovery phrase, which also holds a Bitcoin key. */
+  phrase?: true;
 }
 
 /** The device's keys and account: one per app instance, unlocked only in memory. */
@@ -69,6 +74,39 @@ export function deviceKeys(storage: DeviceStorage) {
     async keys(): Promise<DeviceKeys> {
       if (unlocked) return unlocked;
       throw refusal((await load()) ? "LOCKED" : "NO_DEVICE");
+    },
+
+    /**
+     * Keeps a recovery phrase as this device's keys, locked under the PIN (the child's phone).
+     * Refuses INVALID_RECOVERY_PHRASE, ALREADY_SET_UP.
+     */
+    async adoptPhrase(phrase: string, pin: string): Promise<void> {
+      if (await load()) throw refusal("ALREADY_SET_UP");
+      let keys: DeviceKeys;
+      try {
+        keys = keysFromRecoveryPhrase(phrase);
+      } catch (error) {
+        if (error instanceof InvalidRecoveryPhraseError) throw refusal("INVALID_RECOVERY_PHRASE");
+        throw error;
+      }
+      const record: DeviceRecord = {
+        locked: await lock({ kind: "recovery-phrase", phrase }, { kind: "pin", pin }),
+        publicKey: keys.near.publicKey,
+        accountId: null,
+        phrase: true,
+      };
+      await storage.set(DEVICE, JSON.stringify(record));
+      unlocked = keys;
+    },
+
+    /** This device's account, made by the backend for its key the first time it is needed. */
+    async ensureAccount(backend: BackendClient): Promise<string> {
+      const record = await load();
+      if (!record) throw refusal("NO_DEVICE");
+      if (record.accountId) return record.accountId;
+      const made = await backend.createAccount(record.publicKey);
+      await storage.set(DEVICE, JSON.stringify({ ...record, accountId: made }));
+      return made;
     },
 
     /** This device's account id, if the backend has made it. */

@@ -33,7 +33,31 @@ const CREATE_REFUSALS = [
   "STORAGE_DEPOSIT_TOO_LOW: attach at least 8890000000000000000000 yoctoNEAR for the jar's storage",
 ];
 
+// Part 2's refusals as the contract words them (contract/src/*.rs), each naming an account,
+// a key or an amount the SDK's message must not repeat.
+const PART_TWO_REFUSALS = [
+  "NO_STRAYS: jar 7 has no coins at an old address to re-home",
+  "REHOMING_IN_PROGRESS: jar 7's coins are moving to a new key; try again after",
+  "INVALID_ADDRESS: tb1pxyz is not a native segwit v0 address on this network",
+  "AMOUNT_BELOW_DUST: a spend must send at least 1000 sats (the jar's dust floor)",
+  "TOO_MANY_APPROVALS: jar 7 already has 10 approved accounts",
+  "TRANSFER_BEFORE_HANDOVER: jar 7 cannot be transferred before handover",
+  "TRANSFER_OPEN: a transfer of this jar is open; cancel it before spending",
+  "NO_OPEN_TRANSFER: no transfer of this jar is open",
+  "TRANSFER_ACCEPTED: buyer.testnet accepted this transfer; it can no longer be cancelled",
+  "NOT_THE_RECEIVER: only buyer.testnet can accept this transfer",
+  "INVALID_BTC_KEY: the receiver's Bitcoin key is not a compressed secp256k1 key",
+  "KEY_CHANGED: this transfer was accepted with another Bitcoin key",
+];
+
 describe("refusals", () => {
+  test.each(PART_TWO_REFUSALS)("part 2 refusal %s comes back typed, without account names, NEAR or gas", (panic) => {
+    const answer = result(refusedWith(panic), CONTRACT);
+    if (!("refusal" in answer)) throw new Error("not refused");
+    expect(answer.refusal.code).toBe(panic.split(":")[0]);
+    expect(answer.refusal.message).not.toMatch(/\.testnet|NEAR|gas|yocto|account/i);
+  });
+
   test("the live refusal reads as its code with the SDK's message and the transaction's link", () => {
     expect(result(live, CONTRACT)).toEqual({
       refusal: expect.objectContaining({
@@ -55,7 +79,7 @@ describe("refusals", () => {
     for (const panic of [
       "Failed to deserialize input from JSON.",
       "Requires attached deposit of exactly 1 yoctoNEAR",
-      "SPEND_UNAVAILABLE: spends after handover come in T12",
+      "BAD_MPC_ROOT_KEY: the MPC root key must be a secp256k1 key",
     ]) {
       const answer = result(refusedWith(panic), CONTRACT);
       expect(answer).toEqual({ refusal: expect.objectContaining({ code: "REFUSED", message: "The jar's rule did not allow that." }) });

@@ -3,9 +3,7 @@
 // The screens never see an account name, gas, a deposit or a signing prompt (ADR 0003); the
 // SDK makes and keeps the keys on the device, pays from the person's own funded account and
 // turns every refusal into a typed, readable `SatsJarRefusal`. Times are unix seconds and
-// amounts are whole sats. PROVISIONAL marks flows whose contract tickets are not merged yet
-// (T10 handover completion, T12 holder spend and transfer, T13 emergency payment): their
-// shapes follow the spec and those tickets' plans, and may still change in T19.
+// amounts are whole sats.
 
 /** Unix seconds. */
 export type UnixSeconds = number;
@@ -56,7 +54,7 @@ export interface SatsJarConfig {
   storage: DeviceStorage;
 }
 
-/** Makes the SDK. Part 1 (#21) returns `SatsJarPartOne`; part 2 (#22) widens it to `SatsJar`. */
+/** Makes the SDK. */
 export type CreateSatsJar = (config: SatsJarConfig) => SatsJar;
 
 /** Everything the screens call. */
@@ -95,7 +93,7 @@ export interface Sent {
  */
 export type RefusalCode = ContractRefusalCode | BackendRefusalCode | DeviceRefusalCode;
 
-/** Refusals from the jar contract. T12's transfer refusals are added in T19, when its codes exist. */
+/** Refusals from the jar contract (`contract/src/error.rs`; BAD_MPC_ROOT_KEY is init-only and reads REFUSED). */
 export type ContractRefusalCode =
   // create_jar
   | "INVALID_CHILD_ADDRESS"
@@ -152,7 +150,7 @@ export type ContractRefusalCode =
   | "NOT_GUARDIAN_OR_CLAIMER"
   | "CLAIM_CHANGED"
   | "HANDOVER_IN_PROGRESS"
-  // PROVISIONAL (T10): handover completion and spends
+  // handover completion, re-homing and strays
   | "HANDOVER_NOT_CONFIRMED"
   | "HANDOVER_DELAY_RUNNING"
   | "BEFORE_UNLOCK"
@@ -161,7 +159,20 @@ export type ContractRefusalCode =
   | "HANDOVER_COMPLETING"
   | "HANDOVER_DONE"
   | "SPEND_BEFORE_HANDOVER"
-  // PROVISIONAL (T13): emergency payment
+  | "NO_STRAYS"
+  | "REHOMING_IN_PROGRESS"
+  // the holder: spend, approvals, transfer
+  | "INVALID_ADDRESS"
+  | "AMOUNT_BELOW_DUST"
+  | "TOO_MANY_APPROVALS"
+  | "TRANSFER_BEFORE_HANDOVER"
+  | "TRANSFER_OPEN"
+  | "NO_OPEN_TRANSFER"
+  | "TRANSFER_ACCEPTED"
+  | "NOT_THE_RECEIVER"
+  | "INVALID_BTC_KEY"
+  | "KEY_CHANGED"
+  // emergency payment
   | "OVER_EMERGENCY_CAP"
   | "EMERGENCY_TOO_SMALL"
   | "PROPOSAL_OPEN"
@@ -200,15 +211,18 @@ export type DeviceRefusalCode =
   | "TRANSACTION_FAILED"
   /** The jar's rule refused for a reason this SDK version has no message for. */
   | "REFUSED"
-  /** The claimed account has more than one key, so its code proves nothing (handover check). */
+  /**
+   * The claimed account is not one phone's own: it has another key, or its name is not the one the
+   * app gives its key. Its code would prove nothing (handover check).
+   */
   | "CLAIM_ACCOUNT_HAS_OTHER_KEYS"
-  /** PROVISIONAL: the call needs the child's recovery-phrase keys on this device. */
+  /** The call needs the child's recovery-phrase keys on this device. */
   | "NO_RECOVERY_PHRASE"
-  /** PROVISIONAL: the words typed back do not match the recovery phrase. */
+  /** The words typed back do not match the recovery phrase. */
   | "WRONG_RECOVERY_WORDS"
-  /** PROVISIONAL: these are not the 12 words of a recovery phrase. */
+  /** These are not the 12 words of a recovery phrase. */
   | "INVALID_RECOVERY_PHRASE"
-  /** PROVISIONAL: the receive code was mistyped (its checksum does not match). */
+  /** The receive code was mistyped (its checksum does not match). */
   | "BAD_RECEIVE_CODE";
 
 /**
@@ -383,16 +397,18 @@ export interface JarStatus extends JarSummary {
   nextAllowanceAt: UnixSeconds | null;
   /** The Bitcoin-only exit (story 53). */
   exit: {
+    /** The current address's exit date: moved on by every re-homing (handover, transfer). */
     opensAt: UnixSeconds;
     /** Where it pays if no handover happens: the child's address, which a parent controls. */
     childAddress: string;
-    /** The sentence the app shows about it. */
+    /**
+     * The sentence the app shows about it. After handover it says the exit answers only to the
+     * holder's recovery-phrase key (story 62).
+     */
     note: string;
   };
   handover: HandoverStatus;
-  /** PROVISIONAL (T13). */
   emergency: EmergencyStatus;
-  /** PROVISIONAL (T12). */
   transfer: TransferStatus;
 }
 
@@ -484,8 +500,7 @@ export interface Jars {
 /**
  * The handover as it stands. "claimed": the child's account claimed it, waiting for 2 guardians
  * (lapses if nobody confirms); "confirmed": the public delay runs; "completing": the jar's
- * Bitcoin is moving to the child's key (PROVISIONAL, T10); "done": the jar is the child's
- * (PROVISIONAL, T10).
+ * Bitcoin is moving to the child's key; "done": the jar is the child's.
  */
 export type HandoverStatus =
   | { state: "none" }
@@ -513,7 +528,7 @@ export type HandoverStatus =
 /** "Set up my jar" on the child's own phone (stories 41-46). */
 export interface Child {
   /**
-   * Makes the 12-word recovery phrase (kept in memory only) and says which words to type back.
+   * Makes the 12-word recovery phrase (kept in memory only) and says which 3 words to type back.
    * Refuses ALREADY_SET_UP.
    *
    * @example
@@ -523,15 +538,19 @@ export interface Child {
   startSetUp(): Promise<{ words: string[]; check: number[] }>;
   /**
    * Checks the typed-back words, locks the phrase under the PIN and creates the child's account
-   * with the phone's key as its only key. Refuses WRONG_RECOVERY_WORDS.
+   * with the phone's key as its only key. Exactly the asked positions count; case and spaces do
+   * not. Refuses WRONG_RECOVERY_WORDS, NO_RECOVERY_PHRASE (no `startSetUp` in this session).
    *
    * @example
-   * await app.child.finishSetUp({ words: [{ index: 2, word: "hollow" }, { index: 9, word: "maple" }], pin: "771204" });
+   * await app.child.finishSetUp({
+   *   words: [{ index: 2, word: "hollow" }, { index: 6, word: "ribbon" }, { index: 9, word: "maple" }],
+   *   pin: "771204",
+   * });
    */
   finishSetUp(input: { words: { index: number; word: string }[]; pin: string }): Promise<void>;
   /**
-   * PROVISIONAL (not in T19's acceptance criteria; story 43): restores the child's keys on a new
-   * phone from the recovery phrase; the same account comes back. Refuses INVALID_RECOVERY_PHRASE,
+   * Restores the child's keys on a new phone from the recovery phrase (story 43); the same
+   * account comes back. Refuses INVALID_RECOVERY_PHRASE,
    * ALREADY_SET_UP.
    *
    * @example
@@ -548,7 +567,7 @@ export interface Child {
   /**
    * Claims the jar for this phone's account with the phrase's Bitcoin key. The jar id comes from
    * the family's "Set up my jar" link (the app puts it there); the SDK does not look it up.
-   * Refuses CLAIM_OPEN, NO_RECOVERY_PHRASE, LOCKED.
+   * Refuses CLAIM_OPEN, HANDOVER_COMPLETING, HANDOVER_DONE, NO_RECOVERY_PHRASE, LOCKED.
    *
    * @example
    * await app.child.claim("7");
@@ -569,8 +588,10 @@ export interface HandoverCheck {
 /** Guardians confirm or cancel the child's claim (stories 47-49). */
 export interface Handover {
   /**
-   * Reads the open claim and derives the code to compare. Refuses NO_OPEN_CLAIM,
-   * CLAIM_ACCOUNT_HAS_OTHER_KEYS.
+   * Reads the open claim (unconfirmed, or confirmed with its delay running) and derives the code
+   * to compare, only for an account that is one phone's own: its only key is full access and its
+   * name is the one the app gives that key. Refuses NO_OPEN_CLAIM, CLAIM_ACCOUNT_HAS_OTHER_KEYS,
+   * UNKNOWN_JAR.
    *
    * @example
    * const check = await app.handover.check("7");
@@ -578,8 +599,9 @@ export interface Handover {
    */
   check(jarId: string): Promise<HandoverCheck>;
   /**
-   * Confirms the claim that was checked. Refuses CLAIM_CHANGED (check again), NOT_A_GUARDIAN,
-   * CLAIM_ALREADY_CONFIRMED, NO_OPEN_CLAIM.
+   * Confirms the claim that was checked, after reading its account's key again. Refuses
+   * CLAIM_CHANGED (check again), CLAIM_ACCOUNT_HAS_OTHER_KEYS, NOT_A_GUARDIAN,
+   * CLAIM_ALREADY_CONFIRMED, NO_OPEN_CLAIM, HANDOVER_COMPLETING, HANDOVER_DONE.
    *
    * @example
    * await app.handover.confirm("7", check);
@@ -587,7 +609,7 @@ export interface Handover {
   confirm(jarId: string, check: HandoverCheck): Promise<Sent>;
   /**
    * Cancels the open claim (a guardian or the claimer). Refuses NO_OPEN_CLAIM,
-   * NOT_GUARDIAN_OR_CLAIMER, HANDOVER_COMPLETING.
+   * NOT_GUARDIAN_OR_CLAIMER, HANDOVER_COMPLETING, HANDOVER_DONE.
    *
    * @example
    * await app.handover.cancel("7");
@@ -596,10 +618,10 @@ export interface Handover {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Part 2: emergency payment (PROVISIONAL, T13)
+// Part 2: emergency payment
 // ---------------------------------------------------------------------------------------------
 
-/** PROVISIONAL (T13): the jar's emergency proposal. Only one is open at a time. */
+/** The jar's emergency proposal. Only one is open at a time. */
 export type EmergencyStatus =
   | { state: "none" }
   | {
@@ -617,7 +639,7 @@ export type EmergencyStatus =
   | { state: "executed"; proposalId: number }
   | { state: "lapsed"; proposalId: number };
 
-/** PROVISIONAL (T13): guardians propose and approve; the giver may cancel during the delay (stories 33-39). */
+/** Guardians propose and approve; the giver may cancel during the delay (stories 33-39). */
 export interface Emergency {
   /**
    * Proposes paying the child `amount` (at most 3 x cap). Refuses NOT_A_GUARDIAN,
@@ -628,8 +650,9 @@ export interface Emergency {
    */
   propose(jarId: string, amount: Sats): Promise<Sent & { proposalId: number }>;
   /**
-   * Approves that exact proposal. Refuses NOT_A_GUARDIAN, ALREADY_APPROVED, PROPOSAL_CHANGED,
-   * EMERGENCY_CANCELLED, NO_OPEN_PROPOSAL, HANDOVER_IN_PROGRESS.
+   * Approves that exact proposal (its id from `JarStatus.emergency`). Refuses NOT_A_GUARDIAN,
+   * ALREADY_APPROVED, PROPOSAL_CHANGED (read it again), EMERGENCY_CANCELLED, NO_OPEN_PROPOSAL,
+   * HANDOVER_IN_PROGRESS.
    *
    * @example
    * await app.emergency.approve("7", 1);
@@ -637,7 +660,7 @@ export interface Emergency {
   approve(jarId: string, proposalId: number): Promise<Sent>;
   /**
    * The giver cancels the open proposal before its delay ends. Refuses NOT_THE_GIVER,
-   * DELAY_PASSED, NO_OPEN_PROPOSAL.
+   * DELAY_PASSED, NO_OPEN_PROPOSAL, EMERGENCY_CANCELLED, HANDOVER_IN_PROGRESS.
    *
    * @example
    * await app.emergency.cancel("7");
@@ -646,11 +669,11 @@ export interface Emergency {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Part 2: the holder after handover (PROVISIONAL, T12)
+// Part 2: the holder after handover
 // ---------------------------------------------------------------------------------------------
 
 /**
- * PROVISIONAL (T12): an open transfer of the jar. "offered": started, not yet accepted; "moving":
+ * An open transfer of the jar. "offered": started, not yet accepted; "moving":
  * accepted, the Bitcoin re-homes to the receiver's key.
  */
 export type TransferStatus =
@@ -658,11 +681,13 @@ export type TransferStatus =
   | { state: "offered"; toMe: boolean }
   | { state: "moving"; toMe: boolean; coinsToMove: number; coinsLeft: number };
 
-/** PROVISIONAL (T12): the holder spends or transfers the jar (stories 55-58a). */
+/** The holder spends or transfers the jar (stories 55-58a). */
 export interface Holder {
   /**
-   * Sends the jar's Bitcoin anywhere. The fee rate (sat/vB) defaults to a public explorer's
-   * recommendation. Refuses SPEND_BEFORE_HANDOVER, NOT_THE_HOLDER, INSUFFICIENT_BALANCE.
+   * Sends exactly `amount` of the jar's Bitcoin to a native segwit address; the fee comes from the
+   * jar and change goes back to it. The fee rate (sat/vB) defaults to a public explorer's
+   * half-hour recommendation. Refuses SPEND_BEFORE_HANDOVER, NOT_THE_HOLDER, TRANSFER_OPEN,
+   * INVALID_ADDRESS, AMOUNT_BELOW_DUST, FEE_TOO_LOW, INSUFFICIENT_BALANCE, CHANGE_BELOW_DUST.
    *
    * @example
    * await app.holder.spend("7", { to: "tb1q6rz28mcfaxtmd6v789l9rrlrusdprr9pqcpvkl", amount: 50_000 });
@@ -670,8 +695,8 @@ export interface Holder {
   spend(jarId: string, input: { to: string; amount: Sats; feeRate?: number }): Promise<Sent>;
   /**
    * This device's receive code, to give to a holder who transfers a jar to you. It carries the
-   * account only, with a checksum; the Bitcoin key goes in at `acceptTransfer`. Refuses
-   * NO_RECOVERY_PHRASE.
+   * account only, with a Base58Check checksum; the Bitcoin key goes in at `acceptTransfer`.
+   * Refuses NO_RECOVERY_PHRASE.
    *
    * @example
    * showCode(await app.holder.receiveCode());
@@ -679,14 +704,15 @@ export interface Holder {
   receiveCode(): Promise<string>;
   /**
    * Starts a transfer to the person behind a receive code. Refuses BAD_RECEIVE_CODE,
-   * NOT_THE_HOLDER, PAYMENT_PENDING.
+   * TRANSFER_BEFORE_HANDOVER, NOT_THE_HOLDER, TRANSFER_OPEN, PAYMENT_PENDING.
    *
    * @example
    * await app.holder.startTransfer("7", typedReceiveCode);
    */
   startTransfer(jarId: string, receiveCode: string): Promise<Sent>;
   /**
-   * Cancels a transfer not yet accepted. Refuses NOT_THE_HOLDER.
+   * Cancels a transfer not yet accepted. Refuses NOT_THE_HOLDER, NO_OPEN_TRANSFER,
+   * TRANSFER_ACCEPTED.
    *
    * @example
    * await app.holder.cancelTransfer("7");
@@ -695,7 +721,10 @@ export interface Holder {
   /**
    * The receiver accepts with their own recovery-phrase key; the Bitcoin re-homes to it before
    * the jar moves. The jar id comes from the holder, in the link the app makes for the transfer.
-   * Refuses NO_RECOVERY_PHRASE.
+   * The fee rate defaults to the explorer's half-hour recommendation, capped at the highest rate
+   * the contract's re-homing fee bound accepts for the first batch. Refuses NO_RECOVERY_PHRASE,
+   * NO_OPEN_TRANSFER, NOT_THE_RECEIVER, KEY_CHANGED, PAYMENT_PENDING, FEE_TOO_HIGH,
+   * OUTPUT_BELOW_DUST.
    *
    * @example
    * await app.holder.acceptTransfer("7");
@@ -714,11 +743,14 @@ export interface TriedRefusal {
   explorerUrl: string;
 }
 
-/** Lets a visitor see the rule say no on chain (stories 40a, 52, 36). */
+/**
+ * Lets a visitor see the rule say no on chain (stories 40a, 52, 36). Each call's arguments can
+ * move nothing from any device: a spend at fee rate 0, an approval of proposal 0 (ids start at 1).
+ * Refuses (throws) only TRANSACTION_FAILED, UNAVAILABLE, NO_DEVICE, LOCKED.
+ */
 export interface TryIt {
   /**
    * A family member's or guardian's spend before handover. Expect SPEND_BEFORE_HANDOVER.
-   * PROVISIONAL (T10).
    *
    * @example
    * const tried = await app.tryIt.earlySpend("7");
@@ -726,14 +758,14 @@ export interface TryIt {
    */
   earlySpend(jarId: string): Promise<TriedRefusal>;
   /**
-   * The family account's spend after handover. Expect NOT_THE_HOLDER. PROVISIONAL (T10).
+   * The family account's spend after handover. Expect NOT_THE_HOLDER.
    *
    * @example
    * const tried = await app.tryIt.afterHandover("7");
    */
   afterHandover(jarId: string): Promise<TriedRefusal>;
   /**
-   * An outsider approving the jar's emergency payment. Expect NOT_A_GUARDIAN. PROVISIONAL (T13).
+   * An outsider approving the jar's emergency payment. Expect NOT_A_GUARDIAN.
    *
    * @example
    * const tried = await app.tryIt.outsiderApproval("7");
