@@ -52,14 +52,19 @@ export function createProofReader(options: ProofReaderOptions): ProofReader {
     })) as { result?: { result?: number[] } };
     const bytes = answer.result?.result;
     if (!Array.isArray(bytes)) throw new ProofUnavailableError("near");
-    return JSON.parse(new TextDecoder().decode(Uint8Array.from(bytes))) as T;
+    try {
+      return JSON.parse(new TextDecoder().decode(Uint8Array.from(bytes))) as T;
+    } catch {
+      throw new ProofUnavailableError("near");
+    }
   }
 
   async function paged<T>(method: string, jarId: string): Promise<T[]> {
     const all: T[] = [];
     for (;;) {
-      const page = await view<T[]>(method, { jar_id: jarId, from_index: all.length, limit: VIEW_PAGE });
-      all.push(...page);
+      const page = await view<unknown>(method, { jar_id: jarId, from_index: all.length, limit: VIEW_PAGE });
+      if (!Array.isArray(page)) throw new ProofUnavailableError("near");
+      all.push(...(page as T[]));
       if (page.length < VIEW_PAGE) return all;
     }
   }
@@ -74,7 +79,12 @@ export function createProofReader(options: ProofReaderOptions): ProofReader {
         view<TokenView>("nft_token", { token_id: jarId }),
       ]);
       const payments = await Promise.all(
-        paymentIds(history).map((id) => view<PaymentView>("get_payment", { payment_id: id })),
+        paymentIds(history).map(async (id) => {
+          const payment = await view<PaymentView | null>("get_payment", { payment_id: id });
+          // The history names it, so a missing payment means the answer is wrong, not that it is gone.
+          if (payment === null) throw new ProofUnavailableError("near");
+          return payment;
+        }),
       );
       return toJarProof(jar, coins, payments, history, token);
     },

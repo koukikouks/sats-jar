@@ -88,6 +88,15 @@ export interface HistoryEvent {
   paymentId?: string;
   reason?: string;
   attempt?: number;
+  childAccount?: string;
+  /** Compressed public key, hex. */
+  childBtcPubkey?: string;
+  lapsesAt?: number;
+  guardian?: string;
+  /** Set by the second confirmation, which starts the delay; null before it. */
+  delayEndsAt?: number | null;
+  by?: string;
+  lapsedAt?: number;
 }
 
 export interface JarProof {
@@ -192,5 +201,12 @@ function toHistoryEvent(h: HistoryView): HistoryEvent {
     ...(typeof h.payment_id === "string" ? { paymentId: h.payment_id } : {}),
     ...(typeof h.reason === "string" ? { reason: h.reason } : {}),
     ...(typeof h.attempt === "number" ? { attempt: h.attempt } : {}),
+    ...(typeof h.child_account === "string" ? { childAccount: h.child_account } : {}),
+    ...(typeof h.child_btc_pubkey === "string" ? { childBtcPubkey: h.child_btc_pubkey } : {}),
+    ...(typeof h.lapses_at === "string" ? { lapsesAt: Number(h.lapses_at) } : {}),
+    ...(typeof h.guardian === "string" ? { guardian: h.guardian } : {}),
+    ...("delay_ends_at" in h ? { delayEndsAt: typeof h.delay_ends_at === "string" ? Number(h.delay_ends_at) : null } : {}),
+    ...(typeof h.by === "string" ? { by: h.by } : {}),
+    ...(typeof h.lapsed_at === "string" ? { lapsedAt: Number(h.lapsed_at) } : {}),
   };
 }
