@@ -105,7 +105,12 @@ async function phone(name: string): Promise<SatsJar> {
     await device.device.unlock({ pin: PIN });
   }
   const { accountId, publicKey } = deviceRecord(name);
-  const keys = await chain.accessKeys(accountId);
+  // A brand-new account shows at final a few blocks after the backend made it.
+  let keys = await chain.accessKeys(accountId);
+  for (let attempt = 1; keys.length === 0 && attempt < 10; attempt += 1) {
+    await wait(1);
+    keys = await chain.accessKeys(accountId);
+  }
   check(
     keys.length === 1 && keys[0]?.public_key === publicKey && keys[0].access_key.permission === "FullAccess",
     `${name}'s account ${accountId} has the phone's key as its only key`,
