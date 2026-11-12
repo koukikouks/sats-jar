@@ -1,6 +1,6 @@
 import type { JarProof } from "@sats-jar/proof";
 import { contractExplorerUrl } from "../../config.ts";
-import { day, period, sats } from "../../ui/format.ts";
+import { day, period, sats, when } from "../../ui/format.ts";
 
 /** The jar's picture and settings as the contract reads them (story 38). */
 export function TheJar(props: { jar: JarProof }) {
@@ -20,7 +20,7 @@ export function TheJar(props: { jar: JarProof }) {
         <li>
           Allowance: up to {sats(jar.cap)} every {period(jar.period)}
         </li>
-        <li>Unlocks: {day(jar.unlockAt)}</li>
+        <li>Unlocks: {jar.demoTiming ? when(jar.unlockAt) : day(jar.unlockAt)}</li>
         <li>Guardians: {jar.guardians.length}</li>
         <li>Held by: {jar.holder === jar.familyAccount ? "the family account" : "its holder since handover"}</li>
         <li>
