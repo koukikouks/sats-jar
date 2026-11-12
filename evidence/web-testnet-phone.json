@@ -1,0 +1,282 @@
+{
+  "about": "Live testnet run of the web app (koukikouks/sats-jar#43): every person's step of the App SDK's testnet checks, done through the browser. Output of app/journeys/web-testnet.journey.ts. `row` is the row of docs/web-parity.md.",
+  "contract": "sats-jar-dev-2.testnet",
+  "width": "phone",
+  "ran_at": "2026-11-12T22:37:30.796Z",
+  "code_commit": "5e126e0",
+  "steps": [
+    {
+      "row": [
+        2,
+        3
+      ],
+      "step": "the app locks, and a wrong PIN is refused"
+    },
+    {
+      "row": [
+        4,
+        5
+      ],
+      "step": "2 invite links made and kept on the device"
+    },
+    {
+      "row": [
+        6,
+        7
+      ],
+      "step": "guardian 1 previewed the link and joined"
+    },
+    {
+      "row": [
+        6,
+        7
+      ],
+      "step": "guardian 2 previewed the link and joined"
+    },
+    {
+      "row": [
+        7
+      ],
+      "step": "a used invite link is refused"
+    },
+    {
+      "row": [
+        8
+      ],
+      "step": "INVALID_CHILD_ADDRESS: \"That is not a Bitcoin address the jar can pay. Copy the child's address again from the wallet.\"",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/4hv1x1jsMU6nXKc5bXjUmJVutPC2TXWeMYtVRcSzFy4K"
+    },
+    {
+      "row": [
+        8
+      ],
+      "step": "CHILD_ADDRESS_WRONG_NETWORK: \"That address is for a different Bitcoin network. Use an address from a test Bitcoin wallet (it starts with tb1q).\"",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/28CamZyzw7vtj6ZcgzdGtjHYgPun99Q4RUTX83CxLe28"
+    },
+    {
+      "row": [
+        8
+      ],
+      "step": "CHILD_ADDRESS_NOT_P2WPKH: \"The child's address must be a standard native segwit address (it starts with tb1q and is 42 characters long).\"",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/FvJHw619aSQ74ZfMDDXqTkV1HU11c1zcc7GTbKQSMwNp"
+    },
+    {
+      "row": [
+        8
+      ],
+      "step": "CAP_TOO_SMALL: \"The cap is too small to pay its own Bitcoin fees. Choose at least 1,630 sats.\"",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/8XnFrAYZD5176kTdzGxMMbZKjCiqRmzfMLHdwUsxsEQB"
+    },
+    {
+      "row": [
+        8
+      ],
+      "step": "UNLOCK_IN_PAST: \"The unlock date must be in the future.\"",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/G9LR5Zh2pnj9tvKT3fwdKtqr7XUXiT6cRHtcrtXdPWXr"
+    },
+    {
+      "row": [
+        8
+      ],
+      "step": "LOCKTIME_OUT_OF_RANGE: \"That unlock date is too far away for Bitcoin. Choose an earlier date.\"",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/5hSJnGYPgvoPxLGmh1qXvnW1rpaDosVigzsmGUDxWL1U"
+    },
+    {
+      "row": [
+        8
+      ],
+      "step": "PERIOD_TOO_SHORT and TOO_FEW_GUARDIANS cannot be sent from the screens",
+      "detail": "the form offers only 30 days or demo timing (600 s), and offers Create only once 2 guardians have joined"
+    },
+    {
+      "row": [
+        8,
+        10,
+        11,
+        12,
+        13
+      ],
+      "step": "jar 10 created; the jar page shows it empty, demo timing, with its top-up QR code"
+    },
+    {
+      "row": [
+        9,
+        10
+      ],
+      "step": "guardians list the jar and see themselves as guardians"
+    },
+    {
+      "row": [
+        10
+      ],
+      "step": "an unknown jar reads as UNKNOWN_JAR's sentence"
+    },
+    {
+      "row": [
+        17
+      ],
+      "step": "the child's phone was set up on an earlier run; unlocked with its PIN"
+    },
+    {
+      "row": [
+        17,
+        19
+      ],
+      "step": "the child's phone is set up and shows its guardian code",
+      "detail": "9938 1407 4953 2539 4046"
+    },
+    {
+      "row": [
+        17,
+        26
+      ],
+      "step": "the friend's receive code",
+      "detail": "3QWAuEM85wEbNBWkzcQmM425CUWs6ZZSUskGYUBYfBiHwhrtH9wopDUgKgsT21"
+    },
+    {
+      "row": [
+        30,
+        33
+      ],
+      "step": "a guardian's early spend: SPEND_BEFORE_HANDOVER",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/2KLWPHCt2MBnj1kcEYZpz8nYjGHHXaPNWqApQxkvZfzS"
+    },
+    {
+      "row": [
+        32,
+        33
+      ],
+      "step": "an outsider's approval: NOT_A_GUARDIAN",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/GZneF44d1qKa5nvan1ZhSG3hrn1UsP3PRbpyuGA8ekaq"
+    },
+    {
+      "row": [
+        14
+      ],
+      "step": "a guardian proposed 2,000 sats",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/8zeas4DhoQF7HcX6BZsZGXQdFq9j7VmanEmWof5o4wTP"
+    },
+    {
+      "row": [
+        15
+      ],
+      "step": "the second guardian approved",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/5eny9No2zA9g27TqX6yKUkhsiX78tQKtYWRjNmz5gncd"
+    },
+    {
+      "row": [
+        16
+      ],
+      "step": "2 approvals start the public delay; a guardian who isn't the giver is offered no cancel",
+      "detail": "the SDK check's NOT_THE_GIVER refusal cannot be sent from the screens"
+    },
+    {
+      "row": [
+        16
+      ],
+      "step": "the giver cancelled it",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/4PDAZuciepHaW8HGd2xu4frnexFDD26mRdo6VAFf6Y54"
+    },
+    {
+      "row": [
+        20
+      ],
+      "step": "the child's phone claimed the jar"
+    },
+    {
+      "row": [
+        21
+      ],
+      "step": "guardian 1 reads the same code from the chain",
+      "detail": "9938 1407 4953 2539 4046"
+    },
+    {
+      "row": [
+        23
+      ],
+      "step": "a guardian cancelled the claim",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/4ANBBcDZFBbRu8s11KPyyzKsa3NUiYKcwKScUao8tcFj"
+    },
+    {
+      "row": [
+        20
+      ],
+      "step": "a fresh claim after the cancel"
+    },
+    {
+      "row": [
+        21,
+        22
+      ],
+      "step": "guardian 1 matched the code and confirmed",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/GLQZs4LLXiMX1ekHMdMeqdLV2WGgPKLrpBJ9t9jHuP9x"
+    },
+    {
+      "row": [
+        21,
+        22
+      ],
+      "step": "guardian 2 matched the code and confirmed",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/9LbdAMFgdhf8RTTGteJCsyhSYhzZDj9ukh8jUmGAsHFG"
+    },
+    {
+      "row": [
+        24
+      ],
+      "step": "keeper: complete_handover done",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/E2P8yTFBbgY2DeDQCXjTo7jFcPpDmwcoVaBKNLrYUeJz"
+    },
+    {
+      "row": [
+        24
+      ],
+      "step": "the child holds the jar and reads that nobody can recover it without their phone or phrase"
+    },
+    {
+      "row": [
+        18
+      ],
+      "step": "not run: the child's phone was set up on an earlier run, so its words were not shown on this one"
+    },
+    {
+      "row": [
+        31
+      ],
+      "step": "the family account's spend after handover: NOT_THE_HOLDER",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/635gJbQoDtr86sUFHcDKSYHUnT82JL3USWXyqgHxWRZ"
+    },
+    {
+      "row": [
+        25
+      ],
+      "step": "the holder's spend: INSUFFICIENT_BALANCE",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/H6YHBP2GVGaP91cZ92Snm6x6tapTBv2TkZvQY3Q7DXkN"
+    },
+    {
+      "row": [
+        27
+      ],
+      "step": "a transfer to the friend's receive code",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/6LqD5AagsFD3ZXdz76YPRcV8L2rMhnuK3gqadqMJH4Ma"
+    },
+    {
+      "row": [
+        28
+      ],
+      "step": "the holder cancelled it",
+      "explorerUrl": "https://testnet.nearblocks.io/txns/8FntyuqFFiPk31xmiAhmq7DSQS4J2m61qw75gaoztYg9"
+    },
+    {
+      "row": [
+        29
+      ],
+      "step": "the friend accepted with their own key and holds the jar"
+    },
+    {
+      "row": [
+        33
+      ],
+      "step": "the public record lists 18 requests, 4 of them refused, and names no account"
+    }
+  ]
+}
