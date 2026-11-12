@@ -147,6 +147,9 @@ async function setUpPhone(page: Page, wrongFirst: boolean): Promise<string[]> {
  */
 async function pressUntil(page: Page, button: string, done: Locator): Promise<void> {
   for (let attempt = 1; ; attempt += 1) {
+    // An alert can come from another section's read (the public RPC hiccuping), so the press may
+    // have gone through after all: never press again once its result shows.
+    if (await done.isVisible()) return;
     await page.getByRole("button", { name: button }).click();
     const outcome = await Promise.race([
       done.waitFor().then(() => "done" as const),
