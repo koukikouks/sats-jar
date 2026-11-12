@@ -183,3 +183,13 @@ fieldset.field {
   padding: var(--space-2) 0;
   border-top: var(--border-width) solid var(--color-border);
 }
+.code {
+  font-family: var(--font-mono);
+  font-size: var(--text-h2);
+  letter-spacing: var(--space-1);
+}
+.words {
+  columns: 2;
+  font-family: var(--font-mono);
+  margin: 0 0 var(--space-4);
+}
