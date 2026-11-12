@@ -4,7 +4,7 @@
 // chain back through the app's own screens, and the run writes every transaction it saw to
 // evidence/web-testnet.json. Rows of docs/web-parity.md are named in the step titles.
 import { execSync } from "node:child_process";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -62,6 +62,14 @@ async function save(device: Device) {
   if (!device.persisted) return;
   mkdirSync(DEVICES, { recursive: true });
   await device.context.storageState({ path: join(DEVICES, `${device.name}.json`) });
+}
+
+/** Saves a device whose keys the app has just made, and fails at once if they are not in the saved file. */
+async function saveKeys(device: Device) {
+  await expect.poll(() => device.page.evaluate(() => localStorage.getItem("sats-jar:device") !== null)).toBe(true);
+  await save(device);
+  const saved = readFileSync(join(DEVICES, `${device.name}.json`), "utf8");
+  expect(saved, `${device.name}'s saved device holds its PIN-locked keys`).toContain("sats-jar:device");
 }
 
 /** Opens a path; if the PIN gate shows, sets the device up or unlocks it, then waits for `ready`. */
@@ -211,7 +219,7 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
       await welcome.click();
       await passGate(page, page.getByRole("heading", { name: "Start a jar" }));
       record([1], "a new device is set up with a PIN");
-      await save(giver);
+      await saveKeys(giver);
       await page.goto("/");
     }
     await passGate(page, home());
@@ -245,7 +253,7 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
       await passGate(page, page.getByRole("button", { name: "Join as a guardian" }));
       await page.getByRole("button", { name: "Join as a guardian" }).click();
       await expect(page.getByText(`You're a guardian of ${nickname}.`, { exact: false })).toBeVisible();
-      await save(guardian);
+      await saveKeys(guardian);
       record([6, 7], `guardian ${n + 1} previewed the link and joined`);
     }
     await guardian1.page.goto(links[0] ?? "");
@@ -321,6 +329,8 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
     await expect(fresh.or(page.getByRole("heading", { name: "Unlock Sats Jar" })).first()).toBeVisible();
     if (await fresh.isVisible()) {
       childWords = await setUpPhone(page, true);
+      await expect(page.getByRole("heading", { name: `Claim ${nickname}` })).toBeVisible();
+      await saveKeys(child);
     } else {
       await passGate(page, claimHeading);
       record([17], "the child's phone was set up on an earlier run; unlocked with its PIN");
@@ -339,6 +349,8 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
     await expect(show.or(page.getByRole("heading", { name: "Unlock Sats Jar" })).first()).toBeVisible();
     if (await show.isVisible()) {
       await setUpPhone(page, false);
+      await expect(page.getByRole("heading", { name: "Your receive code" })).toBeVisible();
+      await saveKeys(friend);
     }
     await passGate(page, page.getByRole("heading", { name: "Your receive code" }));
     receiveCode = (await page.locator(".mono").first().textContent()) ?? "";
@@ -424,6 +436,7 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
     }
     await expect(child.page.getByText("Nobody, Sats Jar included, can recover this jar without your phone or your recovery phrase. Keep your recovery phrase safe.")).toBeVisible();
     await expect(child.page.getByText("You hold this jar", { exact: false })).toBeVisible();
+    await expect(child.page.getByText(/^If the signing network behind Sats Jar ever stops, the Bitcoin-only exit opens on .+, and only the holder's recovery phrase can use it\.$/)).toBeVisible();
     record([24], "the child holds the jar and reads that nobody can recover it without their phone or phrase");
   });
 

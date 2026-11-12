@@ -175,6 +175,22 @@ describe("the public record", () => {
     expect(container.textContent).not.toMatch(/testnet|aaaaaaaa/);
   });
 
+  it("does not repeat a role where the contract's sentence names the account after its role", async () => {
+    const requests = [
+      tx({
+        hash: "J",
+        method: "cancel_emergency",
+        signer: "priya-1.sats-jar-dev-2.testnet",
+        ok: false,
+        // contract/src/emergency.rs: the NOT_THE_GIVER sentence, as recorded from testnet.
+        refusal: { code: "NOT_THE_GIVER", reason: "only the giver, ruth-1.sats-jar-dev-2.testnet, can cancel an emergency payment" },
+      }),
+    ];
+    const { container } = renderApp("/proof/7", record(jar(), requests));
+    expect(await screen.findByText("Refused: only the giver can cancel an emergency payment")).toBeTruthy();
+    expect(container.textContent).not.toMatch(/testnet|aaaaaaaa/);
+  });
+
   it("names the holder after handover by role", async () => {
     const requests = [tx({ hash: "A", method: "start_transfer", signer: child })];
     renderApp("/proof/7", record(jar({ holder: child, history: handedOver }), requests));
@@ -326,6 +342,7 @@ describe("trying to break the rule", () => {
     const section = await tryItSection();
     await user.click(within(section).getByRole("button", { name: OUTSIDER }));
     expect(await within(section).findByRole("heading", { name: "Unlock Sats Jar" })).toBeTruthy();
+    expect(within(section).queryByText("To try, set up Sats Jar on this device first.")).toBeNull();
     expect(sdk.tryIt.outsiderApproval).not.toHaveBeenCalled();
   });
 

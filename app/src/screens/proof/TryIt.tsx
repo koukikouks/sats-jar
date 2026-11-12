@@ -47,7 +47,7 @@ export function TryIt(props: { jar: JarProof }) {
       ))}
       {wantsToTry && !unlocked && (
         <>
-          <p>To try, set up Sats Jar on this device first.</p>
+          {state === "new" && <p>To try, set up Sats Jar on this device first.</p>}
           <PinGate>{null}</PinGate>
         </>
       )}

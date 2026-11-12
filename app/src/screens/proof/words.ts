@@ -8,6 +8,7 @@ export const handoverDone = (jar: JarProof): boolean => jar.history.some((event)
 /** Who sent a request, by their part in the jar. */
 export function senderRole(jar: JarProof, signer: string): string {
   if (signer === jar.giver) return "the giver";
+  if (signer === jar.familyAccount) return "the family account";
   if (jar.guardians.includes(signer)) return "a guardian";
   if (signer === jar.holder && jar.holder !== jar.familyAccount) return "the holder";
   const claimants = jar.history.flatMap((event) => (event.event === "handover_claimed" && event.childAccount ? [event.childAccount] : []));
