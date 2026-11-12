@@ -156,6 +156,18 @@ describe("joining as a guardian", () => {
     expect(screen.getByRole("heading", { name: "Be a guardian of Sunny's jar" })).toBeTruthy();
   });
 
+  it("tells a device that already joined to pass the link on, and offers no second join", async () => {
+    const { user } = renderApp("/join/tok-b", (sdk) => {
+      sdk.invites.preview.mockResolvedValue({ nickname: "Sunny's jar", joined: false });
+      sdk.invites.join.mockRejectedValue(new SatsJarRefusal("ALREADY_GUARDIAN", "You are already a guardian of this jar."));
+    });
+    await user.click(await screen.findByRole("button", { name: "Join as a guardian" }));
+    expect(
+      await screen.findByText("This device has already joined this jar as a guardian. Send this link to the other guardian to open on their own phone."),
+    ).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Join as a guardian" })).toBeNull();
+  });
+
   it("says a used link is used, and offers no join", async () => {
     renderApp("/join/tok-a", (sdk) => sdk.invites.preview.mockResolvedValue({ nickname: "Sunny's jar", joined: true }));
     expect(await screen.findByText("Someone has already joined with this invite link. Ask for a new link.")).toBeTruthy();

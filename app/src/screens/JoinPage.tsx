@@ -1,3 +1,4 @@
+import { SatsJarRefusal } from "@sats-jar/sdk";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router";
 import { useSdk } from "../services.tsx";
@@ -37,6 +38,14 @@ function Join(props: { token: string; nickname: string }) {
     mutationFn: () => sdk.invites.join(props.token),
     onSuccess: () => client.invalidateQueries({ queryKey: ["jars"] }),
   });
+  // One person fills one guardian spot (story 40b): this device has joined through another link.
+  if (join.error instanceof SatsJarRefusal && join.error.code === "ALREADY_GUARDIAN") {
+    return (
+      <p className="refusal">
+        This device has already joined this jar as a guardian. Send this link to the other guardian to open on their own phone.
+      </p>
+    );
+  }
   if (join.isSuccess) {
     return <p className="done">You're a guardian of {props.nickname}. The jar appears under Your jars once it's created.</p>;
   }
