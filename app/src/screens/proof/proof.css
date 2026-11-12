@@ -1,0 +1,24 @@
+/* The public record's own classes; every value comes from theme.css. */
+.proof-line {
+  overflow-wrap: anywhere;
+}
+
+.proof-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.proof-list > li {
+  display: grid;
+  gap: var(--space-1);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.proof-meta {
+  color: var(--color-muted);
+  font-size: var(--text-small);
+}

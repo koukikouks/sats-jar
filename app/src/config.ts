@@ -6,3 +6,6 @@ export const config = {
   /** The app backend, on the app's own origin (vite.config.ts proxies it). */
   backendUrl: "/api",
 } as const;
+
+/** The jar contract on a public explorer, for the public record's "The jar contract ↗". */
+export const contractExplorerUrl = `https://testnet.nearblocks.io/address/${config.contract}`;
