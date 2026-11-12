@@ -5,6 +5,7 @@ import { useSdk } from "../services.tsx";
 import { DemoBadge } from "../ui/DemoBadge.tsx";
 import { useDevice } from "../ui/device.ts";
 import { roleLine, sats } from "../ui/format.ts";
+import { Refusal } from "../ui/messages.tsx";
 import { PinGate } from "../ui/PinGate.tsx";
 
 /** "/": a new device's three ways in, or this device's jars (stories 1, 9, 17, 43, 56). */
@@ -58,6 +59,7 @@ function YourJars() {
         ))}
       </ul>
       {empty && <p>No jars on this device yet.</p>}
+      <Refusal error={jars.error ?? drafts.error} />
       <Link className="button" to="/new">
         Start a jar
       </Link>

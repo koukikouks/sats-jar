@@ -36,4 +36,8 @@
   --radius-pill: 999px;
   --border-width: 1px;
   --picture-size: 4rem;
+  --qr-size: 13.75rem;
+  --weight-strong: 600;
+  --weight-brand: 700;
+  --opacity-disabled: 0.6;
 }

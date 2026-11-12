@@ -7,7 +7,8 @@ export function TopUpBox(props: { address: string; qrPayload: string }) {
   const [qr, setQr] = useState<string | null>(null);
   useEffect(() => {
     let live = true;
-    QRCode.toDataURL(props.qrPayload, { margin: 1, width: 220 }).then((url) => live && setQr(url));
+    // Drawn at twice its shown size (--qr-size) so it stays sharp on high-density screens.
+    QRCode.toDataURL(props.qrPayload, { margin: 1, width: 440 }).then((url) => live && setQr(url));
     return () => {
       live = false;
     };
@@ -15,7 +16,7 @@ export function TopUpBox(props: { address: string; qrPayload: string }) {
   return (
     <section className="panel">
       <h2>Top up</h2>
-      {qr && <img className="qr" src={qr} alt="QR code of the jar's Bitcoin address" width={220} height={220} />}
+      {qr && <img className="qr" src={qr} alt="QR code of the jar's Bitcoin address" />}
       <p className="mono">{props.address}</p>
       <Copy text={props.address} label="Copy address" />
       <p>

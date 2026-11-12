@@ -2,7 +2,7 @@ import { SatsJarRefusal } from "@sats-jar/sdk";
 
 /** What a person reads when something they asked for did not happen: the SDK's own sentence. */
 export function refusalText(error: unknown): string {
-  return error instanceof SatsJarRefusal ? error.message : "That didn't work just now. Try again.";
+  return error instanceof SatsJarRefusal ? error.message : "We could not reach the network just now. Try again shortly.";
 }
 
 export function Refusal(props: { error: unknown }) {
