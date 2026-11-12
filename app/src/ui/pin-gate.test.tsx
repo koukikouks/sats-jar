@@ -48,6 +48,13 @@ describe("the PIN gate", () => {
     expect(sdk.device.setUp).toHaveBeenCalledWith({ pin: "123456" });
   });
 
+  it("keeps all 6 digits of a pasted PIN with a separator in it", async () => {
+    const { user } = renderApp("/new", (sdk) => sdk.device.state.mockResolvedValue("new"));
+    await user.click(await screen.findByLabelText("PIN"));
+    await user.paste("123-456");
+    expect((screen.getByLabelText("PIN") as HTMLInputElement).value).toBe("123456");
+  });
+
   it("unlocks a locked device, showing the SDK's sentence for a wrong PIN", async () => {
     const { user, sdk } = renderApp("/", (sdk) => {
       sdk.device.state.mockResolvedValue("locked");

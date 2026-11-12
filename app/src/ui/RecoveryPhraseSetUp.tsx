@@ -84,10 +84,10 @@ function CheckWords(props: { check: number[]; onDone: () => void }) {
         </Field>
       ))}
       <Field label="PIN" hint="A 6-digit PIN unlocks your jar on this phone.">
-        <input type="password" inputMode="numeric" autoComplete="new-password" value={pin} maxLength={6} onChange={(e) => setPin(pinDigits(e.target.value))} />
+        <input type="password" inputMode="numeric" autoComplete="new-password" value={pin} onChange={(e) => setPin(pinDigits(e.target.value))} />
       </Field>
       <Field label="Type it again">
-        <input type="password" inputMode="numeric" autoComplete="new-password" value={again} maxLength={6} onChange={(e) => setAgain(pinDigits(e.target.value))} />
+        <input type="password" inputMode="numeric" autoComplete="new-password" value={again} onChange={(e) => setAgain(pinDigits(e.target.value))} />
       </Field>
       {problem && (
         <p className="refusal" role="alert">

@@ -32,11 +32,11 @@ export function NewPinFields(props: { pin: string; again: string; onPin: (v: str
     <>
       <label className="field">
         <span>PIN</span>
-        <input type="password" inputMode="numeric" autoComplete="new-password" value={props.pin} maxLength={6} onChange={(e) => props.onPin(pinDigits(e.target.value))} />
+        <input type="password" inputMode="numeric" autoComplete="new-password" value={props.pin} onChange={(e) => props.onPin(pinDigits(e.target.value))} />
       </label>
       <label className="field">
         <span>Type it again</span>
-        <input type="password" inputMode="numeric" autoComplete="new-password" value={props.again} maxLength={6} onChange={(e) => props.onAgain(pinDigits(e.target.value))} />
+        <input type="password" inputMode="numeric" autoComplete="new-password" value={props.again} onChange={(e) => props.onAgain(pinDigits(e.target.value))} />
       </label>
     </>
   );
@@ -90,7 +90,7 @@ function Unlock() {
       <h1>Unlock Sats Jar</h1>
       <label className="field">
         <span>PIN</span>
-        <input type="password" inputMode="numeric" autoComplete="current-password" value={pin} maxLength={6} onChange={(e) => setPin(pinDigits(e.target.value))} />
+        <input type="password" inputMode="numeric" autoComplete="current-password" value={pin} onChange={(e) => setPin(pinDigits(e.target.value))} />
       </label>
       <Refusal error={unlock.error} />
       <button type="submit" disabled={unlock.isPending}>
