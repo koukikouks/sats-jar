@@ -18,6 +18,16 @@ function showing(sdk: StandInSdk, jar: JarStatus, topUps: TopUp[] = [], allowanc
 }
 
 describe("the jar page", () => {
+  it("words the exit after handover without naming the chain behind it", async () => {
+    renderApp("/jar/1", (sdk) =>
+      showing(sdk, { ...jar1, exit: { ...jar1.exit, opensAt: Date.UTC(2042, 4, 1) / 1000 }, handover: { state: "done", completedAt: 1_800_000_000 } }),
+    );
+    expect(
+      await screen.findByText("If the signing network behind Sats Jar ever stops, the Bitcoin-only exit opens on 1 May 2042, and only the holder's recovery phrase can use it."),
+    ).toBeTruthy();
+    expect(document.body.textContent).not.toMatch(/NEAR/);
+  });
+
   it("shows a funded jar's balance, top-up address, counted top-ups and paid allowance from live data", async () => {
     const { sdk } = renderApp("/jar/1", (sdk) =>
       showing(sdk, jar1, live.topUps as TopUp[], live.allowances as Allowance[]),
@@ -37,7 +47,7 @@ describe("the jar page", () => {
     expect(within(allowance).getByText("Sats Jar pays it automatically.")).toBeTruthy();
     expect(within(allowance).getByText(/^Next one: .+\.$/)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Copy address" })).toBeTruthy();
-    expect(screen.getByText(jar1.exit.note)).toBeTruthy();
+    expect(screen.getByText(/^If no handover happens, the Bitcoin-only exit opens on .+ and pays the child's address, which a parent controls\.$/)).toBeTruthy();
     expect(screen.getByRole("link", { name: "See the public record" }).getAttribute("href")).toBe("/proof/1");
   });
 
