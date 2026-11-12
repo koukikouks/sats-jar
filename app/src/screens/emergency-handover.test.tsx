@@ -168,8 +168,8 @@ describe("the handover on the jar page", () => {
     expect(await screen.findByText(/Until the Bitcoin starts moving, any guardian or the child can cancel\./)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Cancel the handover" })).toBeTruthy();
     unmount();
-    const second = renderApp("/jar/7", (sdk) => jarAs(sdk, { roles: ["giver"], handover: { state: "completing", coinsToMove: 3, coinsLeft: 1 } }));
-    expect(await screen.findByText("The jar's Bitcoin is moving to the child's own key: 2 of 3 coins moved.")).toBeTruthy();
+    const second = renderApp("/jar/7", (sdk) => jarAs(sdk, { roles: ["giver"], handover: { state: "completing", coinsToMove: 0, coinsLeft: 1 } }));
+    expect(await screen.findByText("The jar's Bitcoin is moving to the child's own key: 1 coin still to go.")).toBeTruthy();
     second.unmount();
     renderApp("/jar/7", (sdk) => jarAs(sdk, { roles: ["holder"], handover: { state: "done", completedAt: NOW } }));
     expect(await screen.findByText(/^Handed over on .*\. The jar is the child's alone, and every adult's access has ended\.$/)).toBeTruthy();

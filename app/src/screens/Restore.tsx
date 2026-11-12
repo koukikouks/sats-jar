@@ -16,7 +16,7 @@ export function Restore() {
   const [again, setAgain] = useState("");
   const [problem, setProblem] = useState<string | null>(null);
   const restore = useMutation({
-    mutationFn: () => sdk.child.restore({ words: phrase.trim().split(/\s+/), pin }),
+    mutationFn: () => sdk.child.restore({ words: phrase.trim().toLowerCase().split(/\s+/), pin }),
     onSuccess: async () => {
       await client.invalidateQueries();
       navigate("/");

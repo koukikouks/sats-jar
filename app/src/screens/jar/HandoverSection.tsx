@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useSdk } from "../../services.tsx";
 import { Copy } from "../../ui/Copy.tsx";
-import { day, when } from "../../ui/format.ts";
+import { coinsStillToGo, day, when } from "../../ui/format.ts";
 import { CheckIt, Refusal } from "../../ui/messages.tsx";
 
 /** The holder's plain statement after handover (story 54, #25). */
@@ -55,10 +55,7 @@ export function HandoverSection(props: { jar: JarStatus }) {
         </>
       )}
       {handover.state === "completing" && (
-        <p>
-          The jar's Bitcoin is moving to the child's own key: {handover.coinsToMove - handover.coinsLeft} of {handover.coinsToMove}{" "}
-          coins moved.
-        </p>
+        <p>The jar's Bitcoin is moving to the child's own key: {coinsStillToGo(handover.coinsLeft)}.</p>
       )}
       {handover.state === "done" && (
         <>

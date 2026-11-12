@@ -43,7 +43,14 @@ export function RecoveryPhraseSetUp(props: { heading: string; intro: ReactNode; 
             <li key={n}>{word}</li>
           ))}
         </ol>
-        <button type="button" onClick={() => setStep({ name: "check", check: step.check })}>
+        <button
+          type="button"
+          onClick={() => {
+            // Forget the words here as soon as they are written down; the SDK keeps them until the check.
+            start.reset();
+            setStep({ name: "check", check: step.check });
+          }}
+        >
           I've written them down
         </button>
       </section>

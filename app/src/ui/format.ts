@@ -37,3 +37,9 @@ const ROLE_LINES: Record<Role, string> = {
 
 /** How this device's person relates to a jar, as one line. */
 export const roleLine = (roles: Role[]): string => roles.map((role) => ROLE_LINES[role]).join(" · ");
+
+/**
+ * A re-homing's progress: "2 coins still to go". The status gives only the coins not yet moved
+ * and confirmed (`coinsLeft`), not a total, so progress is counted down.
+ */
+export const coinsStillToGo = (coinsLeft: number): string => `${coinsLeft} ${coinsLeft === 1 ? "coin" : "coins"} still to go`;

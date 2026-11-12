@@ -90,7 +90,7 @@ describe("restoring the child's phone", () => {
       sdk.child.restore.mockImplementation(async () => void sdk.device.state.mockResolvedValue("unlocked"));
     });
     expect(await screen.findByRole("heading", { name: "Restore your jar" })).toBeTruthy();
-    await user.type(screen.getByLabelText("Recovery phrase"), `  ${words.join("  ")}\n`);
+    await user.type(screen.getByLabelText("Recovery phrase"), `  ${words.join("  ").toUpperCase()}\n`);
     await user.type(screen.getByLabelText("PIN"), "771204");
     await user.type(screen.getByLabelText("Type it again"), "771204");
     await user.click(screen.getByRole("button", { name: "Restore" }));
