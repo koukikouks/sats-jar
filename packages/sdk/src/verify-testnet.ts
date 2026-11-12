@@ -148,7 +148,7 @@ check(lost.code === "UNAVAILABLE", "the first create's draft close was lost");
 const created = await giver.jars.create(valid);
 check((await supply()) === before + 1, `the retry returned jar ${created.jarId}; exactly one jar was minted`);
 check(created.qrPayload === `bitcoin:${created.address}`, `jar ${created.jarId} pays to ${created.address}`);
-check((await giver.invites.mine())[0]?.jarId === created.jarId, "the draft on the device names the jar");
+check((await giver.invites.mine()).find((d) => d.draftId === draft.draftId)?.jarId === created.jarId, "the draft on the device names the jar");
 
 // Following it, and jar 1 (a proven coin and a paid allowance from T06).
 const status = await giver.jars.status(created.jarId);
