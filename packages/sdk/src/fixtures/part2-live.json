@@ -1,0 +1,406 @@
+{
+ "recorded_at": "2026-11-10T05:13:32.579Z",
+ "note": "Live answers, keyless (T19): view_access_key_list of T15's giver account (made by the live backend), mempool.space and Blockstream testnet3 fee answers, FastNEAR /v0/transactions for T15's create_jar and for an unknown hash. Recorded with fetch by a script outside the repo.",
+ "exchanges": [
+  {
+   "request": {
+    "method": "POST",
+    "url": "https://rpc.testnet.fastnear.com",
+    "body": {
+     "jsonrpc": "2.0",
+     "id": "sdk",
+     "method": "query",
+     "params": {
+      "request_type": "view_access_key_list",
+      "finality": "final",
+      "account_id": "116192b82fcb34a34a31.sats-jar-app.testnet"
+     }
+    }
+   },
+   "response": {
+    "status": 200,
+    "body": {
+     "jsonrpc": "2.0",
+     "result": {
+      "block_hash": "G2qgzQeSxq4r9fzwEMyyuZYnfYjXkZqubSRWfdJp371A",
+      "block_height": 277023044,
+      "keys": [
+       {
+        "access_key": {
+         "nonce": 276995992000001,
+         "permission": "FullAccess"
+        },
+        "public_key": "ed25519:5UmPYoHtpEGF3g1Q9hcJz1Z9jQmJQ7D5vFC3k3oA7MEv"
+       }
+      ]
+     },
+     "id": "sdk"
+    }
+   }
+  },
+  {
+   "request": {
+    "method": "GET",
+    "url": "https://mempool.space/testnet/api/v1/fees/recommended",
+    "body": null
+   },
+   "response": {
+    "status": 200,
+    "body": {
+     "fastestFee": 1,
+     "halfHourFee": 1,
+     "hourFee": 1,
+     "economyFee": 1,
+     "minimumFee": 1
+    }
+   }
+  },
+  {
+   "request": {
+    "method": "GET",
+    "url": "https://blockstream.info/testnet/api/fee-estimates",
+    "body": null
+   },
+   "response": {
+    "status": 200,
+    "body": {
+     "1": 5.531,
+     "2": 5.531,
+     "3": 5.531,
+     "4": 5.531,
+     "5": 5.531,
+     "6": 5.531,
+     "7": 1.012,
+     "8": 1.012,
+     "9": 1.012,
+     "10": 1.012,
+     "11": 1.012,
+     "12": 1.012,
+     "13": 1.012,
+     "14": 1.012,
+     "15": 1.012,
+     "16": 1.012,
+     "17": 1.012,
+     "18": 1.012,
+     "19": 1.012,
+     "20": 1.012,
+     "21": 1.012,
+     "22": 1.012,
+     "23": 1.012,
+     "24": 1.012,
+     "25": 1.012,
+     "144": 1.01,
+     "504": 1.01,
+     "1008": 1.01
+    }
+   }
+  },
+  {
+   "request": {
+    "method": "POST",
+    "url": "https://tx.test.fastnear.com/v0/transactions",
+    "body": {
+     "tx_hashes": [
+      "EzMfNipDDPKfNm4cEtuGyQhF2TysNFhxL9rVeXPY55f9"
+     ]
+    }
+   },
+   "response": {
+    "status": 200,
+    "body": {
+     "transactions": [
+      {
+       "transaction": {
+        "signer_id": "116192b82fcb34a34a31.sats-jar-app.testnet",
+        "public_key": "ed25519:5UmPYoHtpEGF3g1Q9hcJz1Z9jQmJQ7D5vFC3k3oA7MEv",
+        "nonce": 276995992000001,
+        "receiver_id": "sats-jar-dev.testnet",
+        "actions": [
+         {
+          "FunctionCall": {
+           "method_name": "create_jar",
+           "args": "eyJjaGlsZF9hZGRyZXNzIjoidGIxcTZyejI4bWNmYXh0bWQ2djc4OWw5cnJscnVzZHBycjlwcWNwdmtsIiwiY2FwIjoiMjUwMCIsInBlcmlvZCI6Ijg2NDAwIiwidW5sb2NrX2F0IjoiMTgyNTgwNzc2MyIsImd1YXJkaWFucyI6WyI2OGFmYTQ3YTM1N2M3ZjU1ZmFiZC5zYXRzLWphci1hcHAudGVzdG5ldCIsIjU1NTQ1ZDAxY2ZhNDY2MmViMzU4LnNhdHMtamFyLWFwcC50ZXN0bmV0Il0sImZhbWlseV9hY2NvdW50IjoiMTE2MTkyYjgyZmNiMzRhMzRhMzEuc2F0cy1qYXItYXBwLnRlc3RuZXQiLCJuaWNrbmFtZSI6IkJhY2tlbmQgY2hlY2sifQ==",
+           "gas": 30000000000000,
+           "deposit": "20000000000000000000000"
+          }
+         }
+        ],
+        "priority_fee": 0,
+        "signature": "ed25519:5ET4rx3Kz8RaUFS7UruPKNyTWxMKr1PvoQwpsrd41ZCV3Z6gE5SQTraaYmmrwi7yHxEyFmp8uGpT1G1tgCNn5HXj",
+        "hash": "EzMfNipDDPKfNm4cEtuGyQhF2TysNFhxL9rVeXPY55f9"
+       },
+       "execution_outcome": {
+        "block_hash": "32KfnrM8gih4YeVEdHx36MEDMvrDuYNby5BNYH6CYnFJ",
+        "block_timestamp": 1794271763958766000,
+        "block_height": 276996007,
+        "index": 0,
+        "id": "EzMfNipDDPKfNm4cEtuGyQhF2TysNFhxL9rVeXPY55f9",
+        "outcome": {
+         "logs": [],
+         "receipt_ids": [
+          "3JCfNrHko2MKLByMN9jfQvXLT2PahXKwUKondZuZPmeQ"
+         ],
+         "gas_burnt": 323175237655,
+         "tokens_burnt": "32317523765500000000",
+         "executor_id": "116192b82fcb34a34a31.sats-jar-app.testnet",
+         "status": {
+          "SuccessReceiptId": "3JCfNrHko2MKLByMN9jfQvXLT2PahXKwUKondZuZPmeQ"
+         },
+         "metadata": {
+          "version": 1,
+          "gas_profile": null
+         }
+        }
+       },
+       "receipts": [
+        {
+         "execution_outcome": {
+          "block_hash": "DWUJBqYt5DmUWURZ8zRsHRF8L1MF5radCPR14CwNXPQV",
+          "block_timestamp": 1794271764548021500,
+          "block_height": 276996008,
+          "index": 3,
+          "id": "3JCfNrHko2MKLByMN9jfQvXLT2PahXKwUKondZuZPmeQ",
+          "outcome": {
+           "logs": [
+            "EVENT_JSON:{\"standard\":\"nep171\",\"version\":\"1.0.0\",\"event\":\"nft_mint\",\"data\":[{\"owner_id\":\"116192b82fcb34a34a31.sats-jar-app.testnet\",\"token_ids\":[\"3\"]}]}",
+            "EVENT_JSON:{\"standard\":\"satsjar\",\"version\":\"1.0.0\",\"event\":\"jar_created\",\"data\":{\"jar_id\":\"3\",\"address\":\"tb1qvtmpsv4m0fd5k4ya2uw2fa098uxcct9udapkw8utf7n89e8wp93stf8pt0\"}}"
+           ],
+           "receipt_ids": [
+            "HfKh1kgQ9HNmTNZPbQhuwoGDYur32aAJbVRMfp4Bfgfd",
+            "5uzLdVKhoQqUdsssbSpKpn5VKiJpoXr9s6XoSvJfU2AT"
+           ],
+           "gas_burnt": 6853884669710,
+           "tokens_burnt": "685388466971000000000",
+           "executor_id": "sats-jar-dev.testnet",
+           "status": {
+            "SuccessValue": "IjMi"
+           },
+           "metadata": {
+            "version": 4,
+            "gas_profile": null,
+            "contracts": [
+             {
+              "local": "FaNy3dNbK3d5s1xR2PKA6fXE79e9j4ojjGGifYZtUazE"
+             }
+            ]
+           }
+          }
+         },
+         "receipt": {
+          "block_height": 276996008,
+          "block_hash": "DWUJBqYt5DmUWURZ8zRsHRF8L1MF5radCPR14CwNXPQV",
+          "block_timestamp": 1794271764548021500,
+          "receipt_index": 0,
+          "predecessor_id": "116192b82fcb34a34a31.sats-jar-app.testnet",
+          "receiver_id": "sats-jar-dev.testnet",
+          "receipt_id": "3JCfNrHko2MKLByMN9jfQvXLT2PahXKwUKondZuZPmeQ",
+          "receipt": {
+           "Action": {
+            "signer_id": "116192b82fcb34a34a31.sats-jar-app.testnet",
+            "signer_public_key": "ed25519:5UmPYoHtpEGF3g1Q9hcJz1Z9jQmJQ7D5vFC3k3oA7MEv",
+            "gas_price": "1000000000",
+            "output_data_receivers": [],
+            "input_data_ids": [],
+            "actions": [
+             {
+              "FunctionCall": {
+               "method_name": "create_jar",
+               "args": "eyJjaGlsZF9hZGRyZXNzIjoidGIxcTZyejI4bWNmYXh0bWQ2djc4OWw5cnJscnVzZHBycjlwcWNwdmtsIiwiY2FwIjoiMjUwMCIsInBlcmlvZCI6Ijg2NDAwIiwidW5sb2NrX2F0IjoiMTgyNTgwNzc2MyIsImd1YXJkaWFucyI6WyI2OGFmYTQ3YTM1N2M3ZjU1ZmFiZC5zYXRzLWphci1hcHAudGVzdG5ldCIsIjU1NTQ1ZDAxY2ZhNDY2MmViMzU4LnNhdHMtamFyLWFwcC50ZXN0bmV0Il0sImZhbWlseV9hY2NvdW50IjoiMTE2MTkyYjgyZmNiMzRhMzRhMzEuc2F0cy1qYXItYXBwLnRlc3RuZXQiLCJuaWNrbmFtZSI6IkJhY2tlbmQgY2hlY2sifQ==",
+               "gas": 30000000000000,
+               "deposit": "20000000000000000000000"
+              }
+             }
+            ],
+            "is_promise_yield": false
+           }
+          },
+          "priority": 0
+         }
+        },
+        {
+         "execution_outcome": {
+          "block_hash": "AuhoWGbkzTzD1u7NURy9YxWncq6sUMTpdz9BT9vtr22f",
+          "block_timestamp": 1794271765238217200,
+          "block_height": 276996009,
+          "index": 0,
+          "id": "HfKh1kgQ9HNmTNZPbQhuwoGDYur32aAJbVRMfp4Bfgfd",
+          "outcome": {
+           "logs": [],
+           "receipt_ids": [
+            "BZHMBdQu2ep2zSkbvJnG65nFnKXQU7hCkrbvSrxCNN7j"
+           ],
+           "gas_burnt": 223182562500,
+           "tokens_burnt": "22318256250000000000",
+           "executor_id": "116192b82fcb34a34a31.sats-jar-app.testnet",
+           "status": {
+            "SuccessValue": ""
+           },
+           "metadata": {
+            "version": 4,
+            "gas_profile": null,
+            "contracts": [
+             null
+            ]
+           }
+          }
+         },
+         "receipt": {
+          "block_height": 276996009,
+          "block_hash": "AuhoWGbkzTzD1u7NURy9YxWncq6sUMTpdz9BT9vtr22f",
+          "block_timestamp": 1794271765238217200,
+          "receipt_index": 3,
+          "predecessor_id": "sats-jar-dev.testnet",
+          "receiver_id": "116192b82fcb34a34a31.sats-jar-app.testnet",
+          "receipt_id": "HfKh1kgQ9HNmTNZPbQhuwoGDYur32aAJbVRMfp4Bfgfd",
+          "receipt": {
+           "Action": {
+            "signer_id": "116192b82fcb34a34a31.sats-jar-app.testnet",
+            "signer_public_key": "ed25519:5UmPYoHtpEGF3g1Q9hcJz1Z9jQmJQ7D5vFC3k3oA7MEv",
+            "gas_price": "1000000000",
+            "output_data_receivers": [],
+            "input_data_ids": [],
+            "actions": [
+             {
+              "Transfer": {
+               "deposit": "10100000000000000000000"
+              }
+             }
+            ],
+            "is_promise_yield": false
+           }
+          },
+          "priority": 0
+         }
+        },
+        {
+         "execution_outcome": {
+          "block_hash": "AuhoWGbkzTzD1u7NURy9YxWncq6sUMTpdz9BT9vtr22f",
+          "block_timestamp": 1794271765238217200,
+          "block_height": 276996009,
+          "index": 1,
+          "id": "5uzLdVKhoQqUdsssbSpKpn5VKiJpoXr9s6XoSvJfU2AT",
+          "outcome": {
+           "logs": [],
+           "receipt_ids": [],
+           "gas_burnt": 223182562500,
+           "tokens_burnt": "0",
+           "executor_id": "116192b82fcb34a34a31.sats-jar-app.testnet",
+           "status": {
+            "SuccessValue": ""
+           },
+           "metadata": {
+            "version": 4,
+            "gas_profile": null,
+            "contracts": [
+             null
+            ]
+           }
+          }
+         },
+         "receipt": {
+          "block_height": 276996009,
+          "block_hash": "AuhoWGbkzTzD1u7NURy9YxWncq6sUMTpdz9BT9vtr22f",
+          "block_timestamp": 1794271765238217200,
+          "receipt_index": 4,
+          "predecessor_id": "system",
+          "receiver_id": "116192b82fcb34a34a31.sats-jar-app.testnet",
+          "receipt_id": "5uzLdVKhoQqUdsssbSpKpn5VKiJpoXr9s6XoSvJfU2AT",
+          "receipt": {
+           "Action": {
+            "signer_id": "116192b82fcb34a34a31.sats-jar-app.testnet",
+            "signer_public_key": "ed25519:5UmPYoHtpEGF3g1Q9hcJz1Z9jQmJQ7D5vFC3k3oA7MEv",
+            "gas_price": "0",
+            "output_data_receivers": [],
+            "input_data_ids": [],
+            "actions": [
+             {
+              "Transfer": {
+               "deposit": "29980197261607000000000"
+              }
+             }
+            ],
+            "is_promise_yield": false
+           }
+          },
+          "priority": 0
+         }
+        },
+        {
+         "execution_outcome": {
+          "block_hash": "JCm9XmVxLdEYbvrSAJy9bnMsA2vR7F8HwKESRybY3eH3",
+          "block_timestamp": 1794271765828520200,
+          "block_height": 276996010,
+          "index": 0,
+          "id": "BZHMBdQu2ep2zSkbvJnG65nFnKXQU7hCkrbvSrxCNN7j",
+          "outcome": {
+           "logs": [],
+           "receipt_ids": [],
+           "gas_burnt": 223182562500,
+           "tokens_burnt": "0",
+           "executor_id": "116192b82fcb34a34a31.sats-jar-app.testnet",
+           "status": {
+            "SuccessValue": ""
+           },
+           "metadata": {
+            "version": 4,
+            "gas_profile": null,
+            "contracts": [
+             null
+            ]
+           }
+          }
+         },
+         "receipt": {
+          "block_height": 276996010,
+          "block_hash": "JCm9XmVxLdEYbvrSAJy9bnMsA2vR7F8HwKESRybY3eH3",
+          "block_timestamp": 1794271765828520200,
+          "receipt_index": 0,
+          "predecessor_id": "system",
+          "receiver_id": "116192b82fcb34a34a31.sats-jar-app.testnet",
+          "receipt_id": "BZHMBdQu2ep2zSkbvJnG65nFnKXQU7hCkrbvSrxCNN7j",
+          "receipt": {
+           "Action": {
+            "signer_id": "116192b82fcb34a34a31.sats-jar-app.testnet",
+            "signer_public_key": "ed25519:5UmPYoHtpEGF3g1Q9hcJz1Z9jQmJQ7D5vFC3k3oA7MEv",
+            "gas_price": "0",
+            "output_data_receivers": [],
+            "input_data_ids": [],
+            "actions": [
+             {
+              "Transfer": {
+               "deposit": "200864306250000000000"
+              }
+             }
+            ],
+            "is_promise_yield": false
+           }
+          },
+          "priority": 0
+         }
+        }
+       ],
+       "data_receipts": []
+      }
+     ]
+    }
+   }
+  },
+  {
+   "request": {
+    "method": "POST",
+    "url": "https://tx.test.fastnear.com/v0/transactions",
+    "body": {
+     "tx_hashes": [
+      "11111111111111111111111111111111"
+     ]
+    }
+   },
+   "response": {
+    "status": 200,
+    "body": {
+     "transactions": []
+    }
+   }
+  }
+ ]
+}

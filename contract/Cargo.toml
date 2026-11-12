@@ -1,0 +1,40 @@
+[package]
+name = "sats-jar"
+version = "0.1.0"
+edition.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[features]
+# Development builds only; the reproducible (locked) build never enables it (ADR 0008).
+dev-escape = []
+
+[dependencies]
+# `unstable` only for `env::ecrecover` (stack notes §1).
+near-sdk = { version = "=5.30.1", features = ["unstable"] }
+btc = { path = "../btc" }
+k256 = { version = "=0.13.4", default-features = false, features = ["arithmetic"] }
+
+[dev-dependencies]
+near-sdk = { version = "=5.30.1", features = ["non-contract-usage"] }
+near-workspaces = "=0.24.0"
+cargo-near-build = "=0.11.5"
+bitcoin = "=0.32.11"
+# Native signature recovery in tests (an implementation independent of NEAR's `ecrecover`).
+k256 = { version = "=0.13.4", default-features = false, features = ["ecdsa"] }
+test-support = { path = "../test-support" }
+# NEP-171/177 reference types and their validators: the oracle for the NFT views' shape.
+near-contract-standards = "=5.30.1"
+# Parses the jar's SVG as XML (an independent check that the picture is well formed).
+roxmltree = "=0.21.2"
+tokio = { version = "=1.54.1", features = ["macros", "rt-multi-thread"] }
+
+# The cargo-near template's block (stack notes §2). passed_env stays empty for verification.
+[package.metadata.near.reproducible_build]
+image = "sourcescan/cargo-near:0.22.0-rust-1.99.1"
+image_digest = "sha256:c9655eaf7436b90c87ea8b25739f91063032c5c30ba24cfeafe72c142943b5bb"
+passed_env = []
+container_build_command = ["cargo", "near", "build", "non-reproducible-wasm", "--locked"]

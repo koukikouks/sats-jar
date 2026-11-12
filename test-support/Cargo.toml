@@ -1,0 +1,9 @@
+[package]
+name = "test-support"
+version = "0.1.0"
+edition.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+bitcoind = { version = "=0.43.2", features = ["download", "30_2"] }

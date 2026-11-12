@@ -1,0 +1,1158 @@
+{
+  "about": "Testnet run of T17 (koukikouks/sats-jar#20): on a fresh dev contract the keeper, pressed through POST /keeper/run, completes a demo jar's handover (prove, complete_handover, broadcast, confirm) and sweeps a stray with rehome_stray. Written by backend/src/verify-handover.ts.",
+  "contract": "sats-jar-dev-2.testnet",
+  "keeper": "keeper-2.sats-jar-app.testnet",
+  "steps": [
+    {
+      "at": "2026-11-10T05:38:14.946Z",
+      "step": "createAccount (guardian)",
+      "account": "2a04960eb00f6506ce54.sats-jar-app.testnet",
+      "result": "created"
+    },
+    {
+      "at": "2026-11-10T05:38:17.081Z",
+      "step": "createAccount (child)",
+      "account": "257282dc25ebe65f38d0.sats-jar-app.testnet",
+      "result": "created"
+    },
+    {
+      "at": "2026-11-10T05:38:22.283Z",
+      "step": "create_jar",
+      "by": "sats-jar-dev-2.testnet",
+      "near_tx": "EMfCdzwQrAX3p5ehxj7jyDKamTb1jL1856sYnN18f6wd",
+      "sent": {
+        "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+        "cap": "2000",
+        "period": "3600",
+        "unlock_at": "1794289697",
+        "guardians": [
+          "sats-jar-dev-2.testnet",
+          "2a04960eb00f6506ce54.sats-jar-app.testnet"
+        ],
+        "family_account": "sats-jar-dev-2.testnet",
+        "nickname": "Handover check"
+      },
+      "outcome": {
+        "ok": true,
+        "hash": "EMfCdzwQrAX3p5ehxj7jyDKamTb1jL1856sYnN18f6wd",
+        "value": "1"
+      }
+    },
+    {
+      "at": "2026-11-10T05:38:22.584Z",
+      "step": "get_jar recorded (new)",
+      "jar": {
+        "jar_id": "1",
+        "giver": "sats-jar-dev-2.testnet",
+        "owner_id": "sats-jar-dev-2.testnet",
+        "create_args": {
+          "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+          "cap": "2000",
+          "period": "3600",
+          "unlock_at": "1794289697",
+          "guardians": [
+            "sats-jar-dev-2.testnet",
+            "2a04960eb00f6506ce54.sats-jar-app.testnet"
+          ],
+          "family_account": "sats-jar-dev-2.testnet",
+          "nickname": "Handover check"
+        },
+        "address": "tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q",
+        "old_addresses": [],
+        "witness_script": "632103a2be165638ab4d919c7fdd24f9c4b86e47d06da1db1fe3b45e12beda9c820038ac670451daf26ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac68",
+        "public_key": "secp256k1:4FibaUTGVMP5aTRLsaaKWAY2VWxcYBQP6x5oNQKJYS1ys36c8Qh2hPJSd3ExnLXFdjdSV1zWZxT8h2VFnFDKfCjC",
+        "locktime": 1794300497,
+        "demo_timing": true,
+        "clock": {
+          "started_at": null
+        },
+        "handover": "none",
+        "proven_balance": "0",
+        "available_allowance": "0",
+        "fee_budget_left": "200",
+        "next_allowance_at": null,
+        "transfer": "none",
+        "emergency": "none"
+      }
+    },
+    {
+      "at": "2026-11-10T05:38:33.424Z",
+      "step": "propose_emergency",
+      "by": "sats-jar-dev-2.testnet",
+      "near_tx": "8VBZwXMBWYsZuF2kMdmhWkSpSkFfrG1jCyooK8QFcwT7",
+      "sent": {
+        "jar_id": "1",
+        "amount": "2000"
+      },
+      "outcome": {
+        "ok": true,
+        "hash": "8VBZwXMBWYsZuF2kMdmhWkSpSkFfrG1jCyooK8QFcwT7",
+        "value": 1
+      }
+    },
+    {
+      "at": "2026-11-10T05:38:33.565Z",
+      "step": "get_jar recorded (emergency-proposed)",
+      "jar": {
+        "jar_id": "1",
+        "giver": "sats-jar-dev-2.testnet",
+        "owner_id": "sats-jar-dev-2.testnet",
+        "create_args": {
+          "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+          "cap": "2000",
+          "period": "3600",
+          "unlock_at": "1794289697",
+          "guardians": [
+            "sats-jar-dev-2.testnet",
+            "2a04960eb00f6506ce54.sats-jar-app.testnet"
+          ],
+          "family_account": "sats-jar-dev-2.testnet",
+          "nickname": "Handover check"
+        },
+        "address": "tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q",
+        "old_addresses": [],
+        "witness_script": "632103a2be165638ab4d919c7fdd24f9c4b86e47d06da1db1fe3b45e12beda9c820038ac670451daf26ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac68",
+        "public_key": "secp256k1:4FibaUTGVMP5aTRLsaaKWAY2VWxcYBQP6x5oNQKJYS1ys36c8Qh2hPJSd3ExnLXFdjdSV1zWZxT8h2VFnFDKfCjC",
+        "locktime": 1794300497,
+        "demo_timing": true,
+        "clock": {
+          "started_at": null
+        },
+        "handover": "none",
+        "proven_balance": "0",
+        "available_allowance": "0",
+        "fee_budget_left": "200",
+        "next_allowance_at": null,
+        "transfer": "none",
+        "emergency": {
+          "open": {
+            "proposal_id": 1,
+            "amount": "2000",
+            "approved_by": [
+              "sats-jar-dev-2.testnet"
+            ],
+            "proposed_at": "1794289110",
+            "delay_ends_at": null
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-11-10T05:38:37.403Z",
+      "step": "approve_emergency",
+      "by": "2a04960eb00f6506ce54.sats-jar-app.testnet",
+      "near_tx": "DSgvUQq87Lo5dhY1tY1iytFUhAoRoWycj8yTUruuUYis",
+      "sent": {
+        "jar_id": "1",
+        "proposal_id": 1
+      },
+      "outcome": {
+        "ok": true,
+        "hash": "DSgvUQq87Lo5dhY1tY1iytFUhAoRoWycj8yTUruuUYis",
+        "value": null
+      }
+    },
+    {
+      "at": "2026-11-10T05:38:37.558Z",
+      "step": "get_jar recorded (emergency-approved)",
+      "jar": {
+        "jar_id": "1",
+        "giver": "sats-jar-dev-2.testnet",
+        "owner_id": "sats-jar-dev-2.testnet",
+        "create_args": {
+          "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+          "cap": "2000",
+          "period": "3600",
+          "unlock_at": "1794289697",
+          "guardians": [
+            "sats-jar-dev-2.testnet",
+            "2a04960eb00f6506ce54.sats-jar-app.testnet"
+          ],
+          "family_account": "sats-jar-dev-2.testnet",
+          "nickname": "Handover check"
+        },
+        "address": "tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q",
+        "old_addresses": [],
+        "witness_script": "632103a2be165638ab4d919c7fdd24f9c4b86e47d06da1db1fe3b45e12beda9c820038ac670451daf26ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac68",
+        "public_key": "secp256k1:4FibaUTGVMP5aTRLsaaKWAY2VWxcYBQP6x5oNQKJYS1ys36c8Qh2hPJSd3ExnLXFdjdSV1zWZxT8h2VFnFDKfCjC",
+        "locktime": 1794300497,
+        "demo_timing": true,
+        "clock": {
+          "started_at": null
+        },
+        "handover": "none",
+        "proven_balance": "0",
+        "available_allowance": "0",
+        "fee_budget_left": "200",
+        "next_allowance_at": null,
+        "transfer": "none",
+        "emergency": {
+          "open": {
+            "proposal_id": 1,
+            "amount": "2000",
+            "approved_by": [
+              "sats-jar-dev-2.testnet",
+              "2a04960eb00f6506ce54.sats-jar-app.testnet"
+            ],
+            "proposed_at": "1794289110",
+            "delay_ends_at": "1794290914"
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-11-10T05:38:41.631Z",
+      "step": "claim_handover",
+      "by": "257282dc25ebe65f38d0.sats-jar-app.testnet",
+      "near_tx": "Es159oBWS2v4rqwpVYW6q6dyhVMQ3LLLvp7aNHqiasHY",
+      "sent": {
+        "jar_id": "1",
+        "child_account": "257282dc25ebe65f38d0.sats-jar-app.testnet",
+        "child_btc_pubkey": "02bff04b004e937bef1e1c376b435cd30a5d93efdff825a24fe3ce78e842208045"
+      },
+      "outcome": {
+        "ok": true,
+        "hash": "Es159oBWS2v4rqwpVYW6q6dyhVMQ3LLLvp7aNHqiasHY",
+        "value": null
+      }
+    },
+    {
+      "at": "2026-11-10T05:38:41.775Z",
+      "step": "get_jar recorded (claimed)",
+      "jar": {
+        "jar_id": "1",
+        "giver": "sats-jar-dev-2.testnet",
+        "owner_id": "sats-jar-dev-2.testnet",
+        "create_args": {
+          "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+          "cap": "2000",
+          "period": "3600",
+          "unlock_at": "1794289697",
+          "guardians": [
+            "sats-jar-dev-2.testnet",
+            "2a04960eb00f6506ce54.sats-jar-app.testnet"
+          ],
+          "family_account": "sats-jar-dev-2.testnet",
+          "nickname": "Handover check"
+        },
+        "address": "tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q",
+        "old_addresses": [],
+        "witness_script": "632103a2be165638ab4d919c7fdd24f9c4b86e47d06da1db1fe3b45e12beda9c820038ac670451daf26ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac68",
+        "public_key": "secp256k1:4FibaUTGVMP5aTRLsaaKWAY2VWxcYBQP6x5oNQKJYS1ys36c8Qh2hPJSd3ExnLXFdjdSV1zWZxT8h2VFnFDKfCjC",
+        "locktime": 1794300497,
+        "demo_timing": true,
+        "clock": {
+          "started_at": null
+        },
+        "handover": {
+          "claimed": {
+            "child_account": "257282dc25ebe65f38d0.sats-jar-app.testnet",
+            "child_btc_pubkey": "02bff04b004e937bef1e1c376b435cd30a5d93efdff825a24fe3ce78e842208045",
+            "claimed_at": "1794289119",
+            "lapses_at": "1794289539",
+            "confirmed_by": []
+          }
+        },
+        "proven_balance": "0",
+        "available_allowance": "0",
+        "fee_budget_left": "200",
+        "next_allowance_at": null,
+        "transfer": "none",
+        "emergency": {
+          "open": {
+            "proposal_id": 1,
+            "amount": "2000",
+            "approved_by": [
+              "sats-jar-dev-2.testnet",
+              "2a04960eb00f6506ce54.sats-jar-app.testnet"
+            ],
+            "proposed_at": "1794289110",
+            "delay_ends_at": "1794290914"
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-11-10T05:38:45.325Z",
+      "step": "confirm_handover",
+      "by": "sats-jar-dev-2.testnet",
+      "near_tx": "HdyA3FhUqsS462cjZZAaVJAzHohtVxjJxuaUuUdKRxkk",
+      "sent": {
+        "jar_id": "1",
+        "child_account": "257282dc25ebe65f38d0.sats-jar-app.testnet"
+      },
+      "outcome": {
+        "ok": true,
+        "hash": "HdyA3FhUqsS462cjZZAaVJAzHohtVxjJxuaUuUdKRxkk",
+        "value": null
+      }
+    },
+    {
+      "at": "2026-11-10T05:38:49.452Z",
+      "step": "confirm_handover",
+      "by": "2a04960eb00f6506ce54.sats-jar-app.testnet",
+      "near_tx": "5wYHVZfP6s12irShMnm4CAwNW24QaVQzFe62LFgFtoqX",
+      "sent": {
+        "jar_id": "1",
+        "child_account": "257282dc25ebe65f38d0.sats-jar-app.testnet"
+      },
+      "outcome": {
+        "ok": true,
+        "hash": "5wYHVZfP6s12irShMnm4CAwNW24QaVQzFe62LFgFtoqX",
+        "value": null
+      }
+    },
+    {
+      "at": "2026-11-10T05:38:49.592Z",
+      "step": "get_jar recorded (confirmed)",
+      "jar": {
+        "jar_id": "1",
+        "giver": "sats-jar-dev-2.testnet",
+        "owner_id": "sats-jar-dev-2.testnet",
+        "create_args": {
+          "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+          "cap": "2000",
+          "period": "3600",
+          "unlock_at": "1794289697",
+          "guardians": [
+            "sats-jar-dev-2.testnet",
+            "2a04960eb00f6506ce54.sats-jar-app.testnet"
+          ],
+          "family_account": "sats-jar-dev-2.testnet",
+          "nickname": "Handover check"
+        },
+        "address": "tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q",
+        "old_addresses": [],
+        "witness_script": "632103a2be165638ab4d919c7fdd24f9c4b86e47d06da1db1fe3b45e12beda9c820038ac670451daf26ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac68",
+        "public_key": "secp256k1:4FibaUTGVMP5aTRLsaaKWAY2VWxcYBQP6x5oNQKJYS1ys36c8Qh2hPJSd3ExnLXFdjdSV1zWZxT8h2VFnFDKfCjC",
+        "locktime": 1794300497,
+        "demo_timing": true,
+        "clock": {
+          "started_at": null
+        },
+        "handover": {
+          "confirmed": {
+            "child_account": "257282dc25ebe65f38d0.sats-jar-app.testnet",
+            "child_btc_pubkey": "02bff04b004e937bef1e1c376b435cd30a5d93efdff825a24fe3ce78e842208045",
+            "claimed_at": "1794289119",
+            "confirmed_by": [
+              "sats-jar-dev-2.testnet",
+              "2a04960eb00f6506ce54.sats-jar-app.testnet"
+            ],
+            "delay_ends_at": "1794289306"
+          }
+        },
+        "proven_balance": "0",
+        "available_allowance": "0",
+        "fee_budget_left": "200",
+        "next_allowance_at": null,
+        "transfer": "none",
+        "emergency": {
+          "open": {
+            "proposal_id": 1,
+            "amount": "2000",
+            "approved_by": [
+              "sats-jar-dev-2.testnet",
+              "2a04960eb00f6506ce54.sats-jar-app.testnet"
+            ],
+            "proposed_at": "1794289110",
+            "delay_ends_at": "1794290914"
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-11-10T05:38:50.119Z",
+      "step": "topup_a (signed, before broadcast)",
+      "btc_tx": "f0061d75026ad2f275a6b696c28a15b24465d35d1b115d696060bb54625a2699",
+      "fee": 153,
+      "vsize": 153,
+      "minimum_fee": 1,
+      "wallet_before": 307294
+    },
+    {
+      "at": "2026-11-10T05:38:50.141Z",
+      "step": "topup_a (broadcast)",
+      "btc_tx": "f0061d75026ad2f275a6b696c28a15b24465d35d1b115d696060bb54625a2699",
+      "explorer": "https://mempool.space/testnet/tx/f0061d75026ad2f275a6b696c28a15b24465d35d1b115d696060bb54625a2699"
+    },
+    {
+      "at": "2026-11-10T05:43:58.571Z",
+      "step": "get_jar recorded (emergency-lapsed)",
+      "jar": {
+        "jar_id": "1",
+        "giver": "sats-jar-dev-2.testnet",
+        "owner_id": "sats-jar-dev-2.testnet",
+        "create_args": {
+          "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+          "cap": "2000",
+          "period": "3600",
+          "unlock_at": "1794289697",
+          "guardians": [
+            "sats-jar-dev-2.testnet",
+            "2a04960eb00f6506ce54.sats-jar-app.testnet"
+          ],
+          "family_account": "sats-jar-dev-2.testnet",
+          "nickname": "Handover check"
+        },
+        "address": "tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q",
+        "old_addresses": [],
+        "witness_script": "632103a2be165638ab4d919c7fdd24f9c4b86e47d06da1db1fe3b45e12beda9c820038ac670451daf26ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac68",
+        "public_key": "secp256k1:4FibaUTGVMP5aTRLsaaKWAY2VWxcYBQP6x5oNQKJYS1ys36c8Qh2hPJSd3ExnLXFdjdSV1zWZxT8h2VFnFDKfCjC",
+        "locktime": 1794300497,
+        "demo_timing": true,
+        "clock": {
+          "started_at": null
+        },
+        "handover": {
+          "confirmed": {
+            "child_account": "257282dc25ebe65f38d0.sats-jar-app.testnet",
+            "child_btc_pubkey": "02bff04b004e937bef1e1c376b435cd30a5d93efdff825a24fe3ce78e842208045",
+            "claimed_at": "1794289119",
+            "confirmed_by": [
+              "sats-jar-dev-2.testnet",
+              "2a04960eb00f6506ce54.sats-jar-app.testnet"
+            ],
+            "delay_ends_at": "1794289306"
+          }
+        },
+        "proven_balance": "0",
+        "available_allowance": "0",
+        "fee_budget_left": "200",
+        "next_allowance_at": null,
+        "transfer": "none",
+        "emergency": {
+          "lapsed": {
+            "proposal_id": 1
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-11-10T14:04:47.867Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323933,
+      "report": {
+        "startedAt": 1794319472,
+        "steps": [
+          {
+            "action": "prove_topup",
+            "jarId": "1",
+            "target": "f0061d75026ad2f275a6b696c28a15b24465d35d1b115d696060bb54625a2699:0",
+            "result": "done",
+            "nearTx": "367oe4VJGPBmqFGj5zxVF7THdPAJX9BM2Ng6hfBuLujK"
+          },
+          {
+            "action": "complete_handover",
+            "jarId": "1",
+            "result": "done",
+            "nearTx": "7P1zKxYwYNwAApiwcs8wxTXL1vPoMGeQ544EynXkqgBg"
+          },
+          {
+            "action": "broadcast",
+            "paymentId": "1",
+            "target": "adf809f22d7ecbfcceec7f83ce1890fdf01b3348956a4bfd91614fe89d9a7695",
+            "result": "done"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-11-10T14:04:55.459Z",
+      "step": "get_jar recorded (completing)",
+      "jar": {
+        "jar_id": "1",
+        "giver": "sats-jar-dev-2.testnet",
+        "owner_id": "sats-jar-dev-2.testnet",
+        "create_args": {
+          "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+          "cap": "2000",
+          "period": "3600",
+          "unlock_at": "1794289697",
+          "guardians": [
+            "sats-jar-dev-2.testnet",
+            "2a04960eb00f6506ce54.sats-jar-app.testnet"
+          ],
+          "family_account": "sats-jar-dev-2.testnet",
+          "nickname": "Handover check"
+        },
+        "address": "tb1qsl5kuaj5rtxl9uje7mp7t5jwgsu8zjw07svh8n43srnfm6ydxe7qslkptf",
+        "old_addresses": [
+          "tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q"
+        ],
+        "witness_script": "632103a2be165638ab4d919c7fdd24f9c4b86e47d06da1db1fe3b45e12beda9c820038ac6704a84ef36ab17576a914060ddee16faf8a98d67d9943861c65d92d00000b88ac68",
+        "public_key": "secp256k1:4FibaUTGVMP5aTRLsaaKWAY2VWxcYBQP6x5oNQKJYS1ys36c8Qh2hPJSd3ExnLXFdjdSV1zWZxT8h2VFnFDKfCjC",
+        "locktime": 1794330280,
+        "demo_timing": true,
+        "clock": {
+          "started_at": "1794319476"
+        },
+        "handover": {
+          "completing": {
+            "child_account": "257282dc25ebe65f38d0.sats-jar-app.testnet",
+            "child_btc_pubkey": "02bff04b004e937bef1e1c376b435cd30a5d93efdff825a24fe3ce78e842208045",
+            "confirmed_by": [
+              "sats-jar-dev-2.testnet",
+              "2a04960eb00f6506ce54.sats-jar-app.testnet"
+            ],
+            "delay_ends_at": "1794289306",
+            "coins_to_move": 0,
+            "coins_left": 1
+          }
+        },
+        "proven_balance": "2000",
+        "available_allowance": "2000",
+        "fee_budget_left": "200",
+        "next_allowance_at": "1794319476",
+        "transfer": "none",
+        "emergency": {
+          "lapsed": {
+            "proposal_id": 1
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-11-10T14:04:56.355Z",
+      "step": "topup_b (signed, before broadcast)",
+      "btc_tx": "bf9efae9af614ba6d74087e3d3ab051193e4cff0a01172a55502837eaf91b975",
+      "fee": 153,
+      "vsize": 153,
+      "minimum_fee": 1,
+      "wallet_before": 305141
+    },
+    {
+      "at": "2026-11-10T14:04:56.378Z",
+      "step": "topup_b (broadcast)",
+      "btc_tx": "bf9efae9af614ba6d74087e3d3ab051193e4cff0a01172a55502837eaf91b975",
+      "explorer": "https://mempool.space/testnet/tx/bf9efae9af614ba6d74087e3d3ab051193e4cff0a01172a55502837eaf91b975"
+    },
+    {
+      "at": "2026-11-10T14:05:17.389Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323933,
+      "report": {
+        "startedAt": 1794319515,
+        "steps": [
+          {
+            "action": "broadcast",
+            "paymentId": "1",
+            "target": "adf809f22d7ecbfcceec7f83ce1890fdf01b3348956a4bfd91614fe89d9a7695",
+            "result": "waiting",
+            "message": "Bitcoin already has it"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-11-10T14:06:20.813Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323935,
+      "report": {
+        "startedAt": 1794319579,
+        "steps": [
+          {
+            "action": "confirm_payment",
+            "paymentId": "1",
+            "target": "adf809f22d7ecbfcceec7f83ce1890fdf01b3348956a4bfd91614fe89d9a7695",
+            "result": "waiting",
+            "message": "1 of 3 confirmations on the light client"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-11-10T14:07:24.538Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323936,
+      "report": {
+        "startedAt": 1794319642,
+        "steps": [
+          {
+            "action": "confirm_payment",
+            "paymentId": "1",
+            "target": "adf809f22d7ecbfcceec7f83ce1890fdf01b3348956a4bfd91614fe89d9a7695",
+            "result": "waiting",
+            "message": "2 of 3 confirmations on the light client"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-11-10T14:08:51.897Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323945,
+      "report": {
+        "startedAt": 1794319706,
+        "steps": [
+          {
+            "action": "confirm_payment",
+            "paymentId": "1",
+            "target": "adf809f22d7ecbfcceec7f83ce1890fdf01b3348956a4bfd91614fe89d9a7695",
+            "result": "done",
+            "nearTx": "G6pwUfwjwHfpLCYMZN7yfd67rkmD68d4Kw1pNnTx1Qby"
+          },
+          {
+            "action": "prove_topup",
+            "jarId": "1",
+            "target": "bf9efae9af614ba6d74087e3d3ab051193e4cff0a01172a55502837eaf91b975:0",
+            "result": "done",
+            "nearTx": "4JEeiZDF5ytHccUFtM1AyuPZvdfrQ1rStf4xvkd3G8Qs"
+          },
+          {
+            "action": "rehome_stray",
+            "jarId": "1",
+            "result": "done",
+            "nearTx": "Hj1pv6ngeLDb81kzJUK7xWX2csEJfJV3uhdLGcUpvKz3"
+          },
+          {
+            "action": "broadcast",
+            "paymentId": "2",
+            "target": "de6c9a703e55f131bb9475a7be2714069c2ed250d54c86b5c3ea9cc1f5187cd7",
+            "result": "done"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-11-10T14:09:08.881Z",
+      "step": "get_jar recorded (done)",
+      "jar": {
+        "jar_id": "1",
+        "giver": "sats-jar-dev-2.testnet",
+        "owner_id": "257282dc25ebe65f38d0.sats-jar-app.testnet",
+        "create_args": {
+          "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+          "cap": "2000",
+          "period": "3600",
+          "unlock_at": "1794289697",
+          "guardians": [
+            "sats-jar-dev-2.testnet",
+            "2a04960eb00f6506ce54.sats-jar-app.testnet"
+          ],
+          "family_account": "sats-jar-dev-2.testnet",
+          "nickname": "Handover check"
+        },
+        "address": "tb1qsl5kuaj5rtxl9uje7mp7t5jwgsu8zjw07svh8n43srnfm6ydxe7qslkptf",
+        "old_addresses": [
+          "tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q"
+        ],
+        "witness_script": "632103a2be165638ab4d919c7fdd24f9c4b86e47d06da1db1fe3b45e12beda9c820038ac6704a84ef36ab17576a914060ddee16faf8a98d67d9943861c65d92d00000b88ac68",
+        "public_key": "secp256k1:4FibaUTGVMP5aTRLsaaKWAY2VWxcYBQP6x5oNQKJYS1ys36c8Qh2hPJSd3ExnLXFdjdSV1zWZxT8h2VFnFDKfCjC",
+        "locktime": 1794330280,
+        "demo_timing": true,
+        "clock": {
+          "started_at": "1794319476"
+        },
+        "handover": {
+          "done": {
+            "child_account": "257282dc25ebe65f38d0.sats-jar-app.testnet",
+            "completed_at": "1794319711"
+          }
+        },
+        "proven_balance": "3368",
+        "available_allowance": "2000",
+        "fee_budget_left": "200",
+        "next_allowance_at": "1794319476",
+        "transfer": "none",
+        "emergency": {
+          "lapsed": {
+            "proposal_id": 1
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-11-10T14:10:01.291Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323949,
+      "report": {
+        "startedAt": 1794319793,
+        "steps": [
+          {
+            "action": "confirm_payment",
+            "paymentId": "2",
+            "target": "de6c9a703e55f131bb9475a7be2714069c2ed250d54c86b5c3ea9cc1f5187cd7",
+            "result": "done",
+            "nearTx": "2vxAdWVPNyxZNzijLpnt6jAy4ZUm3AxE1B8viUE5mPzK"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-11-10T14:10:27.502Z",
+      "step": "request_spend",
+      "by": "257282dc25ebe65f38d0.sats-jar-app.testnet",
+      "near_tx": "JAkX7AobWia4jQovkBnzWEvzS5yaYmKPtcUw7ScLHiPc",
+      "sent": {
+        "jar_id": "1",
+        "to": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+        "amount": "1000",
+        "fee_rate": "1"
+      },
+      "outcome": {
+        "ok": true,
+        "hash": "JAkX7AobWia4jQovkBnzWEvzS5yaYmKPtcUw7ScLHiPc",
+        "value": "3"
+      }
+    },
+    {
+      "at": "2026-11-10T14:10:44.248Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323949,
+      "report": {
+        "startedAt": 1794319842,
+        "steps": [
+          {
+            "action": "broadcast",
+            "paymentId": "3",
+            "target": "0de8d93e7427288ee9d9212b536979a98410a60399be8440e22a215c6fd9b2ee",
+            "result": "done"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-11-10T14:11:19.640Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323953,
+      "report": {
+        "startedAt": 1794319877,
+        "steps": [
+          {
+            "action": "broadcast",
+            "paymentId": "3",
+            "target": "0de8d93e7427288ee9d9212b536979a98410a60399be8440e22a215c6fd9b2ee",
+            "result": "done"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-11-10T14:12:27.731Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323958,
+      "report": {
+        "startedAt": 1794319940,
+        "steps": [
+          {
+            "action": "confirm_payment",
+            "paymentId": "3",
+            "target": "0de8d93e7427288ee9d9212b536979a98410a60399be8440e22a215c6fd9b2ee",
+            "result": "done",
+            "nearTx": "271SiJ7Lq16WHscpzJkeAn2C4oaGCVm8V9AphjK3pTno"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-11-10T14:12:39.472Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323958,
+      "report": {
+        "startedAt": 1794319956,
+        "steps": []
+      }
+    }
+  ],
+  "accounts": {
+    "guardian": "2a04960eb00f6506ce54.sats-jar-app.testnet",
+    "child": "257282dc25ebe65f38d0.sats-jar-app.testnet"
+  },
+  "jar": {
+    "jar_id": "1",
+    "address": "tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q",
+    "demo_timing": true
+  },
+  "topup_a": {
+    "txid": "f0061d75026ad2f275a6b696c28a15b24465d35d1b115d696060bb54625a2699",
+    "value": 2000,
+    "fee": 153,
+    "address": "tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q",
+    "broadcast": true
+  },
+  "topup_b": {
+    "txid": "bf9efae9af614ba6d74087e3d3ab051193e4cff0a01172a55502837eaf91b975",
+    "value": 1500,
+    "fee": 153,
+    "address": "tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q",
+    "broadcast": true
+  },
+  "close": {
+    "keeper_keys": {
+      "block_hash": "6Qteb82fWR1LMaAbNgFshzHdUyH81XS3XVDFKGseTqbE",
+      "block_height": 277078089,
+      "keys": [
+        {
+          "access_key": {
+            "nonce": 277025368000007,
+            "permission": {
+              "FunctionCall": {
+                "allowance": null,
+                "method_names": [],
+                "receiver_id": "sats-jar-dev-2.testnet"
+              }
+            }
+          },
+          "public_key": "ed25519:2oWDNDujeeNvmqcWG2Wpuq9z6X5sues7rAWJwbPWjebe"
+        }
+      ]
+    },
+    "keeper_transactions": [
+      {
+        "near_tx": "271SiJ7Lq16WHscpzJkeAn2C4oaGCVm8V9AphjK3pTno",
+        "signed_by_keeper": true,
+        "explorer": "https://testnet.nearblocks.io/txns/271SiJ7Lq16WHscpzJkeAn2C4oaGCVm8V9AphjK3pTno"
+      },
+      {
+        "near_tx": "2vxAdWVPNyxZNzijLpnt6jAy4ZUm3AxE1B8viUE5mPzK",
+        "signed_by_keeper": true,
+        "explorer": "https://testnet.nearblocks.io/txns/2vxAdWVPNyxZNzijLpnt6jAy4ZUm3AxE1B8viUE5mPzK"
+      },
+      {
+        "near_tx": "Hj1pv6ngeLDb81kzJUK7xWX2csEJfJV3uhdLGcUpvKz3",
+        "signed_by_keeper": true,
+        "explorer": "https://testnet.nearblocks.io/txns/Hj1pv6ngeLDb81kzJUK7xWX2csEJfJV3uhdLGcUpvKz3"
+      },
+      {
+        "near_tx": "4JEeiZDF5ytHccUFtM1AyuPZvdfrQ1rStf4xvkd3G8Qs",
+        "signed_by_keeper": true,
+        "explorer": "https://testnet.nearblocks.io/txns/4JEeiZDF5ytHccUFtM1AyuPZvdfrQ1rStf4xvkd3G8Qs"
+      },
+      {
+        "near_tx": "G6pwUfwjwHfpLCYMZN7yfd67rkmD68d4Kw1pNnTx1Qby",
+        "signed_by_keeper": true,
+        "explorer": "https://testnet.nearblocks.io/txns/G6pwUfwjwHfpLCYMZN7yfd67rkmD68d4Kw1pNnTx1Qby"
+      },
+      {
+        "near_tx": "7P1zKxYwYNwAApiwcs8wxTXL1vPoMGeQ544EynXkqgBg",
+        "signed_by_keeper": true,
+        "explorer": "https://testnet.nearblocks.io/txns/7P1zKxYwYNwAApiwcs8wxTXL1vPoMGeQ544EynXkqgBg"
+      },
+      {
+        "near_tx": "367oe4VJGPBmqFGj5zxVF7THdPAJX9BM2Ng6hfBuLujK",
+        "signed_by_keeper": true,
+        "explorer": "https://testnet.nearblocks.io/txns/367oe4VJGPBmqFGj5zxVF7THdPAJX9BM2Ng6hfBuLujK"
+      },
+      {
+        "near_tx": "BViJBargjYzih7BN4niV5LaMEGJfwpDmfVJ4mC8K3NJc",
+        "signed_by_keeper": false,
+        "explorer": "https://testnet.nearblocks.io/txns/BViJBargjYzih7BN4niV5LaMEGJfwpDmfVJ4mC8K3NJc"
+      }
+    ],
+    "jar": {
+      "jar_id": "1",
+      "giver": "sats-jar-dev-2.testnet",
+      "owner_id": "257282dc25ebe65f38d0.sats-jar-app.testnet",
+      "create_args": {
+        "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+        "cap": "2000",
+        "period": "3600",
+        "unlock_at": "1794289697",
+        "guardians": [
+          "sats-jar-dev-2.testnet",
+          "2a04960eb00f6506ce54.sats-jar-app.testnet"
+        ],
+        "family_account": "sats-jar-dev-2.testnet",
+        "nickname": "Handover check"
+      },
+      "address": "tb1qsl5kuaj5rtxl9uje7mp7t5jwgsu8zjw07svh8n43srnfm6ydxe7qslkptf",
+      "old_addresses": [
+        "tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q"
+      ],
+      "witness_script": "632103a2be165638ab4d919c7fdd24f9c4b86e47d06da1db1fe3b45e12beda9c820038ac6704a84ef36ab17576a914060ddee16faf8a98d67d9943861c65d92d00000b88ac68",
+      "public_key": "secp256k1:4FibaUTGVMP5aTRLsaaKWAY2VWxcYBQP6x5oNQKJYS1ys36c8Qh2hPJSd3ExnLXFdjdSV1zWZxT8h2VFnFDKfCjC",
+      "locktime": 1794330280,
+      "demo_timing": true,
+      "clock": {
+        "started_at": "1794319476"
+      },
+      "handover": {
+        "done": {
+          "child_account": "257282dc25ebe65f38d0.sats-jar-app.testnet",
+          "completed_at": "1794319711"
+        }
+      },
+      "proven_balance": "1996",
+      "available_allowance": "2000",
+      "fee_budget_left": "200",
+      "next_allowance_at": "1794319476",
+      "transfer": "none",
+      "emergency": {
+        "lapsed": {
+          "proposal_id": 1
+        }
+      }
+    },
+    "nft_token": {
+      "token_id": "1",
+      "owner_id": "257282dc25ebe65f38d0.sats-jar-app.testnet",
+      "metadata": {
+        "title": "Sats Jar #1",
+        "description": "Handover check: 1,996 sats, unlocks 2026-11-10",
+        "media": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMzQwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjM0MCIgZmlsbD0iI2ZkZjZlMyIvPjx0ZXh0IGlkPSJuaWNrbmFtZSIgeD0iMTAwIiB5PSIzNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiMzYjNiM2IiPkhhbmRvdmVyIGNoZWNrPC90ZXh0PjxyZWN0IHg9IjYwIiB5PSI0OCIgd2lkdGg9IjgwIiBoZWlnaHQ9IjE2IiByeD0iNCIgZmlsbD0iI2I1ODkwMCIvPjxyZWN0IGlkPSJmaWxsIiB4PSIzMCIgeT0iMjM2IiB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE0IiBmaWxsPSIjZjc5MzFhIi8+PHJlY3QgeD0iMzAiIHk9IjY0IiB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE5MCIgcng9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzYjNiM2IiIHN0cm9rZS13aWR0aD0iNiIvPjx0ZXh0IGlkPSJiYWxhbmNlIiB4PSIxMDAiIHk9IjI4MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMzYjNiM2IiPjEsOTk2IHNhdHM8L3RleHQ+PHRleHQgaWQ9InVubG9jayIgeD0iMTAwIiB5PSIzMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEzIiBmaWxsPSIjNmI2YjZiIj5VbmxvY2tzIDIwMjYtMTEtMTA8L3RleHQ+PHRleHQgaWQ9Im5leHRfYWxsb3dhbmNlIiB4PSIxMDAiIHk9IjMyNiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiM2YjZiNmIiPkFsbG93YW5jZSBkdWUgbm93PC90ZXh0Pjwvc3ZnPg==",
+        "media_hash": "Peg/mwmR90AiBGu7H35tW1nQoBbzWIW3khqtYSRFXfs=",
+        "copies": null,
+        "issued_at": null,
+        "expires_at": null,
+        "starts_at": null,
+        "updated_at": null,
+        "extra": null,
+        "reference": null,
+        "reference_hash": null
+      },
+      "approved_account_ids": {}
+    },
+    "coins": [
+      {
+        "txid": "f0061d75026ad2f275a6b696c28a15b24465d35d1b115d696060bb54625a2699",
+        "vout": 0,
+        "value": "2000",
+        "status": "spent",
+        "payment_id": "1"
+      },
+      {
+        "txid": "adf809f22d7ecbfcceec7f83ce1890fdf01b3348956a4bfd91614fe89d9a7695",
+        "vout": 0,
+        "value": "1868",
+        "status": "spent",
+        "payment_id": "3"
+      },
+      {
+        "txid": "bf9efae9af614ba6d74087e3d3ab051193e4cff0a01172a55502837eaf91b975",
+        "vout": 0,
+        "value": "1500",
+        "status": "spent",
+        "payment_id": "2"
+      },
+      {
+        "txid": "de6c9a703e55f131bb9475a7be2714069c2ed250d54c86b5c3ea9cc1f5187cd7",
+        "vout": 0,
+        "value": "1368",
+        "status": "spent",
+        "payment_id": "3"
+      },
+      {
+        "txid": "0de8d93e7427288ee9d9212b536979a98410a60399be8440e22a215c6fd9b2ee",
+        "vout": 1,
+        "value": "1996",
+        "status": "confirmed",
+        "payment_id": null
+      }
+    ],
+    "payments": [
+      {
+        "payment_id": "1",
+        "jar_id": "1",
+        "kind": "rehoming",
+        "period": null,
+        "status": "confirmed",
+        "failure": null,
+        "txid": "adf809f22d7ecbfcceec7f83ce1890fdf01b3348956a4bfd91614fe89d9a7695",
+        "amount": "1868",
+        "fee": "132",
+        "change": "0",
+        "inputs": [
+          {
+            "txid": "f0061d75026ad2f275a6b696c28a15b24465d35d1b115d696060bb54625a2699",
+            "vout": 0,
+            "value": "2000"
+          }
+        ],
+        "signed_tx": "0200000000010199265a6254bb6060695d111b5dd36544b2158ac296b6a675f2d26a02751d06f00000000000fdffffff014c0700000000000022002087e96e76541acdf2f259f6c3e5d24e44387149cff41973ceb180e69de88d367c0347304402200ee8cbc6caeabbcb026ef6f3b396fd1d0b07aeeefbe561a019c725c319af8e4002204264f86cb3d5ab2d3f5d7c751878c56dd9a22c8db5d608e6cbf2d3d981760ec801010146632103a2be165638ab4d919c7fdd24f9c4b86e47d06da1db1fe3b45e12beda9c820038ac670451daf26ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac6800000000"
+      },
+      {
+        "payment_id": "2",
+        "jar_id": "1",
+        "kind": "rehoming",
+        "period": null,
+        "status": "confirmed",
+        "failure": null,
+        "txid": "de6c9a703e55f131bb9475a7be2714069c2ed250d54c86b5c3ea9cc1f5187cd7",
+        "amount": "1368",
+        "fee": "132",
+        "change": "0",
+        "inputs": [
+          {
+            "txid": "bf9efae9af614ba6d74087e3d3ab051193e4cff0a01172a55502837eaf91b975",
+            "vout": 0,
+            "value": "1500"
+          }
+        ],
+        "signed_tx": "0200000000010175b991af7e830255a57211a0f0cfe4931105abd3e38740d7a64b61afe9fa9ebf0000000000fdffffff01580500000000000022002087e96e76541acdf2f259f6c3e5d24e44387149cff41973ceb180e69de88d367c03483045022100da42e46936a46577fc505a6a2097886be0cb910f7f844194e75a7ffd364fc912022023f33a8a892dbaf6dbb06b011e04c36026038345bfa98d7efb39bf8474b3534201010146632103a2be165638ab4d919c7fdd24f9c4b86e47d06da1db1fe3b45e12beda9c820038ac670451daf26ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac6800000000"
+      },
+      {
+        "payment_id": "3",
+        "jar_id": "1",
+        "kind": "spend",
+        "period": null,
+        "status": "confirmed",
+        "failure": null,
+        "txid": "0de8d93e7427288ee9d9212b536979a98410a60399be8440e22a215c6fd9b2ee",
+        "amount": "1000",
+        "fee": "240",
+        "change": "1996",
+        "inputs": [
+          {
+            "txid": "adf809f22d7ecbfcceec7f83ce1890fdf01b3348956a4bfd91614fe89d9a7695",
+            "vout": 0,
+            "value": "1868"
+          },
+          {
+            "txid": "de6c9a703e55f131bb9475a7be2714069c2ed250d54c86b5c3ea9cc1f5187cd7",
+            "vout": 0,
+            "value": "1368"
+          }
+        ],
+        "signed_tx": "0200000000010295769a9de84f6191fd4b6a9548331bf0fd9018ce837feccefccb7e2df209f8ad0000000000fdffffffd77c18f5c19ceac3b5864cd550d22e9c061427bea77594bb31f1553e709a6cde0000000000fdffffff02e803000000000000160014d69cd757d52625702dfe3a2dc0abeb6122d308fecc0700000000000022002087e96e76541acdf2f259f6c3e5d24e44387149cff41973ceb180e69de88d367c03483045022100bd46b8ae25f5c73348084ab6f1ba74726670bee43f2b00a1a8478fbff8eba6b1022073912828b0a4fa69ba60e9988e6b8a1966a88cc981c5830f35355ff056ecb3f001010146632103a2be165638ab4d919c7fdd24f9c4b86e47d06da1db1fe3b45e12beda9c820038ac6704a84ef36ab17576a914060ddee16faf8a98d67d9943861c65d92d00000b88ac680347304402207d21c4d59e4622d81ad08e6c313d53ca3325b01db756f9e9f8b624a86f5b940802204ddab19bd95c0e6803308a656f317098204dcfb647a1a4e83cf9d336c3fe535201010146632103a2be165638ab4d919c7fdd24f9c4b86e47d06da1db1fe3b45e12beda9c820038ac6704a84ef36ab17576a914060ddee16faf8a98d67d9943861c65d92d00000b88ac6800000000"
+      }
+    ],
+    "history": [
+      {
+        "index": 0,
+        "at": "1794289099",
+        "event": "jar_created"
+      },
+      {
+        "index": 1,
+        "at": "1794289110",
+        "event": "emergency_proposed",
+        "proposal_id": 1,
+        "guardian": "sats-jar-dev-2.testnet",
+        "amount": "2000"
+      },
+      {
+        "index": 2,
+        "at": "1794289114",
+        "event": "emergency_approved",
+        "proposal_id": 1,
+        "guardian": "2a04960eb00f6506ce54.sats-jar-app.testnet",
+        "delay_ends_at": "1794290914"
+      },
+      {
+        "index": 3,
+        "at": "1794289119",
+        "event": "handover_claimed",
+        "child_account": "257282dc25ebe65f38d0.sats-jar-app.testnet",
+        "child_btc_pubkey": "02bff04b004e937bef1e1c376b435cd30a5d93efdff825a24fe3ce78e842208045",
+        "lapses_at": "1794289539"
+      },
+      {
+        "index": 4,
+        "at": "1794289122",
+        "event": "handover_confirmed",
+        "guardian": "sats-jar-dev-2.testnet",
+        "delay_ends_at": null
+      },
+      {
+        "index": 5,
+        "at": "1794289126",
+        "event": "handover_confirmed",
+        "guardian": "2a04960eb00f6506ce54.sats-jar-app.testnet",
+        "delay_ends_at": "1794289306"
+      },
+      {
+        "index": 6,
+        "at": "1794319476",
+        "event": "topup_proven",
+        "txid": "f0061d75026ad2f275a6b696c28a15b24465d35d1b115d696060bb54625a2699",
+        "vout": 0,
+        "value": "2000"
+      },
+      {
+        "index": 7,
+        "at": "1794319480",
+        "event": "emergency_lapsed",
+        "proposal_id": 1,
+        "lapsed_at": "1794289306"
+      },
+      {
+        "index": 8,
+        "at": "1794319480",
+        "event": "rehoming_started",
+        "address": "tb1qsl5kuaj5rtxl9uje7mp7t5jwgsu8zjw07svh8n43srnfm6ydxe7qslkptf",
+        "locktime": 1794330280,
+        "coins": 1
+      },
+      {
+        "index": 9,
+        "at": "1794319480",
+        "event": "rehoming_requested",
+        "payment_id": "1"
+      },
+      {
+        "index": 10,
+        "at": "1794319484",
+        "event": "payment_signed",
+        "payment_id": "1"
+      },
+      {
+        "index": 11,
+        "at": "1794319711",
+        "event": "payment_confirmed",
+        "payment_id": "1"
+      },
+      {
+        "index": 12,
+        "at": "1794319711",
+        "event": "handover_completed",
+        "child_account": "257282dc25ebe65f38d0.sats-jar-app.testnet"
+      },
+      {
+        "index": 13,
+        "at": "1794319716",
+        "event": "topup_proven",
+        "txid": "bf9efae9af614ba6d74087e3d3ab051193e4cff0a01172a55502837eaf91b975",
+        "vout": 0,
+        "value": "1500"
+      },
+      {
+        "index": 14,
+        "at": "1794319720",
+        "event": "rehoming_requested",
+        "payment_id": "2"
+      },
+      {
+        "index": 15,
+        "at": "1794319725",
+        "event": "payment_signed",
+        "payment_id": "2"
+      },
+      {
+        "index": 16,
+        "at": "1794319797",
+        "event": "payment_confirmed",
+        "payment_id": "2"
+      },
+      {
+        "index": 17,
+        "at": "1794319820",
+        "event": "spend_requested",
+        "payment_id": "3"
+      },
+      {
+        "index": 18,
+        "at": "1794319824",
+        "event": "payment_signed",
+        "payment_id": "3"
+      },
+      {
+        "index": 19,
+        "at": "1794319944",
+        "event": "payment_confirmed",
+        "payment_id": "3"
+      }
+    ],
+    "giver_after": 304488
+  }
+}

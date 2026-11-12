@@ -1,0 +1,44 @@
+{
+  "jar_id": "1",
+  "giver": "sats-jar-dev-2.testnet",
+  "owner_id": "sats-jar-dev-2.testnet",
+  "create_args": {
+    "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+    "cap": "2000",
+    "period": "3600",
+    "unlock_at": "1794289697",
+    "guardians": [
+      "sats-jar-dev-2.testnet",
+      "2a04960eb00f6506ce54.sats-jar-app.testnet"
+    ],
+    "family_account": "sats-jar-dev-2.testnet",
+    "nickname": "Handover check"
+  },
+  "address": "tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q",
+  "old_addresses": [],
+  "witness_script": "632103a2be165638ab4d919c7fdd24f9c4b86e47d06da1db1fe3b45e12beda9c820038ac670451daf26ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac68",
+  "public_key": "secp256k1:4FibaUTGVMP5aTRLsaaKWAY2VWxcYBQP6x5oNQKJYS1ys36c8Qh2hPJSd3ExnLXFdjdSV1zWZxT8h2VFnFDKfCjC",
+  "locktime": 1794300497,
+  "demo_timing": true,
+  "clock": {
+    "started_at": null
+  },
+  "handover": "none",
+  "proven_balance": "0",
+  "available_allowance": "0",
+  "fee_budget_left": "200",
+  "next_allowance_at": null,
+  "transfer": "none",
+  "emergency": {
+    "open": {
+      "proposal_id": 1,
+      "amount": "2000",
+      "approved_by": [
+        "sats-jar-dev-2.testnet",
+        "2a04960eb00f6506ce54.sats-jar-app.testnet"
+      ],
+      "proposed_at": "1794289110",
+      "delay_ends_at": "1794290914"
+    }
+  }
+}

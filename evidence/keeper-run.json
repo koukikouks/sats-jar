@@ -1,0 +1,314 @@
+{
+  "about": "Testnet run of T16 (koukikouks/sats-jar#19): the keeper, pressed through POST /keeper/run, proves a top-up, requests the allowance, broadcasts and confirms it on a fresh demo jar of the dev contract. Written by backend/src/verify-keeper.ts.",
+  "contract": "sats-jar-dev.testnet",
+  "keeper": "keeper.sats-jar-app.testnet",
+  "steps": [
+    {
+      "at": "2026-11-10T01:37:35.659Z",
+      "step": "create_jar",
+      "near_tx": "9zsdijQhVjHroJdKs2rRz15G4eCN1WpPFscK9SSX26Qm",
+      "sent": {
+        "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+        "cap": "3000",
+        "period": "3600",
+        "unlock_at": "1794447451",
+        "guardians": [
+          "guardian-a.sats-jar-dev.testnet",
+          "guardian-b.sats-jar-dev.testnet"
+        ],
+        "family_account": "sats-jar-dev.testnet",
+        "nickname": "Keeper check"
+      },
+      "outcome": {
+        "ok": true,
+        "hash": "9zsdijQhVjHroJdKs2rRz15G4eCN1WpPFscK9SSX26Qm",
+        "value": "4"
+      }
+    },
+    {
+      "at": "2026-11-10T01:37:44.298Z",
+      "step": "topup (signed, before broadcast)",
+      "btc_tx": "4bc730dd739ed348f2b093211fd333a45acdfdd032c553d5a9cda3489df89888",
+      "fee": 153,
+      "vsize": 153,
+      "minimum_fee": 1
+    },
+    {
+      "at": "2026-11-10T01:37:44.376Z",
+      "step": "topup (broadcast)",
+      "btc_tx": "4bc730dd739ed348f2b093211fd333a45acdfdd032c553d5a9cda3489df89888",
+      "explorer": "https://mempool.space/testnet/tx/4bc730dd739ed348f2b093211fd333a45acdfdd032c553d5a9cda3489df89888"
+    },
+    {
+      "at": "2026-11-10T01:37:59.749Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323146,
+      "report": {
+        "startedAt": 1794274677,
+        "steps": []
+      }
+    },
+    {
+      "at": "2026-11-10T01:40:51.692Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323150,
+      "report": {
+        "startedAt": 1794274843,
+        "steps": [
+          {
+            "action": "prove_topup",
+            "jarId": "4",
+            "target": "4bc730dd739ed348f2b093211fd333a45acdfdd032c553d5a9cda3489df89888:0",
+            "result": "done",
+            "nearTx": "85UTyBeZHewFCH21kBEqXV3DzKSzZ2vkGUz9W6RjGBwa"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-11-10T01:41:43.946Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323150,
+      "report": {
+        "startedAt": 1794274882,
+        "steps": [
+          {
+            "action": "request_allowance",
+            "jarId": "4",
+            "result": "done",
+            "nearTx": "GHCwEYHnGHNsc84dxRnHYv1TujaqeUyGAyK8i4KcU3HP"
+          },
+          {
+            "action": "broadcast",
+            "paymentId": "2",
+            "target": "7667c5567aac20a4eb3d1e69eac4bd860597bbe3a613678e1f9fc7b08f3ca5cd",
+            "result": "done"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-11-10T01:41:53.380Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323150,
+      "report": {
+        "startedAt": 1794274910,
+        "steps": [
+          {
+            "action": "broadcast",
+            "paymentId": "2",
+            "target": "7667c5567aac20a4eb3d1e69eac4bd860597bbe3a613678e1f9fc7b08f3ca5cd",
+            "result": "done"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-11-10T01:43:54.220Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323153,
+      "report": {
+        "startedAt": 1794275025,
+        "steps": [
+          {
+            "action": "confirm_payment",
+            "paymentId": "2",
+            "target": "7667c5567aac20a4eb3d1e69eac4bd860597bbe3a613678e1f9fc7b08f3ca5cd",
+            "result": "done",
+            "nearTx": "2UQNiz9CHVpAHF3PWDjbEAzsnDRyK9X3U9NdyBXjo2qM"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-11-10T01:43:57.134Z",
+      "step": "POST /keeper/run",
+      "status": 200,
+      "light_client_tip": 5323153,
+      "report": {
+        "startedAt": 1794275034,
+        "steps": []
+      }
+    }
+  ],
+  "jar": {
+    "jar_id": "4",
+    "address": "tb1qv5zcpu2wsyjsfa4jhefefrgaq638dwrmf3vael7dp9ky548wakkqk92arl",
+    "demo_timing": true
+  },
+  "topup": {
+    "txid": "4bc730dd739ed348f2b093211fd333a45acdfdd032c553d5a9cda3489df89888",
+    "value": 3000,
+    "fee": 153,
+    "broadcast": true
+  },
+  "ledger": {
+    "giver_coin": 305067,
+    "topup": 3000,
+    "topup_fee": 153,
+    "giver_change": 301914,
+    "allowance_received": 2880,
+    "giver_after": 307294,
+    "giver_change_confirmed": 301914
+  },
+  "close": {
+    "keeper_keys": {
+      "block_hash": "GSm1yeJqgecsTHZprifWG4vHmBtjZXngLdH8r7n62R59",
+      "block_height": 277001605,
+      "keys": [
+        {
+          "access_key": {
+            "nonce": 277000752000004,
+            "permission": {
+              "FunctionCall": {
+                "allowance": null,
+                "method_names": [],
+                "receiver_id": "sats-jar-dev.testnet"
+              }
+            }
+          },
+          "public_key": "ed25519:GwrYVur2cGRcTrhVZvY4rv6LWCWo3FtpbRTMWCzoyDMX"
+        }
+      ]
+    },
+    "keeper_transactions": [
+      {
+        "near_tx": "2UQNiz9CHVpAHF3PWDjbEAzsnDRyK9X3U9NdyBXjo2qM",
+        "signed_by_keeper": true,
+        "explorer": "https://testnet.nearblocks.io/txns/2UQNiz9CHVpAHF3PWDjbEAzsnDRyK9X3U9NdyBXjo2qM"
+      },
+      {
+        "near_tx": "GHCwEYHnGHNsc84dxRnHYv1TujaqeUyGAyK8i4KcU3HP",
+        "signed_by_keeper": true,
+        "explorer": "https://testnet.nearblocks.io/txns/GHCwEYHnGHNsc84dxRnHYv1TujaqeUyGAyK8i4KcU3HP"
+      },
+      {
+        "near_tx": "85UTyBeZHewFCH21kBEqXV3DzKSzZ2vkGUz9W6RjGBwa",
+        "signed_by_keeper": true,
+        "explorer": "https://testnet.nearblocks.io/txns/85UTyBeZHewFCH21kBEqXV3DzKSzZ2vkGUz9W6RjGBwa"
+      },
+      {
+        "near_tx": "DU9YU16Dmkit7xmETTjYwPECKbk1CdHn4Xs4iZxVvvRp",
+        "signed_by_keeper": true,
+        "explorer": "https://testnet.nearblocks.io/txns/DU9YU16Dmkit7xmETTjYwPECKbk1CdHn4Xs4iZxVvvRp"
+      },
+      {
+        "near_tx": "5cedq8DecCWF3fp4XdeAQwpuS5PQwJqUaVRzBMdGh23V",
+        "signed_by_keeper": false,
+        "explorer": "https://testnet.nearblocks.io/txns/5cedq8DecCWF3fp4XdeAQwpuS5PQwJqUaVRzBMdGh23V"
+      }
+    ],
+    "jar": {
+      "jar_id": "4",
+      "giver": "sats-jar-dev.testnet",
+      "owner_id": "sats-jar-dev.testnet",
+      "create_args": {
+        "child_address": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+        "cap": "3000",
+        "period": "3600",
+        "unlock_at": "1794447451",
+        "guardians": [
+          "guardian-a.sats-jar-dev.testnet",
+          "guardian-b.sats-jar-dev.testnet"
+        ],
+        "family_account": "sats-jar-dev.testnet",
+        "nickname": "Keeper check"
+      },
+      "address": "tb1qv5zcpu2wsyjsfa4jhefefrgaq638dwrmf3vael7dp9ky548wakkqk92arl",
+      "witness_script": "6321024359239864345dc8c2855b73abeddaf9b2ee08e656348518c9c97e693b9a3972ac67048b42f56ab17576a914d69cd757d52625702dfe3a2dc0abeb6122d308fe88ac68",
+      "public_key": "secp256k1:2M6eXF9T2a9NXvpDvkPbypeRDbJByRuvU26xnmVRaRyS8JQkr4bsmfu8WG5xG2vWV6f7Eq24iPZkx9pL1swbKBCH",
+      "locktime": 1794458251,
+      "demo_timing": true,
+      "clock": {
+        "started_at": "1794274848"
+      },
+      "handover": "none",
+      "proven_balance": "0",
+      "available_allowance": "0",
+      "fee_budget_left": "180",
+      "next_allowance_at": "1794278448"
+    },
+    "coins": [
+      {
+        "txid": "4bc730dd739ed348f2b093211fd333a45acdfdd032c553d5a9cda3489df89888",
+        "vout": 0,
+        "value": "3000",
+        "status": "spent",
+        "payment_id": "2"
+      }
+    ],
+    "history": [
+      {
+        "index": 0,
+        "at": "1794274652",
+        "event": "jar_created"
+      },
+      {
+        "index": 1,
+        "at": "1794274848",
+        "event": "topup_proven",
+        "txid": "4bc730dd739ed348f2b093211fd333a45acdfdd032c553d5a9cda3489df89888",
+        "vout": 0,
+        "value": "3000"
+      },
+      {
+        "index": 2,
+        "at": "1794274888",
+        "event": "allowance_requested",
+        "payment_id": "2"
+      },
+      {
+        "index": 3,
+        "at": "1794274900",
+        "event": "payment_signed",
+        "payment_id": "2"
+      },
+      {
+        "index": 4,
+        "at": "1794275029",
+        "event": "payment_confirmed",
+        "payment_id": "2"
+      }
+    ],
+    "giver_outputs": [
+      {
+        "txid": "4016901c16ce105d6c6b44531406ac8e4942cb9177698c4b3be7aa939b00e69c",
+        "vout": 0,
+        "status": {
+          "confirmed": true,
+          "block_height": 5322884,
+          "block_hash": "0000000000000b45dc1b7eff00e7296691854f9477c451a67f8eb6ce16364517",
+          "block_time": 1794274569
+        },
+        "value": 2500
+      },
+      {
+        "txid": "7667c5567aac20a4eb3d1e69eac4bd860597bbe3a613678e1f9fc7b08f3ca5cd",
+        "vout": 0,
+        "status": {
+          "confirmed": true,
+          "block_height": 5323151,
+          "block_hash": "0000000000000981c2d24d88b079b101a61c591163f0531c2dcc90da149b0a20",
+          "block_time": 1794280640
+        },
+        "value": 2880
+      },
+      {
+        "txid": "4bc730dd739ed348f2b093211fd333a45acdfdd032c553d5a9cda3489df89888",
+        "vout": 1,
+        "status": {
+          "confirmed": true,
+          "block_height": 5323148,
+          "block_hash": "0000000000000dc1ba87c1dff77c1f29babfb6436137bceaeb22e428b6b5e76b",
+          "block_time": 1794279440
+        },
+        "value": 301914
+      }
+    ]
+  }
+}

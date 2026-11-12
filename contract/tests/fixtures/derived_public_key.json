@@ -1,0 +1,9 @@
+{
+  "source": "derived_public_key view on v1.signer-prod.testnet (MPC 3.18.0), NEAR testnet RPC, final, block 276938859, 2026-11-09",
+  "root_public_key": "secp256k1:4NfTiv3UsGahebgTaHyD9vF8KYKMBnfd6kh94mK6xv8fGBiJB8TBtFMP5WWXz6B89Ac1fbpzPwAvoyQebemHFwx3",
+  "domain_id": 0,
+  "vectors": [
+    { "predecessor": "jar.test.near", "path": "1", "public_key": "secp256k1:2ChtuaNkMetmYRyLM6LfW67zSsA7FnEzvW91QXPta5ZYBw9G5haw111HWhVoXuGztvJS72s19Fzrowyjvc6KuSeY" },
+    { "predecessor": "jar.test.near", "path": "2", "public_key": "secp256k1:5GkNpT4NidmaiSvzs2Z6jxQcVb6wASV7M7Si2ZA7Doxpzv7XbxagxB9KTrzzHtpA96ty5DYm7pFe3wFomRq4MEKS" }
+  ]
+}

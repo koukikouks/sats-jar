@@ -1,0 +1,14 @@
+[package]
+name = "btc"
+version = "0.1.0"
+edition.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+# The leaf crate behind near_sdk::env::sha256_array: host functions on chain, pure Rust off chain.
+near-sdk-env = "=0.1.9"
+
+[dev-dependencies]
+bitcoin = "=0.32.11"
+test-support = { path = "../test-support" }
