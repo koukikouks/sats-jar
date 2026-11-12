@@ -23,7 +23,12 @@ export default defineConfig({
   workers: 1,
   reporter: "list",
   // A click waits at most 90 s, so a wrong step fails in minutes rather than at the 45-minute limit.
-  use: { ...devices["Desktop Chrome"], baseURL: BASE_URL, trace: "retain-on-failure", actionTimeout: 90_000, navigationTimeout: 90_000 },
+  use: { baseURL: BASE_URL, trace: "retain-on-failure", actionTimeout: 90_000, navigationTimeout: 90_000 },
+  // The same journey at desktop and at phone width (pnpm --dir app journeys --project=phone).
+  projects: [
+    { name: "desktop", use: { ...devices["Desktop Chrome"] } },
+    { name: "phone", use: { ...devices["Pixel 7"] } },
+  ],
   webServer: [
     {
       command: "node ../backend/src/server.ts",

@@ -49,7 +49,17 @@ async function parkOthers(active: Page): Promise<void> {
 
 async function device(browser: Browser, name: string, persisted: boolean): Promise<Device> {
   const file = join(DEVICES, `${name}.json`);
-  const context = await browser.newContext({ baseURL: BASE_URL, ...(persisted && existsSync(file) ? { storageState: file } : {}) });
+  // The project's viewport and device (desktop or phone) apply to every device's context.
+  const { viewport, userAgent, deviceScaleFactor, isMobile, hasTouch } = test.info().project.use;
+  const context = await browser.newContext({
+    baseURL: BASE_URL,
+    ...(viewport !== undefined ? { viewport } : {}),
+    ...(userAgent !== undefined ? { userAgent } : {}),
+    ...(deviceScaleFactor !== undefined ? { deviceScaleFactor } : {}),
+    ...(isMobile !== undefined ? { isMobile } : {}),
+    ...(hasTouch !== undefined ? { hasTouch } : {}),
+    ...(persisted && existsSync(file) ? { storageState: file } : {}),
+  });
   const page = await context.newPage();
   pages.push(page);
   page.on("console", (message) => {
@@ -166,13 +176,15 @@ const sleep = (seconds: number) => new Promise((resolve) => setTimeout(resolve, 
 
 test.afterAll(() => {
   const commit = execSync("git rev-parse --short HEAD", { cwd: REPO }).toString().trim();
+  const project = test.info().project.name;
   writeFileSync(
-    join(REPO, "evidence", "web-testnet.json"),
+    join(REPO, "evidence", project === "desktop" ? "web-testnet.json" : `web-testnet-${project}.json`),
     `${JSON.stringify(
       {
         about:
           "Live testnet run of the web app (koukikouks/sats-jar#43): every person's step of the App SDK's testnet checks, done through the browser. Output of app/journeys/web-testnet.journey.ts. `row` is the row of docs/web-parity.md.",
         contract: CONTRACT,
+        width: project,
         ran_at: new Date().toISOString(),
         code_commit: commit,
         steps: evidence,
@@ -506,7 +518,7 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
   });
 
   await step("[33] the public record shows the jar's life, refusals included, with no account names", async () => {
-    const page = await (await browser.newContext({ baseURL: BASE_URL })).newPage();
+    const page = await (await browser.newContext({ baseURL: BASE_URL, viewport: test.info().project.use.viewport ?? null })).newPage();
     await parkOthers(page);
     await page.goto(`/proof/${jarId}`);
     await expect(page.getByRole("heading", { name: `${nickname}: public record` })).toBeVisible();
@@ -515,6 +527,7 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
     await expect(requests.getByText(/^Refused: /).first()).toBeVisible();
     const text = (await page.locator("main").textContent()) ?? "";
     expect(text).not.toMatch(/\.testnet/);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), "no sideways scroll").toBe(true);
     record([33], `the public record lists ${await requests.locator("li").count()} requests, ${await requests.getByText(/^Refused: /).count()} of them refused, and names no account`);
   });
 });
