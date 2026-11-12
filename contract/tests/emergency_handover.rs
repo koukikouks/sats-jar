@@ -181,3 +181,36 @@ async fn the_first_complete_handover_records_the_lapse_of_an_open_proposal() {
         json!({ "lapsed": { "proposal_id": id } })
     );
 }
+
+#[tokio::test]
+async fn every_emergency_call_is_refused_while_the_coins_are_rehoming() {
+    let regtest = Regtest::start();
+    let jars = start_paying(Build::Locked, "regtest").await;
+    let family = jars.family().await;
+    let mut args = jars.demo_args(&family, &regtest.new_address()).await;
+    let unlock_at = now(&jars.worker).await + 240;
+    args["unlock_at"] = json!(unlock_at.to_string());
+    let jar = jars
+        .funded_jar_with(&regtest, args, &[30_000, 30_000])
+        .await;
+    let id = jars.approved_emergency(&family, &jar.id, JAR_CAP).await;
+    jars.confirmed_claim(&family, &jar.id).await;
+    jars.wait_until(handover_delay_ends_at(&jars, &jar.id).await.max(unlock_at))
+        .await;
+    jars.signed_rehoming(&family, &jar.id, 1).await;
+    assert!(jars.handover(&jar.id).await["completing"].is_object());
+
+    let propose = jars.propose(&family.guardians[2], &jar.id, JAR_CAP).await;
+    let approve = jars.approve(&family.guardians[2], &jar.id, id).await;
+    let cancel = jars.cancel_emergency(&jars.giver, &jar.id).await;
+    let execute = jars.execute(&family.stranger, &jar.id, 1).await;
+
+    for result in [propose, approve, cancel, execute] {
+        let reason = refusal(&result);
+        assert!(reason.contains("HANDOVER_IN_PROGRESS: "), "{reason}");
+    }
+    assert_eq!(
+        jars.emergency(&jar.id).await,
+        json!({ "lapsed": { "proposal_id": id } })
+    );
+}
