@@ -16,6 +16,9 @@ export function PinGate(props: { children: ReactNode }) {
   return <>{props.children}</>;
 }
 
+/** What a PIN box keeps of what was typed: digits only, at most 6 (a PIN is exactly 6). */
+export const pinDigits = (typed: string): string => typed.replace(/\D/g, "").slice(0, 6);
+
 /** Checks a chosen PIN typed twice; null when it is fine. */
 export function pinProblem(pin: string, again: string): string | null {
   if (!/^\d{6}$/.test(pin)) return "Use 6 digits.";
@@ -29,11 +32,11 @@ export function NewPinFields(props: { pin: string; again: string; onPin: (v: str
     <>
       <label className="field">
         <span>PIN</span>
-        <input type="password" inputMode="numeric" autoComplete="new-password" value={props.pin} onChange={(e) => props.onPin(e.target.value)} />
+        <input type="password" inputMode="numeric" autoComplete="new-password" value={props.pin} maxLength={6} onChange={(e) => props.onPin(pinDigits(e.target.value))} />
       </label>
       <label className="field">
         <span>Type it again</span>
-        <input type="password" inputMode="numeric" autoComplete="new-password" value={props.again} onChange={(e) => props.onAgain(e.target.value)} />
+        <input type="password" inputMode="numeric" autoComplete="new-password" value={props.again} maxLength={6} onChange={(e) => props.onAgain(pinDigits(e.target.value))} />
       </label>
     </>
   );
@@ -87,7 +90,7 @@ function Unlock() {
       <h1>Unlock Sats Jar</h1>
       <label className="field">
         <span>PIN</span>
-        <input type="password" inputMode="numeric" autoComplete="current-password" value={pin} onChange={(e) => setPin(e.target.value)} />
+        <input type="password" inputMode="numeric" autoComplete="current-password" value={pin} maxLength={6} onChange={(e) => setPin(pinDigits(e.target.value))} />
       </label>
       <Refusal error={unlock.error} />
       <button type="submit" disabled={unlock.isPending}>

@@ -3,7 +3,7 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { useSdk } from "../services.tsx";
 import { Field } from "./Field.tsx";
 import { Refusal } from "./messages.tsx";
-import { pinProblem } from "./PinGate.tsx";
+import { pinDigits, pinProblem } from "./PinGate.tsx";
 
 type Step = { name: "intro" } | { name: "words"; words: string[]; check: number[] } | { name: "check"; check: number[] };
 
@@ -84,10 +84,10 @@ function CheckWords(props: { check: number[]; onDone: () => void }) {
         </Field>
       ))}
       <Field label="PIN" hint="A 6-digit PIN unlocks your jar on this phone.">
-        <input type="password" inputMode="numeric" autoComplete="new-password" value={pin} onChange={(e) => setPin(e.target.value)} />
+        <input type="password" inputMode="numeric" autoComplete="new-password" value={pin} maxLength={6} onChange={(e) => setPin(pinDigits(e.target.value))} />
       </Field>
       <Field label="Type it again">
-        <input type="password" inputMode="numeric" autoComplete="new-password" value={again} onChange={(e) => setAgain(e.target.value)} />
+        <input type="password" inputMode="numeric" autoComplete="new-password" value={again} maxLength={6} onChange={(e) => setAgain(pinDigits(e.target.value))} />
       </Field>
       {problem && (
         <p className="refusal" role="alert">

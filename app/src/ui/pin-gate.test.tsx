@@ -35,6 +35,19 @@ describe("the PIN gate", () => {
     expect(sdk.device.setUp).not.toHaveBeenCalled();
   });
 
+  it("takes only 6 digits in a PIN box, so a seventh digit or a letter never lands", async () => {
+    const { user, sdk } = renderApp("/new", (sdk) => {
+      sdk.device.state.mockResolvedValue("new");
+      sdk.device.setUp.mockImplementation(async () => void sdk.device.state.mockResolvedValue("unlocked"));
+    });
+    await user.type(await screen.findByLabelText("PIN"), "1234567");
+    await user.type(screen.getByLabelText("Type it again"), "12a34567");
+    expect((screen.getByLabelText("PIN") as HTMLInputElement).value).toBe("123456");
+    expect((screen.getByLabelText("Type it again") as HTMLInputElement).value).toBe("123456");
+    await user.click(screen.getByRole("button", { name: "Set up" }));
+    expect(sdk.device.setUp).toHaveBeenCalledWith({ pin: "123456" });
+  });
+
   it("unlocks a locked device, showing the SDK's sentence for a wrong PIN", async () => {
     const { user, sdk } = renderApp("/", (sdk) => {
       sdk.device.state.mockResolvedValue("locked");
