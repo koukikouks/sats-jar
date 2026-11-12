@@ -87,6 +87,14 @@ export function near(http: typeof fetch, contract: string) {
     }
     if (answer.error) throw new RpcError(answer.error.cause?.name ?? "UNKNOWN");
     if (answer.result === undefined) throw unavailable();
+    // A `query` can fail inside a success envelope: FastNEAR answers a key that isn't at final yet
+    // with result.error "access key ed25519:... does not exist while viewing" (seen 2026-11-12).
+    const failed = (answer.result as { error?: unknown }).error;
+    if (typeof failed === "string") {
+      if (/^access key .* does not exist/.test(failed)) throw new RpcError("UNKNOWN_ACCESS_KEY");
+      if (/^account .* does not exist/.test(failed)) throw new RpcError("UNKNOWN_ACCOUNT");
+      throw new RpcError("QUERY_ERROR");
+    }
     return answer.result;
   }
 
