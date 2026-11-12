@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useSdk } from "../../services.tsx";
 import { Copy } from "../../ui/Copy.tsx";
 import { Field } from "../../ui/Field.tsx";
+import { coinsStillToGo } from "../../ui/format.ts";
 import { CheckIt, Refusal } from "../../ui/messages.tsx";
 
 /** The holder after handover: send the jar's Bitcoin, or give the jar to someone (stories 55–58). */
@@ -40,10 +41,7 @@ export function HolderSection(props: { jar: JarStatus }) {
         </>
       )}
       {transfer.state === "moving" && (
-        <p>
-          The jar's Bitcoin is moving to the new holder's key: {transfer.coinsToMove - transfer.coinsLeft} of {transfer.coinsToMove}{" "}
-          coins moved.
-        </p>
+        <p>The jar's Bitcoin is moving to the new holder's key: {coinsStillToGo(transfer.coinsLeft)}.</p>
       )}
       <Refusal error={cancel.error} />
       <CheckIt url={sent?.explorerUrl} />

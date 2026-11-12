@@ -66,8 +66,8 @@ describe("the holder after handover", () => {
   });
 
   it("shows the Bitcoin moving to the new holder", async () => {
-    renderApp("/jar/7", (sdk) => jarAs(sdk, { transfer: { state: "moving", toMe: false, coinsToMove: 2, coinsLeft: 2 } }));
-    expect(await screen.findByText("The jar's Bitcoin is moving to the new holder's key: 0 of 2 coins moved.")).toBeTruthy();
+    renderApp("/jar/7", (sdk) => jarAs(sdk, { transfer: { state: "moving", toMe: false, coinsToMove: 0, coinsLeft: 2 } }));
+    expect(await screen.findByText("The jar's Bitcoin is moving to the new holder's key: 2 coins still to go.")).toBeTruthy();
   });
 
   it("offers nothing to the family account after handover", async () => {
