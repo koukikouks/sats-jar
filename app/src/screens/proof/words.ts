@@ -19,7 +19,11 @@ export function senderRole(jar: JarProof, signer: string): string {
 const ACCOUNT = /\b[a-z0-9_-]+(?:\.[a-z0-9_-]+)*\.(?:testnet|near)\b|\b[0-9a-f]{64}\b/g;
 
 /** A refusal's reason with every account in it replaced by that account's role. */
-export const withoutAccounts = (jar: JarProof, reason: string): string => reason.replace(ACCOUNT, (account) => senderRole(jar, account));
+export const withoutAccounts = (jar: JarProof, reason: string): string =>
+  reason
+    .replace(ACCOUNT, (account) => senderRole(jar, account))
+    // "only the giver, <account>, can cancel" would read "only the giver, the giver, can cancel".
+    .replace(/\b(the giver|a guardian|the holder|the child|someone else), \1,/g, "$1");
 
 // The contract's change methods (contract/src: lib, spend, emergency, handover, transfer,
 // rehoming, nft). Anything else (the dev-only escape, a method a later contract adds) reads
