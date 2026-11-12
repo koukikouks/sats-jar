@@ -178,8 +178,10 @@ check() {
   hash="$(code_hash "$account")"
   [ "$hash" = "$sum" ] || die "on-chain code hash $hash is not the build's $sum"
   metadata="$(query "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"query\",\"params\":{\"request_type\":\"call_function\",\"finality\":\"final\",\"account_id\":\"$account\",\"method_name\":\"contract_source_metadata\",\"args_base64\":\"e30=\"}}" |
-    node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(Buffer.from(JSON.parse(s).result.result).toString()))')"
+    node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(Buffer.from(JSON.parse(s).result.result).toString()))')" ||
+    die "could not read contract_source_metadata"
   # The rebuild a third party runs uses exactly these: image@digest, command, no env, commit.
+  # `|| exit 1` because verify calls check inside $(...), where bash ignores set -e.
   node -e '
     const [m,b,c]=process.argv.slice(1).map((x,i)=>i<2?JSON.parse(x):x);
     const i=m.build_info||{},fail=w=>{console.error("metadata: "+w);process.exit(1)};
@@ -187,7 +189,7 @@ check() {
     if(JSON.stringify(i.build_command)!==JSON.stringify(b.container_build_command))fail("command "+JSON.stringify(i.build_command));
     if(b.passed_env.length)fail("passed_env is not empty");
     if(!String(i.source_code_snapshot).endsWith("?rev="+c))fail("snapshot "+i.source_code_snapshot);' \
-    "$metadata" "$(manifest_build)" "$commit"
+    "$metadata" "$(manifest_build)" "$commit" || exit 1
   echo "$metadata"
 }
 
