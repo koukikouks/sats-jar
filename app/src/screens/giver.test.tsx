@@ -116,14 +116,20 @@ describe("creating the jar", () => {
     const { user } = renderApp("/draft/d1", (sdk) => {
       withDraft(sdk, [true, true]);
       sdk.jars.create.mockRejectedValue(
-        new SatsJarRefusal("CAP_TOO_SMALL", "The cap is too small to pay its own Bitcoin fees. Choose at least 1,630 sats."),
+        new SatsJarRefusal(
+          "CAP_TOO_SMALL",
+          "The cap is too small to pay its own Bitcoin fees. Choose at least 1,630 sats.",
+          "https://testnet.nearblocks.io/txns/R1",
+        ),
       );
     });
     await user.type(await screen.findByLabelText("Child's Bitcoin address"), "tb1qchild");
     await user.type(screen.getByLabelText("Allowance per period (sats)"), "1000");
     await user.type(screen.getByLabelText("Unlock date"), "2040-05-01");
     await user.click(screen.getByRole("button", { name: "Create the jar" }));
-    expect(await screen.findByRole("alert")).toHaveProperty("textContent", "The cap is too small to pay its own Bitcoin fees. Choose at least 1,630 sats.");
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toBe("The cap is too small to pay its own Bitcoin fees. Choose at least 1,630 sats. Check it yourself ↗");
+    expect(within(alert).getByRole("link", { name: "Check it yourself ↗" }).getAttribute("href")).toBe("https://testnet.nearblocks.io/txns/R1");
   });
 });
 

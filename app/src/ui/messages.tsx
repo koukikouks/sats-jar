@@ -5,11 +5,13 @@ export function refusalText(error: unknown): string {
   return error instanceof SatsJarRefusal ? error.message : "We could not reach the network just now. Try again shortly.";
 }
 
+/** A refusal in the SDK's sentence; a refused transaction also links to its explorer (stories 6, 70). */
 export function Refusal(props: { error: unknown }) {
   if (props.error === null || props.error === undefined) return null;
+  const url = props.error instanceof SatsJarRefusal ? props.error.explorerUrl : null;
   return (
     <p className="refusal" role="alert">
-      {refusalText(props.error)}
+      {refusalText(props.error)} <CheckIt url={url} />
     </p>
   );
 }
