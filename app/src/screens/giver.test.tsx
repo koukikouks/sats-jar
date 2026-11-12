@@ -1,7 +1,8 @@
 /** @vitest-environment jsdom */
-import { SatsJarRefusal } from "@sats-jar/sdk";
+import { SatsJarRefusal, type JarStatus } from "@sats-jar/sdk";
 import { screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import live from "../test/fixtures/dev-jar-1.json";
 import { renderApp } from "../test/render.tsx";
 import type { StandInSdk } from "../test/stand-in.ts";
 
@@ -100,6 +101,15 @@ describe("creating the jar", () => {
       period: 2_592_000,
       unlockAt: Date.UTC(2040, 4, 1) / 1000,
     });
+  });
+
+  it("shows a full-timing jar's unlock day as the day the giver chose, whatever the time zone", async () => {
+    renderApp("/jar/7", (sdk) => {
+      sdk.jars.status.mockResolvedValue({ ...(live.status as unknown as JarStatus), jarId: "7", roles: ["giver"], demoTiming: false, unlockAt: Date.UTC(2040, 4, 1) / 1000 });
+      sdk.jars.topUps.mockResolvedValue([]);
+      sdk.jars.allowances.mockResolvedValue([]);
+    });
+    expect(await screen.findByText("The jar unlocks on 1 May 2040. From then on, the child can take it over.")).toBeTruthy();
   });
 
   it("shows a create refusal next to the button", async () => {

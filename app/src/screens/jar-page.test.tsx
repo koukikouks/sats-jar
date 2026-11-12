@@ -35,6 +35,8 @@ describe("the jar page", () => {
     expect(await within(allowance).findByText("Paid")).toBeTruthy();
     expect(within(allowance).getByText(`2,500 sats to the child, fee ${live.allowances[0]?.fee.toLocaleString("en-US")} sats from the jar`)).toBeTruthy();
     expect(within(allowance).getByText("Sats Jar pays it automatically.")).toBeTruthy();
+    expect(within(allowance).getByText(/^Next one: .+\.$/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Copy address" })).toBeTruthy();
     expect(screen.getByText(jar1.exit.note)).toBeTruthy();
     expect(screen.getByRole("link", { name: "See the public record" }).getAttribute("href")).toBe("/proof/1");
   });
@@ -64,7 +66,6 @@ describe("the jar page", () => {
       ),
     );
     expect(await screen.findByText("On the way")).toBeTruthy();
-    expect(await screen.findByText("Being signed")).toBeTruthy();
     expect(screen.getByText("Confirming, 2 of 3")).toBeTruthy();
     expect(screen.getByText("Under 1,000 sats, so it doesn't count")).toBeTruthy();
     expect(screen.getByText("Being signed")).toBeTruthy();

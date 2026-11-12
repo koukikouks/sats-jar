@@ -7,8 +7,9 @@ export const sats = (amount: number): string => `${amount.toLocaleString("en-US"
 export const when = (unixSeconds: number): string =>
   new Date(unixSeconds * 1000).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
 
-/** A day: "1 May 2040". */
-export const day = (unixSeconds: number): string => new Date(unixSeconds * 1000).toLocaleDateString("en-GB", { dateStyle: "medium" });
+/** A day: "1 May 2040". In UTC, because a chosen unlock date is midnight UTC of that day. */
+export const day = (unixSeconds: number): string =>
+  new Date(unixSeconds * 1000).toLocaleDateString("en-GB", { dateStyle: "medium", timeZone: "UTC" });
 
 /** A period's length: "30 days", "10 minutes". */
 export function period(seconds: number): string {

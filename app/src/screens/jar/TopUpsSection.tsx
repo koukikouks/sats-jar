@@ -28,8 +28,9 @@ export function TopUpsSection(props: { jarId: string }) {
       <h2>Top-ups</h2>
       {topUps.data?.length === 0 && <p>No top-ups yet.</p>}
       <ul className="plain rows">
-        {(topUps.data ?? []).map((topUp) => (
-          <li key={topUp.txid}>
+        {/* One Bitcoin transaction can pay the jar twice, so the txid alone is not unique. */}
+        {(topUps.data ?? []).map((topUp, n) => (
+          <li key={`${topUp.txid}-${n}`}>
             <span>{sats(topUp.value)}</span> <span>{progress(topUp)}</span> <CheckIt url={topUp.explorerUrl} />
           </li>
         ))}
