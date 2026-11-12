@@ -171,3 +171,15 @@ fieldset.field {
 .invite {
   margin-bottom: var(--space-4);
 }
+.jar-head {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+.rows li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-top: var(--border-width) solid var(--color-border);
+}

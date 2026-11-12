@@ -1,0 +1,60 @@
+{
+  "about": "The App SDK's answers for sats-jar-dev.testnet jar 1, recorded from testnet on 2026-11-12: two counted top-ups and a paid allowance (T06).",
+  "status": {
+    "jarId": "1",
+    "nickname": "Dev money moment",
+    "roles": [],
+    "balance": 1260,
+    "picture": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMzQwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjM0MCIgZmlsbD0iI2ZkZjZlMyIvPjx0ZXh0IGlkPSJuaWNrbmFtZSIgeD0iMTAwIiB5PSIzNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiMzYjNiM2IiPkRldiBtb25leSBtb21lbnQ8L3RleHQ+PHJlY3QgeD0iNjAiIHk9IjQ4IiB3aWR0aD0iODAiIGhlaWdodD0iMTYiIHJ4PSI0IiBmaWxsPSIjYjU4OTAwIi8+PHJlY3QgaWQ9ImZpbGwiIHg9IjMwIiB5PSIyNDMiIHdpZHRoPSIxNDAiIGhlaWdodD0iNyIgZmlsbD0iI2Y3OTMxYSIvPjxyZWN0IHg9IjMwIiB5PSI2NCIgd2lkdGg9IjE0MCIgaGVpZ2h0PSIxOTAiIHJ4PSIxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjM2IzYjNiIiBzdHJva2Utd2lkdGg9IjYiLz48dGV4dCBpZD0iYmFsYW5jZSIgeD0iMTAwIiB5PSIyODIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjM2IzYjNiIj4xLDI2MCBzYXRzPC90ZXh0Pjx0ZXh0IGlkPSJ1bmxvY2siIHg9IjEwMCIgeT0iMzA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMyIgZmlsbD0iIzZiNmI2YiI+VW5sb2NrcyAyMDI2LTExLTExPC90ZXh0Pjx0ZXh0IGlkPSJuZXh0X2FsbG93YW5jZSIgeD0iMTAwIiB5PSIzMjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjNmI2YjZiIj5BbGxvd2FuY2UgZHVlIG5vdzwvdGV4dD48L3N2Zz4=",
+    "demoTiming": true,
+    "address": "tb1q5vkrawlraeg8r4h5efs96z85sgv48qk4r5d9kd5eusj2zmtc9puqc3ezza",
+    "qrPayload": "bitcoin:tb1q5vkrawlraeg8r4h5efs96z85sgv48qk4r5d9kd5eusj2zmtc9puqc3ezza",
+    "childAddress": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+    "cap": 2500,
+    "period": 86400,
+    "unlockAt": 1794355391,
+    "availableAllowance": 5000,
+    "nextAllowanceAt": 1794441969,
+    "exit": {
+      "opensAt": 1794366191,
+      "childAddress": "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
+      "note": "If no handover happens, the Bitcoin-only exit opens on 2026-11-11 and pays the child's address, which a parent controls."
+    },
+    "handover": {
+      "state": "none"
+    },
+    "emergency": {
+      "state": "none"
+    },
+    "transfer": {
+      "state": "none"
+    }
+  },
+  "topUps": [
+    {
+      "txid": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+      "value": 2000,
+      "status": "counted",
+      "confirmations": null,
+      "countedAt": 1794269175,
+      "explorerUrl": "https://mempool.space/testnet/tx/2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea"
+    },
+    {
+      "txid": "2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea",
+      "value": 2000,
+      "status": "counted",
+      "confirmations": null,
+      "countedAt": 1794269169,
+      "explorerUrl": "https://mempool.space/testnet/tx/2edba4ef7d19b83c9d4eae99329abda471f029e99b93376c1881953a2ac0a9ea"
+    }
+  ],
+  "allowances": [
+    {
+      "amount": 2500,
+      "fee": 240,
+      "status": "confirmed",
+      "requestedAt": 1794269187,
+      "explorerUrl": "https://mempool.space/testnet/tx/4016901c16ce105d6c6b44531406ac8e4942cb9177698c4b3be7aa939b00e69c"
+    }
+  ]
+}
