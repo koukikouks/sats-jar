@@ -4,3 +4,4 @@ project-brief.md
 docs/plans/
 target/
 node_modules/
+app/dist/
