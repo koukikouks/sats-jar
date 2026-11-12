@@ -151,6 +151,30 @@ describe("the public record", () => {
     expect(container.textContent).not.toMatch(/testnet|dev_cancel_payment/);
   });
 
+  it("names accounts in a refusal's reason by role, never by account", async () => {
+    const requests = [
+      tx({
+        hash: "G",
+        method: "approve_emergency",
+        signer: "kai-3.sats-jar-dev-2.testnet",
+        ok: false,
+        // contract/src/emergency.rs: the NOT_A_GUARDIAN sentence names the caller.
+        refusal: { code: "NOT_A_GUARDIAN", reason: "kai-3.sats-jar-dev-2.testnet is not a guardian of jar 7" },
+      }),
+      tx({
+        hash: "H",
+        method: "cancel_emergency",
+        signer: "priya-1.sats-jar-dev-2.testnet",
+        ok: false,
+        refusal: { code: "NOT_THE_GIVER", reason: `only ${"ruth-1.sats-jar-dev-2.testnet"}, not ${"a".repeat(64)}, may cancel` },
+      }),
+    ];
+    const { container } = renderApp("/proof/7", record(jar(), requests));
+    expect(await screen.findByText("Refused: someone else is not a guardian of jar 7")).toBeTruthy();
+    expect(screen.getByText("Refused: only the giver, not someone else, may cancel")).toBeTruthy();
+    expect(container.textContent).not.toMatch(/testnet|aaaaaaaa/);
+  });
+
   it("names the holder after handover by role", async () => {
     const requests = [tx({ hash: "A", method: "start_transfer", signer: child })];
     renderApp("/proof/7", record(jar({ holder: child, history: handedOver }), requests));

@@ -15,6 +15,12 @@ export function senderRole(jar: JarProof, signer: string): string {
   return "someone else";
 }
 
+// A NEAR account: named (dot-separated, ending .testnet or .near) or implicit (64 hex characters).
+const ACCOUNT = /\b[a-z0-9_-]+(?:\.[a-z0-9_-]+)*\.(?:testnet|near)\b|\b[0-9a-f]{64}\b/g;
+
+/** A refusal's reason with every account in it replaced by that account's role. */
+export const withoutAccounts = (jar: JarProof, reason: string): string => reason.replace(ACCOUNT, (account) => senderRole(jar, account));
+
 // The contract's change methods (contract/src: lib, spend, emergency, handover, transfer,
 // rehoming, nft). Anything else (the dev-only escape, a method a later contract adds) reads
 // "A request", so a method name never reaches the page.

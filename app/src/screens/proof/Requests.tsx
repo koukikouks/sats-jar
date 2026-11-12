@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useProof } from "../../services.tsx";
 import { when } from "../../ui/format.ts";
 import { Unreadable } from "./Unreadable.tsx";
-import { action, senderRole } from "./words.ts";
+import { action, senderRole, withoutAccounts } from "./words.ts";
 
 /** Every NEAR request about the jar, refusals with their reasons, oldest first (stories 38, 70). */
 export function Requests(props: { jar: JarProof }) {
@@ -20,7 +20,7 @@ export function Requests(props: { jar: JarProof }) {
             <strong>
               {action(request.method)} by {senderRole(jar, request.signer)}
             </strong>
-            {request.ok ? <span className="done">Done</span> : <span className="refusal">Refused: {request.refusal?.reason}</span>}
+            {request.ok ? <span className="done">Done</span> : <span className="refusal">Refused: {withoutAccounts(jar, request.refusal?.reason ?? "")}</span>}
             <span className="proof-meta">{when(request.time)}</span>
             <a className="proof-line proof-meta" href={request.explorerUrl} target="_blank" rel="noreferrer">
               {request.hash} ↗
