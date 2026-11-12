@@ -32,6 +32,51 @@ Then record the deploy (the code hash is compared with the local build):
 node --env-file=<path to .env> scripts/src/money-moment.ts deploy
 ```
 
+## The locked contract (`locked-deploy.sh`)
+
+`sats-jar.testnet` runs the **locked build**: the reproducible build (no `dev-escape`), deployed once with the same init arguments as the development contract, then every access key deleted (ADR 0008). Nobody, the team included, can change its code or its rule after that.
+
+Needs Docker, cargo-near 0.22.0 and near-cli-rs 0.30.1. One step per command, in this order. Each appends to `evidence/locked-deploy.json`:
+
+| Step | What it does | Refuses when |
+|---|---|---|
+| `build` | `cargo near build reproducible-wasm` in the Docker image pinned in `contract/Cargo.toml`; stores the commit and the wasm's bs58 SHA-256 | the tree is dirty, or `HEAD` is not on `origin` (the NEP-330 metadata names the commit) |
+| `deploy <account>` | creates the account through the testnet faucet if needed, deploys the wasm and calls `new` | the account already has code (deployed once, never redeployed); the wasm is not the one `build` made from `HEAD` |
+| `verify <account>` | checks the on-chain code hash equals the build's checksum, and the `contract_source_metadata` names the pinned image and digest, the pinned build command, no env and the built commit | any mismatch |
+| `lock <account> --delete-every-key` | runs the `verify` checks, deletes every access key in one transaction and records the remaining count (0) | the checks fail, or the flag is missing |
+
+```sh
+scripts/locked-deploy.sh build
+scripts/locked-deploy.sh deploy sats-jar.testnet
+scripts/locked-deploy.sh verify sats-jar.testnet
+scripts/locked-deploy.sh lock sats-jar.testnet --delete-every-key   # irreversible
+```
+
+`lock` can be run again if it stops part-way: it deletes whatever keys remain. The real deploy runs only after the maintainer's sign-off. `DRY_RUN=1` rehearses all four steps on a throwaway account: it writes `evidence/locked-deploy-dryrun.json` instead, lets `build` use a commit not yet pushed, and refuses `sats-jar.testnet`.
+
+### Checking it yourself
+
+The repository is public at https://github.com/koukikouks/sats-jar. With no keys and a matching code hash, the deployed code is exactly the published source.
+
+```sh
+RPC=https://rpc.testnet.fastnear.com
+# The code hash (bs58 SHA-256 of the deployed wasm)
+curl -s $RPC -H 'content-type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"query","params":{"request_type":"view_account","finality":"final","account_id":"sats-jar.testnet"}}'
+# The access keys: expect "keys":[]
+curl -s $RPC -H 'content-type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"query","params":{"request_type":"view_access_key_list","finality":"final","account_id":"sats-jar.testnet"}}'
+# The build: image, digest, command and commit (NEP-330)
+near contract call-function as-read-only sats-jar.testnet contract_source_metadata json-args {} network-config testnet now
+```
+
+Then rebuild from that commit and compare the printed checksum with the code hash:
+
+```sh
+git clone https://github.com/koukikouks/sats-jar && cd sats-jar && git checkout <commit>
+cargo near build reproducible-wasm --manifest-path contract/Cargo.toml   # "SHA-256 checksum bs58"
+```
+
+[near-verify-rs](https://github.com/near/near-verify-rs) or NearBlocks' "Verify and Publish" do the same rebuild from the metadata.
+
 ## The money moment (`src/money-moment.ts`)
 
 One step per command, in this order. Each step appends to `evidence/dev-money-moment.json` and refuses to run before the step it depends on.
