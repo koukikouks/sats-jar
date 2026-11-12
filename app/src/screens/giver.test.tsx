@@ -64,7 +64,13 @@ describe("creating the jar", () => {
       sdk.jars.create.mockResolvedValue({ jarId: "7", address: "tb1qjar", qrPayload: "bitcoin:tb1qjar" });
       sdk.jars.status.mockRejectedValue(new SatsJarRefusal("UNAVAILABLE", "We could not reach the network just now. Try again shortly."));
     });
-    await user.type(await screen.findByLabelText("Child's Bitcoin address"), "tb1q6rz28mcfaxtmd6v789l9rrlrusdprr9pqcpvkl");
+    const address = await screen.findByLabelText("Where should the allowance go?");
+    expect(
+      screen.getByText(
+        "Paste the child's Bitcoin address. In a Bitcoin wallet a parent controls, tap Receive and copy the address it shows. Don't use an exchange's deposit address. Before handover the jar can only ever pay this address.",
+      ),
+    ).toBeTruthy();
+    await user.type(address, "tb1q6rz28mcfaxtmd6v789l9rrlrusdprr9pqcpvkl");
     await user.type(screen.getByLabelText("Allowance per period (sats)"), "2500");
     await user.click(screen.getByLabelText("Demo timing: every 10 minutes"));
     expect(screen.getByText("Shortens every wait so a jar's whole life fits in an afternoon. The jar shows a Demo timing badge.")).toBeTruthy();
@@ -88,7 +94,7 @@ describe("creating the jar", () => {
       sdk.jars.create.mockResolvedValue({ jarId: "7", address: "tb1qjar", qrPayload: "bitcoin:tb1qjar" });
       sdk.jars.status.mockReturnValue(new Promise(() => {}));
     });
-    await user.type(await screen.findByLabelText("Child's Bitcoin address"), "tb1qchild");
+    await user.type(await screen.findByLabelText("Where should the allowance go?"), "tb1qchild");
     await user.type(screen.getByLabelText("Allowance per period (sats)"), "20000");
     expect(screen.getByText("The earliest the jar can be handed over to the child. Most families choose the 18th birthday.")).toBeTruthy();
     await user.type(screen.getByLabelText("Unlock date"), "2040-05-01");
@@ -123,7 +129,7 @@ describe("creating the jar", () => {
         ),
       );
     });
-    await user.type(await screen.findByLabelText("Child's Bitcoin address"), "tb1qchild");
+    await user.type(await screen.findByLabelText("Where should the allowance go?"), "tb1qchild");
     await user.type(screen.getByLabelText("Allowance per period (sats)"), "1000");
     await user.type(screen.getByLabelText("Unlock date"), "2040-05-01");
     await user.click(screen.getByRole("button", { name: "Create the jar" }));

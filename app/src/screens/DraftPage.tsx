@@ -118,7 +118,10 @@ function RuleForm(props: { draft: Draft; joinedCount: number }) {
   return (
     <form className="panel" onSubmit={submit}>
       <h2>The jar's rule</h2>
-      <Field label="Child's Bitcoin address" hint="Copy it from a Bitcoin wallet a parent controls, not from an exchange. Before handover the jar can only ever pay this address.">
+      <Field
+        label="Where should the allowance go?"
+        hint="Paste the child's Bitcoin address. In a Bitcoin wallet a parent controls, tap Receive and copy the address it shows. Don't use an exchange's deposit address. Before handover the jar can only ever pay this address."
+      >
         <input placeholder="tb1q…" value={childAddress} onChange={(e) => setChildAddress(e.target.value)} />
       </Field>
       <Field label="Allowance per period (sats)" hint="The most the child receives each period. Bitcoin fees come out of the jar, never out of the allowance.">

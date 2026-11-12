@@ -288,7 +288,7 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
       { code: "LOCKTIME_OUT_OF_RANGE", date: "2105-06-01", message: "That unlock date is too far away for Bitcoin." },
     ];
     for (const attempt of attempts) {
-      await page.getByLabel("Child's Bitcoin address").fill(attempt.address ?? CHILD_ADDRESS);
+      await page.getByLabel("Where should the allowance go?").fill(attempt.address ?? CHILD_ADDRESS);
       await page.getByLabel("Allowance per period (sats)").fill(attempt.cap ?? "2500");
       await page.getByLabel("Every 30 days").check();
       await page.getByLabel("Unlock date").fill(attempt.date ?? "2040-05-01");
@@ -304,7 +304,7 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
 
   await step("[8, 10, 11, 12, 13] the giver creates a demo-timing jar and sees it, empty", async () => {
     const { page } = giver;
-    await page.getByLabel("Child's Bitcoin address").fill(CHILD_ADDRESS);
+    await page.getByLabel("Where should the allowance go?").fill(CHILD_ADDRESS);
     await page.getByLabel("Allowance per period (sats)").fill("2500");
     await page.getByLabel("Demo timing: every 10 minutes").check();
     // Unlocks after the emergency payment and the claim steps; the handover delay is 3 minutes.
