@@ -1,6 +1,6 @@
 import type { ProofReader } from "@sats-jar/proof";
 import type { SatsJar } from "@sats-jar/sdk";
-import { cleanup, render, type RenderResult } from "@testing-library/react";
+import { cleanup, configure, render, type RenderResult } from "@testing-library/react";
 import userEvent, { type UserEvent } from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { afterEach, vi } from "vitest";
@@ -11,6 +11,8 @@ import { standInProof, standInSdk, type StandInProof, type StandInSdk } from "./
 afterEach(cleanup);
 // Typing a form through user-event takes seconds on a loaded machine; the 5 s default flakes.
 vi.setConfig({ testTimeout: 30_000 });
+// findBy* waits 1 s by default; a loaded machine can take longer to render the next state.
+configure({ asyncUtilTimeout: 10_000 });
 
 export interface Rendered extends RenderResult {
   user: UserEvent;
