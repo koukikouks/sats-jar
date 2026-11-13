@@ -18,6 +18,8 @@ export const BASE_URL = "http://localhost:4280";
 export default defineConfig({
   testDir: "journeys",
   testMatch: "*.journey.ts",
+  // The hosted journeys run against a deployed site with their own config (playwright.hosted.config.ts).
+  testIgnore: "hosted-*.journey.ts",
   timeout: 45 * 60_000,
   expect: { timeout: 60_000 },
   workers: 1,

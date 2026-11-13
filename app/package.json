@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p .",
     "journeys": "playwright test",
+    "journeys:hosted": "playwright test -c playwright.hosted.config.ts",
     "build:site": "vite build && mv dist/index.html dist/app.html && cp -R landing/. dist/ && mv dist/index.html dist/landing.html"
   },
   "dependencies": {
