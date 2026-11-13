@@ -1,6 +1,6 @@
 # Hosting (testnet)
 
-How Sats Jar is hosted until at least 2026-11-25 (spec #45, ADR 0011). Variable names only, never values.
+How Sats Jar is hosted until at least 2026-11-25 (spec #45, ADR 0011). Never a secret value.
 
 ## How a change goes live
 
@@ -18,7 +18,7 @@ Project `sats-jar-backend` (https://railway.com/project/43fbf8ba-300e-447e-8502-
 | Source | GitHub `koukikouks/sats-jar`, branch `main`, auto-deploy | `main` is production |
 | Root directory | `/` (none set) | the backend imports workspace packages |
 | Builder | Railpack | |
-| Build variables | `RAILPACK_PACKAGES` = `node@22.22.2 pnpm@12.8.1`, `RAILPACK_INSTALL_CMD` = `pnpm install --frozen-lockfile`, `RAILPACK_BUILD_CMD` = `cp "$(node -p process.execPath)" ./node-runtime` | the root `Cargo.toml` makes Railpack pick its Rust provider, and only a committed `railpack.json` can force Node. These install Node and pnpm for the build and install the workspace; the Rust image carries no Node at run time, so the build copies the Node binary into the app folder. The backend is TypeScript run by Node directly, so there is nothing else to build |
+| Build variables | `RAILPACK_PACKAGES` = `node@22.22.2 pnpm@12.8.1`, `RAILPACK_INSTALL_CMD` = `pnpm install --frozen-lockfile`, `RAILPACK_BUILD_CMD` = `cp "$(node -p process.execPath)" ./node-runtime` | the root `Cargo.toml` makes Railpack pick its Rust provider, and only a committed `railpack.json` can force Node. These install Node and pnpm for the build and install the workspace; the Rust image carries no Node at run time, so the build copies the Node binary into the app folder. The backend is TypeScript run by Node directly, so there is nothing else to build. Once #44 puts `packageManager` on `main`, drop `pnpm@12.8.1` from `RAILPACK_PACKAGES` so pnpm is pinned in one place |
 | Start command | `./node-runtime backend/src/server.ts` | the Node binary copied by the build |
 | Watch paths | `/backend/**`, `/packages/**`, `/scripts/**`, `/package.json`, `/pnpm-lock.yaml`, `/pnpm-workspace.yaml` | landing and screen changes don't restart the backend |
 | Replicas | 1, US East | the file store works in one process |

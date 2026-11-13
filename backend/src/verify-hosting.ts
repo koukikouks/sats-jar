@@ -76,7 +76,7 @@ async function backend(url: string): Promise<void> {
   check(run.status === 200 && Array.isArray(run.answer.steps), "POST /keeper/run answers with a report");
   const draft = await call(url, "POST", "/drafts", { nickname: NICKNAME, invites: 2 });
   check(draft.status === 201 && typeof draft.answer.draftId === "string", "POST /drafts makes a draft");
-  writeFileSync(DRAFT_FILE, JSON.stringify({ url, draftId: draft.answer.draftId }));
+  writeFileSync(DRAFT_FILE, JSON.stringify({ draftId: draft.answer.draftId }));
   const unknown = await call(url, "GET", "/no-such-endpoint");
   check(unknown.status === 404 && unknown.answer.code === "NOT_FOUND", "an unknown path answers NOT_FOUND");
   set("backend", {
