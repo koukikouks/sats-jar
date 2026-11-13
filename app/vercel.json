@@ -2,8 +2,21 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm run build:site",
   "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/:path((?!assets/|landing\\.).+)",
+      "has": [{ "type": "host", "value": "satsjar.app" }],
+      "destination": "https://app.satsjar.app/:path",
+      "permanent": true
+    }
+  ],
   "rewrites": [
-    { "source": "/", "destination": "/landing.html" },
-    { "source": "/(.*)", "destination": "/app.html" }
+    { "source": "/", "has": [{ "type": "host", "value": "satsjar.app" }], "destination": "/landing.html" },
+    {
+      "source": "/api/:path*",
+      "missing": [{ "type": "host", "value": "satsjar.app" }],
+      "destination": "https://sats-jar-production.up.railway.app/:path*"
+    },
+    { "source": "/(.*)", "missing": [{ "type": "host", "value": "satsjar.app" }], "destination": "/app.html" }
   ]
 }
