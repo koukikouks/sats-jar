@@ -45,14 +45,14 @@
     "desktop": {
       "base_url": "https://sats-jar-git-t31-site-routing-sats-jar.vercel.app",
       "deployed_commit": "12aba96",
-      "ran_at": "2026-11-13T18:20:13.315Z",
+      "ran_at": "2026-11-13T18:22:04.504Z",
       "passed": true,
       "accounts": {
         "guardian": "7748c824433383f36b3c.sats-jar-app.testnet"
       },
       "steps": [
         "the giver's device was unlocked with a PIN and the backend made a draft with 2 invite links",
-        "the guardian's device was unlocked with a PIN, joined from the invite link and got sponsored account 7748c824433383f36b3c.sats-jar-app.testnet",
+        "the guardian's device was unlocked with a PIN, joined from the invite link and holds sponsored account 7748c824433383f36b3c.sats-jar-app.testnet",
         "the giver's draft page shows guardian 1 joined (draft read not served from cache)",
         "/proof/1 loads with no sign-in and shows \"There is no such jar.\" read from the chain",
         "POST /api/keeper/run answered 200 with a report of 0 steps"
@@ -61,14 +61,14 @@
     "phone": {
       "base_url": "https://sats-jar-git-t31-site-routing-sats-jar.vercel.app",
       "deployed_commit": "12aba96",
-      "ran_at": "2026-11-13T18:20:27.677Z",
+      "ran_at": "2026-11-13T18:22:20.478Z",
       "passed": true,
       "accounts": {
         "guardian": "f4924037da7e65c7c799.sats-jar-app.testnet"
       },
       "steps": [
         "the giver's device was unlocked with a PIN and the backend made a draft with 2 invite links",
-        "the guardian's device was unlocked with a PIN, joined from the invite link and got sponsored account f4924037da7e65c7c799.sats-jar-app.testnet",
+        "the guardian's device was unlocked with a PIN, joined from the invite link and holds sponsored account f4924037da7e65c7c799.sats-jar-app.testnet",
         "the giver's draft page shows guardian 1 joined (draft read not served from cache)",
         "/proof/1 loads with no sign-in and shows \"There is no such jar.\" read from the chain",
         "POST /api/keeper/run answered 200 with a report of 0 steps"
