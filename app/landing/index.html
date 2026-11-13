@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sats Jar: set your loved one up for life</title>
+  <meta name="description" content="A piggy bank for a child's Bitcoin. Anyone can top it up, the child gets a small allowance, and on the day you choose the whole jar becomes theirs. Testnet demo.">
+  <link rel="icon" href="assets/coin-1.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="landing.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav">
+    <a class="logo" href="#top" aria-label="Sats Jar, home">
+      <img src="assets/coin-2.png" alt="" width="44" height="44">
+      <span class="grainy">Sats Jar</span>
+    </a>
+    <nav aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="#trust">What you're trusting</a>
+      <a href="#proof">Check it yourself</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- ───────────── Hero: "Set your ___ up for life" + the jar filling ───────────── -->
+    <section class="hero" id="top">
+      <img class="doodle d-star" src="assets/doodle-star.png" alt="" width="60" height="60">
+      <img class="doodle d-heart" src="assets/doodle-heart.png" alt="" width="54" height="54">
+      <img class="doodle d-dots" src="assets/doodle-dots.png" alt="" width="60" height="50">
+
+      <div class="hero-copy">
+        <p class="kicker">A piggy bank for a child's Bitcoin</p>
+
+        <!-- The rotating word is decoration for sighted users; screen readers get the whole sentence. -->
+        <h1 aria-label="Set your loved one up for life">
+          <span class="line grainy" aria-hidden="true">Set your</span>
+          <span class="role" aria-hidden="true">
+            <span class="role-word grainy" data-role-word>loved one</span>
+            <img class="role-underline" data-role-underline src="assets/underline-orange.png" alt="" width="600" height="44">
+          </span>
+          <span class="line grainy" aria-hidden="true">up for life.</span>
+        </h1>
+
+        <p class="lede">Put Bitcoin in a jar for a child you love. Anyone can top it up, the child gets a small allowance on a schedule, and on the day you choose the whole jar becomes theirs.</p>
+
+        <div class="cta">
+          <!-- TODO(H3): point at the web app once its screens exist -->
+          <a class="btn btn-primary" href="/new" data-app-link>Make a jar</a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+        <p class="testnet"><span class="testnet-dot" aria-hidden="true"></span>Testnet demo. Test coins only, no real money.</p>
+      </div>
+
+      <div class="stage" aria-hidden="true">
+        <img class="doodle d-spiral" src="assets/doodle-spiral.png" alt="" width="56" height="56">
+        <div class="card" data-card>
+          <img class="card-patch" data-card-patch src="assets/patch-1.png" alt="" width="320" height="400">
+          <img class="card-figure" data-card-figure src="assets/figure-loved-one.png" alt="" width="300" height="380">
+          <img class="card-frame" data-card-frame src="assets/frame-1.png" alt="" width="320" height="400">
+          <p class="card-tag grainy" data-card-tag>your loved one</p>
+        </div>
+
+        <div class="jar-wrap" data-jar>
+          <div class="pile" data-pile>
+            <!-- Static pile for no-JS; landing.js clears it and drops the coins in one at a time.
+                 Positions come from assets/pile.json (made by app/art-src/make_art.py). -->
+            <img class="coin" src="assets/coin-1.png" alt="" style="--x:57.76%;--y:85.64%;--r:-33.1deg" width="208" height="208">
+            <img class="coin" src="assets/coin-2.png" alt="" style="--x:33.26%;--y:85.64%;--r:-11.4deg" width="208" height="208">
+            <img class="coin" src="assets/coin-3.png" alt="" style="--x:76.29%;--y:76.91%;--r:25.3deg" width="208" height="208">
+            <img class="coin" src="assets/coin-4.png" alt="" style="--x:42.79%;--y:71.19%;--r:-20.3deg" width="208" height="208">
+            <img class="coin" src="assets/coin-1.png" alt="" style="--x:62.74%;--y:64.28%;--r:24.0deg" width="208" height="208">
+            <img class="coin" src="assets/coin-2.png" alt="" style="--x:24.00%;--y:62.77%;--r:-2.9deg" width="208" height="208">
+            <img class="coin" src="assets/coin-3.png" alt="" style="--x:44.41%;--y:55.23%;--r:-27.3deg" width="208" height="208">
+            <img class="coin" src="assets/coin-4.png" alt="" style="--x:77.59%;--y:52.43%;--r:2.6deg" width="208" height="208">
+            <img class="coin" src="assets/coin-1.png" alt="" style="--x:28.41%;--y:44.19%;--r:-14.1deg" width="208" height="208">
+          </div>
+          <img class="jar" src="assets/jar.png" alt="" width="340" height="470">
+        </div>
+      </div>
+
+      <ul class="roles" data-roles aria-label="Who is the jar for?"></ul>
+    </section>
+
+    <!-- ───────────── How it works ───────────── -->
+    <section class="section" id="how">
+      <h2 class="grainy">How it works</h2>
+      <ol class="steps">
+        <li class="step step-1">
+          <img class="step-art" src="assets/step-1.png" alt="" width="260" height="220" loading="lazy">
+          <h3 class="grainy"><span class="num">1</span> Make a jar</h3>
+          <p>Pick the child, how much they can get each period, and the day the jar becomes theirs. Name two or three guardians for emergencies.</p>
+        </li>
+        <li class="step step-2">
+          <img class="step-art" src="assets/step-2.png" alt="" width="260" height="220" loading="lazy">
+          <h3 class="grainy"><span class="num">2</span> Anyone can top it up</h3>
+          <p>Every jar has its own Bitcoin address and QR code. Grandparents, aunties, friends: scan it from any Bitcoin wallet or exchange app.</p>
+        </li>
+        <li class="step step-3">
+          <img class="step-art" src="assets/step-3.png" alt="" width="260" height="220" loading="lazy">
+          <h3 class="grainy"><span class="num">3</span> A little at a time, then all of it</h3>
+          <p>The child gets a capped allowance each period. On the unlock date the jar, and the Bitcoin in it, moves to the child's own account. Every adult's access ends there.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ───────────── What you are trusting ─────────────
+         Draft copy from docs/adr/0004 and 0008. Re-check against the final locked deploy (T14) before launch. -->
+    <section class="section" id="trust">
+      <h2 class="grainy">What you're trusting</h2>
+      <p class="section-lede">Sats Jar hides the plumbing, not the trust. Here is what you can check yourself, and what you are relying on.</p>
+      <div class="trust-grid">
+        <div class="trust-col">
+          <h3 class="grainy">You can check</h3>
+          <ul>
+            <li>The rule: each jar can only pay a capped allowance to the child's address, or an emergency payment that guardians approve and that waits out a public delay.</li>
+            <li>Every top-up and every payment, with links to the public records.</li>
+            <li>Every attempt the rule refused, and why.</li>
+          </ul>
+        </div>
+        <div class="trust-col trust-col-2">
+          <h3 class="grainy">You're trusting</h3>
+          <ul>
+            <li>NEAR's signing network, which signs a jar's Bitcoin payments once the rule says yes.</li>
+            <li>A Bitcoin light client, which tells the jar that a top-up really happened. It has a few named admins and one relayer.</li>
+            <li>Our helper accounts. They pay fees and start scheduled payments. They cannot move coins outside the rule.</li>
+            <li>The child's login. After handover, whoever holds it holds the jar, so the child saves a recovery phrase.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────── Proof ───────────── -->
+    <section class="section proof" id="proof">
+      <img class="swatch swatch-lilac" src="assets/swatch-lilac.png" alt="" width="300" height="120" loading="lazy">
+      <h2 class="grainy">Check it yourself</h2>
+      <p class="section-lede">Every jar has a see-how-it-works page: its NFT, its Bitcoin address, and every transaction behind it, including the ones the rule refused.</p>
+      <!-- TODO(H3): link to the proof view; TODO(T21): add the demo jar's real transaction scroll-through here -->
+      <a class="btn btn-ghost" href="#proof" data-proof-link>Open the proof view</a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p class="testnet-note"><strong>This is a testnet demo.</strong> It runs on Bitcoin's test network. Test coins have no value, so please don't send real Bitcoin to a jar.</p>
+    <p class="footer-links"><a href="https://github.com/koukikouks/sats-jar">Source on GitHub</a><span aria-hidden="true"> · </span><span>Drawn in crayon</span></p>
+  </footer>
+
+  <script src="landing.js" defer></script>
+</body>
+</html>
