@@ -5,8 +5,49 @@ How Sats Jar is hosted until at least 2026-11-25 (spec #45, ADR 0011). Never a s
 ## How a change goes live
 
 - **`main` is production on both hosts.** Merging into `main` (the maintainer's pull request merge) is the go-live sign-off. Merges into `integration/web-app` build only Vercel previews and never touch Railway.
-- **Vercel** builds `main` for production. Until #44 merges, `main` has no `app/` folder, so a push to `main` starts a production build that fails; Vercel keeps serving the last good deployment, so this is harmless.
+- **Vercel** builds `main` for production. Until #44 merges, `main` has no `app/` folder, so a push to `main` starts a production build that fails; Vercel keeps serving the last good deployment, so this is harmless. Every other branch (`integration/web-app`, ticket branches) builds a preview on each push.
 - **Railway** redeploys `main` only when a backend-affecting path changes (watch paths below). A redeploy briefly stops the backend: the app shows "We could not reach the network just now. Try again shortly." meanwhile. Each start restarts the keeper's hour, so run a keeper pass after a deploy (below).
+
+## Vercel: the site
+
+Project `sats-jar` in team Sats Jar (Hobby). Settings live in Vercel's dashboard, except the build and routing, which live in `app/vercel.json`.
+
+| Setting | Value | Why |
+|---|---|---|
+| Root directory | `app` | the site is the app package; the build reaches workspace packages from there |
+| Framework | Vite | |
+| Node | 22.x (also `engines.node` in `app/package.json`) | the repo's Node |
+| Build | `pnpm run build:site`, output `dist` (`app/vercel.json`) | puts the app's page (`app.html`), the landing page (`landing.html`, `landing.css`, `landing.js`) and both sets of files (`assets/`) side by side |
+| Production branch | `main` | merging into `main` is the go-live sign-off |
+| Preview protection | off (maintainer said yes on 2026-11-13) | test phones and the hosted journey reach a preview with no sign-in; previews hold nothing secret |
+| Variables (production and preview) | `VITE_SATS_JAR_CONTRACT` = `sats-jar.testnet`, `ENABLE_EXPERIMENTAL_COREPACK` = `1` | the public contract name built into the app; Corepack makes Vercel use the pnpm pinned by the root `packageManager`. Nothing secret is in Vercel |
+
+Domains: `satsjar.app` (production). `www.satsjar.app` and `sats-jar-two.vercel.app` redirect to it. `app.satsjar.app` is added when #44 merges (T32), not before: added earlier it would serve production's early build with no `/api`.
+
+### Routing (`app/vercel.json`)
+
+Rules depend on the host the browser asked for:
+
+- **`satsjar.app`**: `/` shows the landing page, and its own files (`assets/…`, `landing.*`) load. Every other path, the app's raw `app.html` included, is a permanent (308) redirect to the same path on `app.satsjar.app`, so an invite link, jar page or public record opened on the apex lands in the app. There is no list of app routes to keep up to date. Redirects run before files are served, which is why the landing's own files are left out of the redirect.
+- **Any other host** (`app.satsjar.app`, previews): `/api/…` is forwarded to the Railway backend with `/api` removed (`/api/drafts/x` reaches `https://sats-jar-production.up.railway.app/drafts/x`); every other path that is not a file is the app (`app.html`), which picks the screen from the path.
+- **No caching of `/api`.** Vercel caches forwarded answers only when the backend sends cache headers, and it sends none, so draft polling always sees fresh answers. The hosted journey checks a polled draft read is not a cache hit.
+
+The landing's "Make a jar" button links straight to `https://app.satsjar.app/new`.
+
+### Previews
+
+- Each branch has a fixed preview address, `https://sats-jar-git-<branch>-sats-jar.vercel.app` (the `integration/web-app` one is where the maintainer tests before merging #44). Previews reach the same Railway backend and locked contract as production.
+- **Accounts made on a preview stay there.** A device's keys are kept per address in the browser, so an account set up on a preview doesn't carry over to `app.satsjar.app`; set the device up again there.
+
+### Hosted journey C1
+
+Checks the app host end to end through the real backend, at desktop and phone width, with no jar created:
+
+```bash
+SATS_JAR_HOSTED_URL=https://sats-jar-git-<branch>-sats-jar.vercel.app SATS_JAR_HOSTED_COMMIT=<deployed commit> pnpm --dir app journeys:hosted
+```
+
+Use the branch's fixed preview address, not a single deployment's: devices are saved per address in `~/.sats-jar/hosted-journey-devices/`, so reruns unlock them instead of spending 0.25 testnet NEAR of the sponsor's per new account. Results go to `evidence/hosting.json` under `c1`.
 
 ## Railway: the backend
 
@@ -42,7 +83,7 @@ Settings live in Railway's dashboard. There is no `railway.json`: Railway is ret
 
 ## Running and fixing
 
-- **Run a keeper pass now**: `curl -X POST https://sats-jar-production.up.railway.app/keeper/run` (after the site is wired: `https://app.satsjar.app/api/keeper/run`). It answers with a report of each step.
+- **Run a keeper pass now**: `curl -X POST https://sats-jar-production.up.railway.app/keeper/run` (or through the site, `https://<app address>/api/keeper/run`). It answers with a report of each step.
 - **Logs**: the service's Deployments tab, View logs. The keeper's hourly report is logged as one JSON line.
 - **Roll back**: Deployments tab, an earlier successful deployment, Redeploy. The volume keeps the drafts.
 - **Usage**: workspace Settings, Billing shows the credit left.
