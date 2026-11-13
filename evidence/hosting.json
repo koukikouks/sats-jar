@@ -1,0 +1,44 @@
+{
+  "about": "Hosting checks of spec #45 (koukikouks/sats-jar#45): the hosted keeper's keys on the locked contract, and the backend on Railway. Written by backend/src/verify-hosting.ts.",
+  "contract": "sats-jar.testnet",
+  "keeper": "keeper-locked.sats-jar-app.testnet",
+  "keeper_setup": {
+    "at": "2026-11-13T17:09:09.199Z",
+    "account": "keeper-locked.sats-jar-app.testnet",
+    "creation_tx": "CJBv5tGvpMEmnNFcrBepTcPLE9aLYEyU1J3z113P5VF2",
+    "explorer": "https://testnet.nearblocks.io/txns/CJBv5tGvpMEmnNFcrBepTcPLE9aLYEyU1J3z113P5VF2",
+    "keys": [
+      {
+        "access_key": {
+          "nonce": 277538677000000,
+          "permission": {
+            "FunctionCall": {
+              "allowance": null,
+              "method_names": [],
+              "receiver_id": "sats-jar.testnet"
+            }
+          }
+        },
+        "public_key": "ed25519:5ADCZKW2tvwmrPYgGxdRPTobj4SCAdJkudqtxL8VjDyB"
+      }
+    ]
+  },
+  "backend": {
+    "at": "2026-11-13T17:47:37.058Z",
+    "keeper_run": {
+      "status": 200,
+      "startedAt": 1794592056,
+      "steps": []
+    },
+    "draft_made": 201,
+    "unknown_path": {
+      "code": "NOT_FOUND",
+      "message": "no such endpoint"
+    }
+  },
+  "after_redeploy": {
+    "at": "2026-11-13T18:01:04.889Z",
+    "draft_kept": true,
+    "nickname": "Hosting check"
+  }
+}
