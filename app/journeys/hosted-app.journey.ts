@@ -53,14 +53,14 @@ async function device(browser: Browser, name: string): Promise<Device> {
   return { name, context, page, file };
 }
 
-/** Saves the device and returns its sponsored account, which the app keeps once the backend made it. */
-async function saveAccount(device: Device): Promise<string> {
-  const read = () =>
-    device.page.evaluate(() => (JSON.parse(localStorage.getItem("sats-jar:device") ?? "{}") as { accountId?: string | null }).accountId ?? null);
-  await expect.poll(read, { message: `the ${device.name}'s device holds its account` }).not.toBeNull();
+const accountOf = (device: Device) =>
+  device.page.evaluate(() => (JSON.parse(localStorage.getItem("sats-jar:device") ?? "{}") as { accountId?: string | null }).accountId ?? null);
+
+/** Saves the device, PIN-locked keys and all, so a rerun on the same address unlocks it. */
+async function save(device: Device): Promise<void> {
+  await expect.poll(() => device.page.evaluate(() => localStorage.getItem("sats-jar:device") !== null)).toBe(true);
   mkdirSync(dirname(device.file), { recursive: true });
   await device.context.storageState({ path: device.file });
-  return (await read()) ?? "";
 }
 
 /** Sets the device up with a PIN, or unlocks it on a rerun, then waits for `ready`. */
@@ -102,8 +102,11 @@ test("C1: a giver starts a jar and a guardian joins, through the hosted backend"
     links = await page.locator(".invite .mono").allTextContents();
     expect(links).toHaveLength(2);
     for (const link of links) expect(link.startsWith(`${new URL(baseURL).origin}/join/`)).toBe(true);
-    accounts.giver = await saveAccount(giver);
-    passed(`the giver's device was ${how} with a PIN (account ${accounts.giver}) and a draft with 2 invite links was made`);
+    await save(giver);
+    // The giver's own account is made when they create the jar, which C1 never does.
+    const account = await accountOf(giver);
+    if (account !== null) accounts.giver = account;
+    passed(`the giver's device was ${how} with a PIN and the backend made a draft with 2 invite links`);
   });
 
   await test.step("the guardian opens their invite link, sets a PIN and joins", async () => {
@@ -113,8 +116,11 @@ test("C1: a giver starts a jar and a guardian joins, through the hosted backend"
     const how = await passGate(page, page.getByRole("button", { name: "Join as a guardian" }));
     await page.getByRole("button", { name: "Join as a guardian" }).click();
     await expect(page.getByText(`You're a guardian of ${nickname}.`, { exact: false })).toBeVisible();
-    accounts.guardian = await saveAccount(guardian);
-    passed(`the guardian's device was ${how} (account ${accounts.guardian}) and joined from the invite link`);
+    // Joining is when the backend makes the guardian's sponsored account.
+    await expect.poll(() => accountOf(guardian), { message: "the guardian's device holds its sponsored account" }).not.toBeNull();
+    accounts.guardian = (await accountOf(guardian)) ?? "";
+    await save(guardian);
+    passed(`the guardian's device was ${how} with a PIN, joined from the invite link and holds sponsored account ${accounts.guardian}`);
   });
 
   await test.step("the giver's draft page shows the guardian joined, from fresh answers", async () => {
