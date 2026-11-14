@@ -11,8 +11,11 @@ export function Header() {
   };
   return (
     <header className="header">
-      <Link to="/" className="brand">
-        Sats Jar
+      <Link to="/" className="brand" aria-label="Sats Jar, home">
+        {/* The landing's wordmark: "sats jar" with the j dotted by a coin (a dotless j plus the coin). */}
+        <span className="wordmark" aria-hidden="true">
+          sats <span className="j">&#x237;</span>ar
+        </span>
       </Link>
       <span className="badge test">Test Bitcoin</span>
       {state === "unlocked" && (

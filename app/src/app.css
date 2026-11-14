@@ -87,8 +87,37 @@ a:hover {
   content: "";
   width: var(--logo-size);
   height: var(--logo-size);
+  margin-right: -0.2rem;
+  background: url("../landing/assets/logo-mark.png") center / contain no-repeat;
+}
+.wordmark {
+  -webkit-mask-image: url("../landing/assets/grain.png");
+  mask-image: url("../landing/assets/grain.png");
+  -webkit-mask-size: var(--grain-size) var(--grain-size);
+  mask-size: var(--grain-size) var(--grain-size);
+  padding-block: 0.14em;
+  margin-block: -0.14em;
+}
+.wordmark .j {
+  position: relative;
+  display: inline-block;
+}
+/* The coin dots the j, as on the landing's logo. */
+.wordmark .j::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 0.42em;
+  height: 0.42em;
   background: url("../landing/assets/coin-2.png") center / contain no-repeat;
-  transform: rotate(-8deg);
+  transform: translateX(-45%) rotate(-12deg);
+}
+.step {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--blue);
 }
 .main {
   max-width: var(--page-width);
