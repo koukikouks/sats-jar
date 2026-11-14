@@ -32,6 +32,8 @@ function jar(overrides: Partial<JarProof> = {}): JarProof {
     nextAllowanceAt: null,
     clockStartedAt: null,
     handover: "none",
+    emergency: null,
+    transfer: null,
     nft: { title: "Sunny's jar", description: "", media: picture },
     coins: [],
     payments: [],

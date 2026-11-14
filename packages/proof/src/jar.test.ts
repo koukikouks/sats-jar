@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { createProofReader, JarNotFoundError, ProofUnavailableError } from "./index.ts";
 import { evidence, fixture, replayFetch, type Fixture } from "./test-fetch.ts";
 
@@ -154,3 +154,71 @@ function answer(source: Fixture, method: string, replace: (result: unknown) => u
   }
   return copy;
 }
+
+/** Counts each NEAR view method the reader calls, over a replay. */
+function counting(replay: typeof fetch) {
+  const calls: string[] = [];
+  const http: typeof fetch = async (input, init) => {
+    if (typeof init?.body === "string") {
+      const body = JSON.parse(init.body) as { params?: { method_name?: string } };
+      if (body.params?.method_name) calls.push(body.params.method_name);
+    }
+    return replay(input, init);
+  };
+  return { http, calls };
+}
+
+describe("reading a jar again", () => {
+  test("a payment that has finished is not read again", async () => {
+    const { http, calls } = counting(replayFetch(fixture("near-views")));
+    const again = createProofReader({ contract: record.contract, fetch: http });
+
+    const first = await again.jar("1");
+    const second = await again.jar("1");
+
+    // jar 1's allowance payment is confirmed: final on chain, so one read serves every later one.
+    expect(first.payments[0]?.status).toBe("confirmed");
+    expect(second.payments).toEqual(first.payments);
+    expect(calls.filter((m) => m === "get_payment")).toHaveLength(1);
+    expect(calls.filter((m) => m === "get_jar")).toHaveLength(2);
+  });
+
+  test("returns the contract's emergency and transfer records with the jar", async () => {
+    const jar = await reader.jar("1");
+    // The T06 dev contract predates both records; a newer build returns null when there is none.
+    expect(jar.emergency).toBeNull();
+    expect(jar.transfer).toBeNull();
+  });
+});
+
+describe("a rate-limited NEAR answer", () => {
+  afterEach(() => void vi.useRealTimers());
+
+  function limited(times: number) {
+    const replay = replayFetch(fixture("near-views"));
+    let left = times;
+    const http: typeof fetch = async (input, init) => {
+      if (left > 0) {
+        left -= 1;
+        return new Response("Too Many Requests", { status: 429 });
+      }
+      return replay(input, init);
+    };
+    return createProofReader({ contract: record.contract, fetch: http });
+  }
+
+  test("is asked once more after a second", async () => {
+    vi.useFakeTimers();
+    const read = limited(1).jar("1");
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect((await read).jarId).toBe("1");
+  });
+
+  test("is unavailable when the second answer is rate-limited too", async () => {
+    vi.useFakeTimers();
+    const read = limited(2).jar("1");
+    const outcome = read.catch((error: unknown) => error);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(await outcome).toBeInstanceOf(ProofUnavailableError);
+  });
+});
