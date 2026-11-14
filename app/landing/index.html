@@ -36,13 +36,25 @@
       <!-- The README logo's wordmark: "sats jar" with the j dotted by a coin (a dotless j plus the coin). -->
       <span class="wordmark grainy" aria-hidden="true">sats <span class="j">&#x237;<img src="assets/coin-2.png" alt="" width="16" height="16"></span>ar</span>
     </a>
-    <nav aria-label="Main">
+    <nav class="nav-links" aria-label="Main">
       <a href="#how">How it works</a>
       <a href="#roadmap">Roadmap</a>
       <a href="story.html">The story</a>
       <a href="#trust">What you're trusting</a>
       <a href="#proof">Check it yourself</a>
     </nav>
+    <!-- Phones: the same links behind a Menu button (nav.js closes it after a pick) -->
+    <details class="menu" data-menu>
+      <summary>Menu</summary>
+      <nav class="menu-panel" aria-label="Main">
+        <a href="#how">How it works</a>
+        <a href="story.html">The story</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#trust">What you're trusting</a>
+        <a href="#proof">Check it yourself</a>
+        <a href="https://app.satsjar.app/new">Make a jar</a>
+      </nav>
+    </details>
   </header>
 
   <main id="main">
@@ -101,7 +113,6 @@
         </div>
       </div>
 
-      <ul class="roles" data-roles aria-label="Who is the jar for?"></ul>
     </section>
 
     <!-- ───────────── How it works ───────────── -->
@@ -109,17 +120,17 @@
       <h2 class="grainy">How it works</h2>
       <ol class="steps">
         <li class="step step-1">
-          <img class="step-art" src="assets/step-1.png" alt="" width="260" height="220" loading="lazy">
+          <img class="step-art" src="assets/step-1.png" alt="" width="320" height="220" loading="lazy">
           <h3 class="grainy"><span class="num">1</span> Make a jar</h3>
           <p>Pick the beneficiary, how much they can get each period, and the day the jar becomes theirs. Name two or three guardians for emergencies.</p>
         </li>
         <li class="step step-2">
-          <img class="step-art" src="assets/step-2.png" alt="" width="260" height="220" loading="lazy">
+          <img class="step-art" src="assets/step-2.png" alt="" width="320" height="220" loading="lazy">
           <h3 class="grainy"><span class="num">2</span> Anyone can top it up</h3>
           <p>Every jar has its own Bitcoin address and QR code. Grandparents, aunties, friends: scan it from any Bitcoin wallet or exchange app.</p>
         </li>
         <li class="step step-3">
-          <img class="step-art" src="assets/step-3.png" alt="" width="260" height="220" loading="lazy">
+          <img class="step-art" src="assets/step-3.png" alt="" width="320" height="220" loading="lazy">
           <h3 class="grainy"><span class="num">3</span> A little at a time, then all of it</h3>
           <p>The beneficiary gets a capped allowance each period. On the unlock date the jar, and the Bitcoin in it, moves to the beneficiary's own account. Every adult's access ends there.</p>
         </li>
@@ -200,5 +211,6 @@
   </footer>
 
   <script src="landing.js" defer></script>
+  <script src="nav.js" defer></script>
 </body>
 </html>

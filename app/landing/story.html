@@ -38,11 +38,22 @@
       <img class="logo-mark" src="assets/logo-mark.png" alt="" width="44" height="44">
       <span class="wordmark grainy" aria-hidden="true">sats <span class="j">&#x237;<img src="assets/coin-2.png" alt="" width="16" height="16"></span>ar</span>
     </a>
-    <nav aria-label="Main">
+    <nav class="nav-links" aria-label="Main">
       <a href="/#how">How it works</a>
       <a href="/#roadmap">Roadmap</a>
       <a href="story.html" aria-current="page">The story</a>
     </nav>
+    <details class="menu" data-menu>
+      <summary>Menu</summary>
+      <nav class="menu-panel" aria-label="Main">
+        <a href="/#how">How it works</a>
+        <a href="story.html" aria-current="page">The story</a>
+        <a href="/#roadmap">Roadmap</a>
+        <a href="/#trust">What you're trusting</a>
+        <a href="/#proof">Check it yourself</a>
+        <a href="https://app.satsjar.app/new">Make a jar</a>
+      </nav>
+    </details>
   </header>
 
   <main id="main">
@@ -86,5 +97,6 @@
     <p class="testnet-note"><strong>This is a testnet demo.</strong> It runs on Bitcoin's test network. Test coins have no value, so please don't send real Bitcoin to a jar.</p>
     <p class="footer-links"><a href="https://github.com/koukikouks/sats-jar">Source on GitHub</a></p>
   </footer>
+  <script src="nav.js" defer></script>
 </body>
 </html>

@@ -30,7 +30,6 @@
   var tagEl = document.querySelector("[data-card-tag]");
   var jarEl = document.querySelector("[data-jar]");
   var pileEl = document.querySelector("[data-pile]");
-  var rolesEl = document.querySelector("[data-roles]");
   if (!wordEl || !figureEl || !pileEl || !jarEl) return;
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -39,25 +38,12 @@
 
   var index = -1;
   var timer = null;
-  var buttons = [];
   var pending = [];
 
   // preload art so the first pop is not blank
   ROLES.forEach(function (r) { new Image().src = "assets/figure-" + r.slug + ".png"; });
   [1, 2, 3, 4].forEach(function (n) { new Image().src = "assets/frame-" + n + ".png"; new Image().src = "assets/patch-" + n + ".png"; });
   UNDERLINES.forEach(function (c) { new Image().src = "assets/underline-" + c + ".png"; });
-
-  // ── role picker ──
-  ROLES.forEach(function (role, i) {
-    var li = document.createElement("li");
-    var b = document.createElement("button");
-    b.type = "button";
-    b.textContent = role.word;
-    b.setAttribute("aria-pressed", "false");
-    li.appendChild(b);
-    rolesEl.appendChild(li);
-    buttons.push(b);
-  });
 
   function setLater(fn, ms) {
     var t = setTimeout(fn, ms);
@@ -74,10 +60,10 @@
     var role = ROLES[i];
     var c = i % 4;
     index = i;
-    buttons.forEach(function (b, k) { b.setAttribute("aria-pressed", String(k === i)); });
 
     function apply() {
       wordEl.textContent = role.word;
+      wordEl.classList.toggle("is-long", role.word.length > 9);
       underlineEl.src = "assets/underline-" + UNDERLINES[c] + ".png";
       figureEl.src = "assets/figure-" + role.slug + ".png";
       frameEl.src = "assets/frame-" + FRAME_FOR[c] + ".png";
@@ -154,8 +140,7 @@
   }
 
   // ── the loop: every step shows the next role and drops the next coin; once the jar is full it
-  //    holds a moment, empties, and starts over. Coins are counted separately from roles, so
-  //    picking a role by hand never leaves a coin floating. ──
+  //    holds a moment, empties, and starts over. ──
   var dropped = 0;
   var running = false;
 
@@ -184,7 +169,7 @@
 
   function start() {
     if (reduceMotion) {
-      // No autoplay: the whole pile stays in the jar, and the buttons pick the role.
+      // No autoplay: the whole pile stays in the jar and the headline says "loved one".
       showRole(ROLES.length - 1, false);
       return;
     }
@@ -194,15 +179,6 @@
     setLater(function () { dropCoin(0); dropped = 1; }, 700);
     setLater(step, STEP_MS + 700);
   }
-
-  // a manual pick pauses the rotation for a moment, then it carries on from there
-  buttons.forEach(function (b, i) {
-    b.addEventListener("click", function () {
-      clearPending();
-      showRole(i, true);
-      resumeAfter(STEP_MS * 1.6);
-    });
-  });
 
   // do not stack up drops while the tab is in the background
   document.addEventListener("visibilitychange", function () {

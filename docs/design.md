@@ -52,7 +52,7 @@ Status colours the app needs and the landing doesn't have are drawn from this pa
 
 - **Primary button:** ink fill, white text, 3px ink border, wobbly radius `16px 20px 14px 22px / 20px 14px 22px 16px`, padding 1rem 1.5rem, hard offset shadow `5px 5px 0 orange`.
 - **Ghost button:** white fill, ink text, same border and radius, shadow `5px 5px 0 lilac`.
-- **Pill (role picker):** white, 2px ink border, fully round, DM Sans 500 .95rem; pressed = ink fill, white text.
+- **Pill (badges):** white, 2px ink border, fully round, DM Sans 500 .95rem.
 - **Testnet note:** a yellow blob dot with a 2px ink border, then muted text.
 - **Bullets:** blob dots (`border-radius: 50% 40% 55% 45%`), green or yellow, 2px ink border.
 - **Swatches and underlines:** crayon PNGs (`swatch-*.png`, `underline-*.png`) behind a word to highlight it.

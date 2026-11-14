@@ -323,27 +323,11 @@ for i, (nm, cols, ang) in enumerate([("lilac", LILAC, 30), ("yellow", YELLOW, -2
     seeded(340 + i)
     add(f"swatch-{nm}", 300, 120, hatch_poly([(8, 12), (292, 8), (294, 110), (6, 114)], rad(ang), 13, cols, 15), 90 + i)
 
-# ------------------------------------------------------------------ step doodles
-seeded(350)
-jar_small = brk_line(jar_pts(.42, 60, 6), INK, 7, 2, amp=1.2, dense=5, seg=(8, 16))
-jar_small += heart(130, 120, 30, PINK, 8)
-add("step-1", 260, 220, jar_small, 100)
-
-seeded(351)
-ph = rrect(30, 20, 120, 196, 14)
-s2 = brk_line(ph + [ph[0]], INK, 8, 2, amp=1.2, dense=5, seg=(8, 18))
-for (qx, qy) in [(48, 60), (78, 60), (48, 92), (96, 92), (66, 124), (92, 128)]:
-    s2 += hatch_poly([(qx, qy), (qx + 22, qy), (qx + 22, qy + 22), (qx, qy + 22)], rad(45), 5, INK, 6)
-s2 += brk_line(quad((130, 40), (190, 10), (214, 86), 16), BLUE, 6, 1, amp=.8, dense=4, seg=(8, 14))
-s2 += brk_line([(206, 74), (214, 88), (196, 86)], BLUE, 6, 1, amp=.4, dense=3, seg=(4, 8))
-add("step-2", 260, 220, s2 + f'<g transform="translate(150 98) scale(.62)">{coin_body(110)}</g>', 101)
-
-seeded(352)
-kid = fig_daughter()
-s3 = f'<g transform="translate(-6 20) scale(.55)">{kid}</g>'
-s3 += f'<g transform="translate(110 96) scale(.62)">{coin_body(111)}</g>'
-s3 += star(214, 46, 20, YELLOW, 7)
-add("step-3", 260, 220, s3, 102)
+# ------------------------------------------------------------------ step pictures
+# The How it works pictures (assets/step-1..3.png: the girl beside her jar, relatives putting coins
+# in, the girl grown up with a fuller jar) are the earlier drawings, kept as files. Their source is
+# the step section of video/story_art.py, the earlier copy of this script; this script no longer
+# draws them, so re-running it leaves them alone.
 
 # ------------------------------------------------------------------ pile layout for the jar (png px units)
 random.seed(42)
