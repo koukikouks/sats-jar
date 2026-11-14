@@ -76,6 +76,19 @@ describe("the emergency payment", () => {
     expect(sdk.emergency.cancel).toHaveBeenCalledWith("7");
   });
 
+  it("says an approved proposal past its waiting time goes out soon, with no cancel", async () => {
+    vi.spyOn(Date, "now").mockReturnValue(NOW * 1000);
+    renderApp("/jar/7", (sdk) =>
+      jarAs(sdk, {
+        roles: ["giver", "guardian", "holder"],
+        emergency: { state: "open", proposalId: 4, amount: 2_000, approvals: 2, approvedByMe: true, proposedAt: NOW - 3_600, delayEndsAt: NOW - 60 },
+      }),
+    );
+    expect(await screen.findByText("The waiting time is over, so it goes out soon.")).toBeTruthy();
+    expect(screen.queryByText(/unless the giver cancels it/)).toBeNull();
+    expect(screen.queryByRole("button", { name: "Cancel it" })).toBeNull();
+  });
+
   it("does not offer a guardian who isn't the giver a cancel, and shows a refusal's sentence", async () => {
     const { user } = renderApp("/jar/7", (sdk) => {
       jarAs(sdk, {

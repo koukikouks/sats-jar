@@ -317,11 +317,11 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
     await expect(page.getByText("Demo timing").first()).toBeVisible();
     await expect(page.getByText("0 sats in the jar")).toBeVisible();
     await expect(page.getByText("You gave this jar · You hold this jar")).toBeVisible();
-    await expect(page.getByText("No top-ups yet.")).toBeVisible();
+    await expect(page.getByText("No top-ups yet. The first counted one starts the allowance.")).toBeVisible();
     await expect(page.getByText("Up to 2,500 sats every 10 minutes.")).toBeVisible();
     await expect(page.getByText("Starts with the first counted top-up.")).toBeVisible();
     await expect(page.locator("img.qr")).toBeVisible();
-    await expect(page.getByText(/^If no handover happens, the Bitcoin-only exit opens on /)).toBeVisible();
+    await expect(page.getByText(/^If Sats Jar's signing ever stops before the handover is done, the Bitcoin-only exit opens on /)).toBeVisible();
     record([8, 10, 11, 12, 13], `jar ${jarId} created; the jar page shows it empty, demo timing, with its top-up QR code`);
   });
 

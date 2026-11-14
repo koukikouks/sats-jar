@@ -12,7 +12,9 @@ function progress(topUp: TopUp): string {
     case "on_the_way":
       return "On the way";
     case "confirming":
-      return `Confirming, ${topUp.confirmations ?? 0} of 3`;
+      // Bitcoin explorers run a few blocks ahead of the light client the jar trusts, so 3 or more
+      // here can still wait to be counted.
+      return (topUp.confirmations ?? 0) >= 3 ? "Confirmed on Bitcoin, being counted" : `Confirming, ${topUp.confirmations ?? 0} of 3`;
     case "counted":
       return "Counted";
     case "too_small":
@@ -34,7 +36,7 @@ export function TopUpsSection(props: { jarId: string }) {
   return (
     <section className="panel">
       <h2>Top-ups</h2>
-      {topUps.data?.length === 0 && <p>No top-ups yet.</p>}
+      {topUps.data?.length === 0 && <p>No top-ups yet. The first counted one starts the allowance.</p>}
       <ul className="plain rows">
         {/* One Bitcoin transaction can pay the jar twice, so the txid alone is not unique. */}
         {(topUps.data ?? []).map((topUp, n) => (

@@ -3,7 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useSdk } from "../../services.tsx";
 import { Copy } from "../../ui/Copy.tsx";
-import { coinsStillToGo, day, when } from "../../ui/format.ts";
+import { coinsStillToGo, when } from "../../ui/format.ts";
+import { moment } from "./moments.ts";
 import { CheckIt, Refusal } from "../../ui/messages.tsx";
 
 /** The holder's plain statement after handover (story 54, #25). */
@@ -59,7 +60,7 @@ export function HandoverSection(props: { jar: JarStatus }) {
       )}
       {handover.state === "done" && (
         <>
-          <p>Handed over on {day(handover.completedAt)}. The jar is the child's alone, and every adult's access has ended.</p>
+          <p>Handed over on {moment(jar, handover.completedAt)}. The jar is the child's alone, and every adult's access has ended.</p>
           {jar.roles.includes("holder") && <p>{NOBODY_CAN_RECOVER_HELD}</p>}
         </>
       )}
@@ -75,7 +76,7 @@ function NotYet(props: { jar: JarStatus }) {
   const link = `${window.location.origin}/jar/${jar.jarId}/set-up`;
   return (
     <>
-      <p>The jar unlocks on {jar.demoTiming ? when(jar.unlockAt) : day(jar.unlockAt)}. From then on, the child can take it over.</p>
+      <p>The jar unlocks on {moment(jar, jar.unlockAt)}. From then on, the child can take it over.</p>
       {familyAdult && (
         <>
           <p>When it's time, send the child this link to open on their own phone:</p>
