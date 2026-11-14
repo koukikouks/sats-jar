@@ -47,6 +47,7 @@ test("C2: the apex serves the landing and sends every app path to the app host",
     passed("Make a jar on satsjar.app lands on app.satsjar.app/new at the PIN screen");
   });
 
+  // Fresh devices each run, so each run spends one sponsored guardian account (0.25 testnet NEAR).
   await test.step("an invite link opened on the apex joins on the app host", async () => {
     const giver = await (await browser.newContext({ baseURL: APP })).newPage();
     await giver.goto("/new");
@@ -65,6 +66,8 @@ test("C2: the apex serves the landing and sends every app path to the app host",
     await guardian.getByLabel("Type it again").fill(PIN);
     await guardian.getByRole("button", { name: "Join as a guardian" }).click();
     await expect(guardian.getByText(`You're a guardian of ${nickname}.`, { exact: false })).toBeVisible();
+    await giver.context().close();
+    await guardian.context().close();
     passed(`an invite opened as satsjar.app${token} landed on app.satsjar.app and joined`);
   });
 
