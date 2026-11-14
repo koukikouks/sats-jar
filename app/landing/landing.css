@@ -100,11 +100,14 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
 .section-lede { font-size: 1.15rem; max-width: 40rem; margin: -.4rem 0 2rem; }
 
 .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.75rem; counter-reset: s; }
-.step { position: relative; padding: 2.8rem 3rem 3rem; background: transparent; }
-.step::before { content: ""; position: absolute; inset: 0; background-size: 100% 100%; background-repeat: no-repeat; z-index: 0; }
-.step-1::before { background-image: url("assets/frame-4.png"); transform: rotate(-1.5deg); }
-.step-2::before { background-image: url("assets/frame-3.png"); transform: rotate(1deg); }
-.step-3::before { background-image: url("assets/frame-2.png"); transform: rotate(-.8deg); }
+/* Each frame is drawn as a 9-slice border image, so its crayon border keeps one thickness (36px)
+   however wide or tall the card gets, and the padding keeps the text clear of it. The slice
+   (15% of the art on each side) takes in the deepest stroke, frame-2's wavy double line. */
+.step { position: relative; padding: 3.4rem 3.1rem 3.6rem; background: transparent; }
+.step::before { content: ""; position: absolute; inset: 0; z-index: 0; border: 1px solid transparent; border-image-slice: 15%; border-image-width: 36px; border-image-repeat: stretch; }
+.step-1::before { border-image-source: url("assets/frame-4.png"); transform: rotate(-1.5deg); }
+.step-2::before { border-image-source: url("assets/frame-3.png"); transform: rotate(1deg); }
+.step-3::before { border-image-source: url("assets/frame-2.png"); transform: rotate(-.8deg); }
 .step > * { position: relative; z-index: 1; }
 .step-art { width: 70%; margin: 0 auto .6rem; }
 .step h3 { font-family: var(--hand); font-weight: 400; font-size: 1.75rem; line-height: 1.1; margin: 0 0 .5rem; }
@@ -130,16 +133,15 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
 /* ───────── small screens ───────── */
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; padding-top: .5rem; }
-  /* headline, then the figure and jar, then the pitch and buttons */
+  /* headline, pitch and buttons on the first screen, then the figure and jar */
   .hero-copy { display: contents; }
   .kicker { order: 1; justify-self: start; }
   h1 { order: 2; margin-bottom: .4rem; }
-  .stage { order: 3; }
-  .lede { order: 4; margin-top: 1rem; }
-  .cta { order: 5; }
-  .testnet { order: 6; justify-self: start; }
+  .lede { order: 3; margin-top: .6rem; }
+  .cta { order: 4; }
+  .testnet { order: 5; justify-self: start; }
+  .stage { order: 6; max-width: 400px; margin-top: 1.4rem; }
   .roles { order: 7; }
-  .stage { max-width: 440px; margin-top: 1.8rem; }
   .nav nav { display: none; }
   .steps { grid-template-columns: 1fr; max-width: 460px; margin-inline: auto; }
   .trust-grid { grid-template-columns: 1fr; gap: 1.8rem; }
