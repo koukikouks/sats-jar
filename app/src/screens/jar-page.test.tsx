@@ -139,13 +139,13 @@ describe("the jar page tells the truth at this moment", () => {
     expect(screen.queryByText(/due now/)).toBeNull();
   });
 
-  it("says a passed allowance time is due now when there is allowance to pay", async () => {
-    renderApp("/jar/1", at({ nextAllowanceAt: NOW - 60, availableAllowance: 2_500 }));
+  it("says a passed allowance time is due now when the jar has sats to pay it", async () => {
+    renderApp("/jar/1", at({ nextAllowanceAt: NOW - 60, availableAllowance: 2_500, balance: 9_000 }));
     expect(await screen.findByText("Next allowance: due now, Sats Jar sends it soon.")).toBeTruthy();
   });
 
-  it("never promises a passed allowance when there is nothing to pay", async () => {
-    renderApp("/jar/1", at({ nextAllowanceAt: NOW - 60, availableAllowance: 0 }));
+  it("never promises a passed allowance from an empty jar", async () => {
+    renderApp("/jar/1", at({ nextAllowanceAt: NOW - 60, availableAllowance: 2_500, balance: 0 }));
     expect(await screen.findByText("Next allowance: once the jar has sats again.")).toBeTruthy();
     expect(screen.queryByText(/due now/)).toBeNull();
   });

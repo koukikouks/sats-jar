@@ -71,9 +71,9 @@ function stoppedLine(jar: JarStatus): string {
   return "Allowances are paused while the handover waits to go ahead. If it's cancelled, they start again.";
 }
 
-/** When the next allowance goes. A passed time is promised only when there is allowance to pay. */
+/** When the next allowance goes. A passed time is promised only when the jar has sats: the keeper skips an empty jar. */
 function nextLine(jar: JarStatus): string {
   if (jar.nextAllowanceAt === null) return "Starts with the first counted top-up.";
   if (jar.nextAllowanceAt > nowSeconds()) return `Next allowance: ${when(jar.nextAllowanceAt)}.`;
-  return jar.availableAllowance > 0 ? "Next allowance: due now, Sats Jar sends it soon." : "Next allowance: once the jar has sats again.";
+  return jar.balance > 0 ? "Next allowance: due now, Sats Jar sends it soon." : "Next allowance: once the jar has sats again.";
 }

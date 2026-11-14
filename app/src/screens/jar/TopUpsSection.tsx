@@ -6,6 +6,9 @@ import { sats } from "../../ui/format.ts";
 import { CheckIt, Refusal } from "../../ui/messages.tsx";
 
 
+/** Bitcoin confirmations before a top-up can count (story 20). */
+const CONFIRMATIONS_NEEDED = 3;
+
 /** How far a top-up has got (stories 16, 18, 20). */
 function progress(topUp: TopUp): string {
   switch (topUp.status) {
@@ -14,7 +17,9 @@ function progress(topUp: TopUp): string {
     case "confirming":
       // Bitcoin explorers run a few blocks ahead of the light client the jar trusts, so 3 or more
       // here can still wait to be counted.
-      return (topUp.confirmations ?? 0) >= 3 ? "Confirmed on Bitcoin, being counted" : `Confirming, ${topUp.confirmations ?? 0} of 3`;
+      return (topUp.confirmations ?? 0) >= CONFIRMATIONS_NEEDED
+        ? "Confirmed on Bitcoin, being counted"
+        : `Confirming, ${topUp.confirmations ?? 0} of ${CONFIRMATIONS_NEEDED}`;
     case "counted":
       return "Counted";
     case "too_small":
