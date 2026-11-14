@@ -132,10 +132,10 @@ describe("the handover on the jar page", () => {
       sdk.handover.check.mockResolvedValue(check);
       sdk.handover.confirm.mockResolvedValue(sent("H1"));
     });
-    expect(await screen.findByText(/^The child's phone has claimed the jar\. 0 of 2 guardians have confirmed\. Unless 2 guardians confirm by .*, the claim lapses\.$/)).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Check the child's code" }));
+    expect(await screen.findByText("The beneficiary's phone has claimed the jar. 0 of 2 guardians have confirmed.")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Check the beneficiary's code" }));
     expect(sdk.handover.check).toHaveBeenCalledWith("7");
-    expect(await screen.findByText("Ask the child to show you the code on their phone. Confirm only if every digit matches.")).toBeTruthy();
+    expect(await screen.findByText("Ask the beneficiary to show you the code on their phone. Confirm only if every digit matches.")).toBeTruthy();
     expect(screen.getByText("9765 9494 0429 5968 6952")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "It matches: confirm" }));
     expect(sdk.handover.confirm).toHaveBeenCalledWith("7", check);
@@ -147,7 +147,7 @@ describe("the handover on the jar page", () => {
       sdk.handover.check.mockResolvedValue({ code: "1234", claimedAt: NOW } as HandoverCheck);
       sdk.handover.cancel.mockResolvedValue(sent("X1"));
     });
-    await user.click(await screen.findByRole("button", { name: "Check the child's code" }));
+    await user.click(await screen.findByRole("button", { name: "Check the beneficiary's code" }));
     expect(await screen.findByText(/^Confirming now ends allowances early/)).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Cancel the claim" }));
     expect(sdk.handover.cancel).toHaveBeenCalledWith("7");
@@ -156,10 +156,10 @@ describe("the handover on the jar page", () => {
   it("offers nothing more to a guardian who has confirmed", async () => {
     renderApp("/jar/7", (sdk) => jarAs(sdk, { roles: ["guardian"], ...claimed(1, true) }));
     await screen.findByText(/1 of 2 guardians have confirmed/);
-    expect(screen.queryByRole("button", { name: "Check the child's code" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Check the beneficiary's code" })).toBeNull();
   });
 
-  it("shows the child's phone its code and lets it cancel its own claim", async () => {
+  it("shows the beneficiary's phone its code and lets it cancel its own claim", async () => {
     const { user, sdk } = renderApp("/jar/7", (sdk) => {
       jarAs(sdk, { roles: ["child"], ...claimed(0) });
       sdk.child.guardianCode.mockResolvedValue("9765 9494 0429 5968 6952");
@@ -178,16 +178,96 @@ describe("the handover on the jar page", () => {
         handover: { state: "confirmed", claimedAt: NOW, delayEndsAt: NOW + 180, confirmedByMe: true, pausesAllowancesEarly: false },
       }),
     );
-    expect(await screen.findByText(/Until the Bitcoin starts moving, any guardian or the child can cancel\./)).toBeTruthy();
+    expect(await screen.findByText(/Until the Bitcoin starts moving, any guardian or the beneficiary can cancel\./)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Cancel the handover" })).toBeTruthy();
     unmount();
     const second = renderApp("/jar/7", (sdk) => jarAs(sdk, { roles: ["giver"], handover: { state: "completing", coinsToMove: 0, coinsLeft: 1 } }));
-    expect(await screen.findByText("The jar's Bitcoin is moving to the child's own key: 1 coin still to go.")).toBeTruthy();
+    expect(await screen.findByText("The jar's Bitcoin is moving to the beneficiary's own key: 1 coin still to go.")).toBeTruthy();
     second.unmount();
     renderApp("/jar/7", (sdk) => jarAs(sdk, { roles: ["holder"], handover: { state: "done", completedAt: NOW } }));
-    expect(await screen.findByText(/^Handed over on .*\. The jar is the child's alone, and every adult's access has ended\.$/)).toBeTruthy();
+    expect(await screen.findByText(/^Handed over on .*\. The jar is the beneficiary's alone, and every adult's access has ended\.$/)).toBeTruthy();
     expect(
       screen.getByText("Nobody, Sats Jar included, can recover this jar without your phone or your recovery phrase. Keep your recovery phrase safe."),
     ).toBeTruthy();
   });
 });
+
+describe("the handover's step and waits", () => {
+  const clock = (unixSeconds: number) => new Date(unixSeconds * 1000).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
+  const at = (change: Partial<JarStatus>) => (sdk: StandInSdk) => {
+    vi.spyOn(Date, "now").mockReturnValue(NOW * 1000);
+    jarAs(sdk, { unlockAt: NOW - 60, ...change });
+  };
+
+  it("gives the giver or a guardian the beneficiary's link before a claim, with one helper for trying it alone", async () => {
+    renderApp("/jar/7", at({ roles: ["giver", "holder"], handover: { state: "none" } }));
+    expect(await within(await findSection("Handover")).findByText("Step 5 of 5 · Hand it over")).toBeTruthy();
+    expect(screen.getByText("Send the beneficiary this link to open on their own phone.")).toBeTruthy();
+    expect(screen.getByText(`${window.location.origin}/jar/7/set-up`)).toBeTruthy();
+    expect(screen.getByText("Trying it alone? Open it in a different browser or on your phone, once your top-up says Counted.")).toBeTruthy();
+  });
+
+  it("names no step for the beneficiary, nor once the handover is done", async () => {
+    const child = renderApp("/jar/7", (sdk) => {
+      at({ roles: ["child"], handover: { state: "claimed", claimedAt: NOW, lapsesAt: NOW + 420, confirmations: 0, confirmedByMe: false, pausesAllowancesEarly: false } })(sdk);
+      sdk.child.guardianCode.mockResolvedValue("1234");
+    });
+    await screen.findByRole("heading", { name: "Handover" });
+    expect(screen.queryByText("Step 5 of 5 · Hand it over")).toBeNull();
+    child.unmount();
+    renderApp("/jar/7", at({ roles: ["guardian"], handover: { state: "done", completedAt: NOW } }));
+    await screen.findByRole("heading", { name: "Handover" });
+    expect(screen.queryByText("Step 5 of 5 · Hand it over")).toBeNull();
+  });
+
+  it("tells a guardian to check and confirm within the minutes left before the claim lapses", async () => {
+    renderApp("/jar/7", at({ roles: ["guardian"], handover: { state: "claimed", claimedAt: NOW, lapsesAt: NOW + 420, confirmations: 0, confirmedByMe: false, pausesAllowancesEarly: false } }));
+    expect(await screen.findByText(`Check the beneficiary's code and confirm by ${clock(NOW + 420)}, in about 7 minutes, or the claim lapses.`)).toBeTruthy();
+  });
+
+  it("tells everyone else when the claim lapses, in about how long", async () => {
+    renderApp("/jar/7", at({ roles: ["giver"], handover: { state: "claimed", claimedAt: NOW, lapsesAt: NOW + 400, confirmations: 1, confirmedByMe: false, pausesAllowancesEarly: false } }));
+    expect(await screen.findByText(`Unless 2 guardians confirm by ${clock(NOW + 400)}, in about 7 minutes, the claim lapses.`)).toBeTruthy();
+  });
+
+  it("says when a confirmed handover goes ahead, in about how long, and that there's nothing to do but wait", async () => {
+    renderApp("/jar/7", at({ roles: ["giver"], handover: { state: "confirmed", claimedAt: NOW, delayEndsAt: NOW + 180, confirmedByMe: false, pausesAllowancesEarly: false } }));
+    expect(
+      await screen.findByText(`Both guardians confirmed. The handover goes ahead at ${clock(NOW + 180)}, in about 3 minutes. Nothing to do but wait.`),
+    ).toBeTruthy();
+  });
+
+  it("waits for the unlock when it comes after the waiting time", async () => {
+    renderApp("/jar/7", at({ roles: ["giver"], unlockAt: NOW + 1_200, handover: { state: "confirmed", claimedAt: NOW, delayEndsAt: NOW + 180, confirmedByMe: false, pausesAllowancesEarly: false } }));
+    expect(
+      await screen.findByText(
+        `Both guardians confirmed. The handover goes ahead at ${clock(NOW + 1_200)}, once the jar unlocks, in about 20 minutes. Nothing to do but wait.`,
+      ),
+    ).toBeTruthy();
+  });
+
+  it("warns a guardian checking the code that an empty jar would hand over nothing", async () => {
+    const { user } = renderApp("/jar/7", (sdk) => {
+      at({ roles: ["guardian"], balance: 0, handover: { state: "claimed", claimedAt: NOW, lapsesAt: NOW + 420, confirmations: 0, confirmedByMe: false, pausesAllowancesEarly: false } })(sdk);
+      sdk.handover.check.mockResolvedValue({ code: "1234", claimedAt: NOW } as HandoverCheck);
+    });
+    await user.click(await screen.findByRole("button", { name: "Check the beneficiary's code" }));
+    expect(
+      await screen.findByText("The jar has 0 sats, so the beneficiary would get an empty jar. Wait for a top-up to say Counted before you confirm."),
+    ).toBeTruthy();
+  });
+
+  it("gives no empty-jar warning when the jar has sats", async () => {
+    const { user } = renderApp("/jar/7", (sdk) => {
+      at({ roles: ["guardian"], balance: 2_000, handover: { state: "claimed", claimedAt: NOW, lapsesAt: NOW + 420, confirmations: 0, confirmedByMe: false, pausesAllowancesEarly: false } })(sdk);
+      sdk.handover.check.mockResolvedValue({ code: "1234", claimedAt: NOW } as HandoverCheck);
+    });
+    await user.click(await screen.findByRole("button", { name: "Check the beneficiary's code" }));
+    await screen.findByText("1234");
+    expect(screen.queryByText(/empty jar/)).toBeNull();
+  });
+});
+
+async function findSection(name: string): Promise<HTMLElement> {
+  return (await screen.findByRole("heading", { name })).closest("section")!;
+}

@@ -86,11 +86,15 @@ describe("the public record", () => {
       screen.getByText("Everything here is read straight from the public NEAR and Bitcoin chains, not from Sats Jar. Check any line on an explorer."),
     ).toBeTruthy();
     const theJar = screen.getByRole("heading", { name: "The jar" }).closest("section")!;
-    expect(within(theJar).getByRole("img").getAttribute("src")).toBe(picture);
+    const drawn = within(theJar).getByRole("img", { name: "Picture of Sunny's jar" });
+    expect(within(drawn).getByText("Sunny's jar")).toBeTruthy();
+    expect(within(drawn).getByText("20,000 sats")).toBeTruthy();
+    expect(within(drawn).getByText("Up to 2,500 sats an allowance")).toBeTruthy();
+    expect(within(drawn).getByText(/^Unlocks /)).toBeTruthy();
     expect(within(theJar).getByText("Balance: 20,000 sats")).toBeTruthy();
     const address = within(theJar).getByRole("link", { name: /^Bitcoin address: tb1qjar0+ ↗$/ });
     expect(address.getAttribute("href")).toBe("https://mempool.space/testnet/address/tb1qjar");
-    expect(within(theJar).getByText("Child's address: tb1qchild0000000000000000000000000000000")).toBeTruthy();
+    expect(within(theJar).getByText("Beneficiary's address: tb1qchild0000000000000000000000000000000")).toBeTruthy();
     expect(within(theJar).getByText("Allowance: up to 2,500 sats every 10 minutes")).toBeTruthy();
     expect(within(theJar).getByText(/^Unlocks: /)).toBeTruthy();
     expect(within(theJar).getByText("Guardians: 2")).toBeTruthy();
@@ -119,6 +123,17 @@ describe("the public record", () => {
     expect(await within(topUp).findByAltText("QR code of the jar's Bitcoin address")).toBeTruthy();
   });
 
+  it("shows the same 4 top-up steps as the jar page, without the giver's step", async () => {
+    renderApp("/proof/7", record(jar()));
+    const topUp = (await screen.findByRole("heading", { name: "Top it up" })).closest("section")!;
+    expect(within(topUp).getAllByRole("listitem")).toHaveLength(4);
+    expect(within(topUp).getByRole("link", { name: /faucet/ }).getAttribute("href")).toBe("https://coinfaucet.eu/en/btc-testnet/");
+    expect(within(topUp).getByText(/Under 1,000 sats doesn't count/)).toBeTruthy();
+    expect(within(topUp).getByText(/usually 10–30 minutes/)).toBeTruthy();
+    expect(screen.queryByText(/Step 4 of 5/)).toBeNull();
+    expect(document.body.textContent).not.toMatch(/two hours/);
+  });
+
   it("lists the jar's requests oldest first, naming each sender by role and never by account", async () => {
     const requests = [
       tx({ hash: "A", method: "create_jar", signer: "ruth-1.sats-jar-dev-2.testnet" }),
@@ -143,8 +158,8 @@ describe("the public record", () => {
       "Create the jar by the giver",
       "Propose an emergency payment by a guardian",
       "Spend from the jar by someone else",
-      "Claim the jar by the child",
-      "Spend from the jar by the child",
+      "Claim the jar by the beneficiary",
+      "Spend from the jar by the beneficiary",
       "A request by someone else",
     ]);
     expect(within(rows[0]!).getByText("Done")).toBeTruthy();
@@ -194,13 +209,13 @@ describe("the public record", () => {
     expect(container.textContent).not.toMatch(/testnet|aaaaaaaa/);
   });
 
-  it("names the child's claim by the child, though the child holds the jar now", async () => {
+  it("names the beneficiary's claim by the beneficiary, though the beneficiary holds the jar now", async () => {
     const requests = [
       tx({ hash: "A", method: "claim_handover", signer: child, time: 1_760_001_000 }),
       tx({ hash: "B", method: "start_transfer", signer: child, time: 1_760_010_000 }),
     ];
     renderApp("/proof/7", record(jar({ holder: child, history: handedOver }), requests));
-    expect(await screen.findByText("Claim the jar by the child")).toBeTruthy();
+    expect(await screen.findByText("Claim the jar by the beneficiary")).toBeTruthy();
     expect(screen.getByText("Start a transfer by the holder")).toBeTruthy();
   });
 

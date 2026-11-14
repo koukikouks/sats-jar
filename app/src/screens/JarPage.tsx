@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router";
 import { useSdk } from "../services.tsx";
 import { POLL } from "../ui/poll.ts";
 import { DemoBadge } from "../ui/DemoBadge.tsx";
+import { JarPicture } from "../ui/JarPicture.tsx";
 import { roleLine, sats } from "../ui/format.ts";
 import { Refusal } from "../ui/messages.tsx";
 import { PinGate } from "../ui/PinGate.tsx";
@@ -32,10 +33,24 @@ function FamilyPage() {
   const proofLink = `/proof/${jarId}`;
   // Privacy, not security: the chain data behind this page is public (story 60).
   if (jar.roles.length === 0) return <NotFamily jarId={jarId} mayHaveClaimed={jar.handover.state === "none"} />;
+  const beneficiary = jar.roles.includes("child");
   return (
     <>
       <section className="panel jar-head">
-        <img className="picture" src={jar.picture} alt="" />
+        <figure className="jar-figure">
+          <JarPicture
+            className="jar-picture"
+            nickname={jar.nickname}
+            balance={jar.balance}
+            cap={jar.cap}
+            unlockAt={jar.unlockAt}
+            nextAllowanceAt={jar.nextAllowanceAt}
+            demoTiming={jar.demoTiming}
+          />
+          <figcaption className="hint">
+            NEAR wallets and explorers show the jar's on-chain picture, which the contract draws and can't change.
+          </figcaption>
+        </figure>
         <div>
           <h1>{jar.nickname}</h1>
           <DemoBadge demoTiming={jar.demoTiming} />
@@ -44,20 +59,26 @@ function FamilyPage() {
           <Link to={proofLink}>See the public record</Link>
         </div>
       </section>
-      <TopUpBox address={jar.address} qrPayload={jar.qrPayload} />
+      {/* The beneficiary came for the handover, so it comes first for them (story 21). */}
+      {beneficiary && <HandoverSection jar={jar} />}
+      <TopUpBox address={jar.address} qrPayload={jar.qrPayload} journeyStep={jar.roles.includes("giver")} />
       <TopUpsSection jarId={jarId} />
       <AllowanceSection jar={jar} />
-      <EmergencySection jar={jar} />
-      <HandoverSection jar={jar} />
+      {!beneficiary && <HandoverSection jar={jar} />}
       <HolderSection jar={jar} />
-      <ExitSection jar={jar} />
+      {/* Off the happy path, so folded away; open while an emergency payment is live, so a guardian asked to approve sees it (story 22). */}
+      <details className="more" open={jar.emergency.state === "open"}>
+        <summary>More: emergency payment and the Bitcoin-only exit</summary>
+        <EmergencySection jar={jar} />
+        <ExitSection jar={jar} />
+      </details>
     </>
   );
 }
 
 /**
  * A device with no role in the jar. A phone set up with a recovery phrase (it has a handover code)
- * looking at a jar with no claim may be a child whose claim lapsed or was cancelled; the app can't
+ * looking at a jar with no claim may be a beneficiary whose claim lapsed or was cancelled; the app can't
  * tell whether it claimed this jar, so the sentence holds either way (story 29, finding 1).
  */
 function NotFamily(props: { jarId: string; mayHaveClaimed: boolean }) {

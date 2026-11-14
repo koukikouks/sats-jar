@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import { useSdk } from "../services.tsx";
 import { DemoBadge } from "../ui/DemoBadge.tsx";
 import { useDevice } from "../ui/device.ts";
+import { JarPicture } from "../ui/JarPicture.tsx";
 import { roleLine, sats } from "../ui/format.ts";
 import { Refusal } from "../ui/messages.tsx";
 import { PinGate } from "../ui/PinGate.tsx";
@@ -25,9 +26,10 @@ function Welcome() {
     <section className="panel welcome">
       <h1>A jar of Bitcoin for someone you love</h1>
       <p>
-        Anyone can top it up, the child gets a small allowance on a schedule, and from the day you choose the whole jar can
+        Anyone can top it up, the beneficiary gets a small allowance on a schedule, and from the day you choose the whole jar can
         become theirs.
       </p>
+      <p>1 Name your jar · 2 Invite 2 guardians · 3 Set the rules · 4 Top it up · 5 Hand it over. About 30 minutes on test Bitcoin.</p>
       <Link className="button" to="/new">
         Make a jar
       </Link>
@@ -81,7 +83,7 @@ function JarCard(props: { jar: JarSummary }) {
   return (
     <li className="card">
       <Link to={`/jar/${jar.jarId}`}>
-        <img className="picture" src={jar.picture} alt="" />
+        <JarPicture className="picture" nickname={jar.nickname} balance={jar.balance} />
         <span className="card-title">{jar.nickname}</span>
       </Link>
       <DemoBadge demoTiming={jar.demoTiming} />

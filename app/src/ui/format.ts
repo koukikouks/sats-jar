@@ -11,6 +11,18 @@ export const when = (unixSeconds: number): string =>
 export const day = (unixSeconds: number): string =>
   new Date(unixSeconds * 1000).toLocaleDateString("en-GB", { dateStyle: "medium", timeZone: "UTC" });
 
+/**
+ * How long until a moment, roughly: "about 7 minutes". Computed, not hard-coded, so it holds for
+ * real timing too (spec #75): minutes under 2 hours, hours under 2 days, then days. Never under a minute.
+ */
+export function aboutHowLong(seconds: number): string {
+  const minutes = Math.max(1, Math.round(seconds / 60));
+  if (minutes < 120) return `about ${minutes} minute${minutes === 1 ? "" : "s"}`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 48) return `about ${hours} hours`;
+  return `about ${Math.round(hours / 24)} days`;
+}
+
 /** A period's length: "30 days", "10 minutes". */
 export function period(seconds: number): string {
   if (seconds === FULL_PERIOD) return "30 days";

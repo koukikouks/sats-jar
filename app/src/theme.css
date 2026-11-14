@@ -12,6 +12,7 @@
   --blue: #2f6fd8;
   --green: #3a9d4f;
   --lilac: #b79bdc;
+  --pink: #f27aa8;
 
   /* Status text, drawn from the palette and darkened to read at 4.5:1 or better. */
   --done-text: #2a7a3d;
@@ -68,6 +69,7 @@
   --page-width: 44rem;
   --page-gutter: 1.25rem;
   --picture-size: 5rem;
+  --jar-picture-size: 13rem;
   --logo-size: 44px;
   --qr-size: 13.75rem;
   --doodle-size: 56px;

@@ -3,15 +3,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router";
 import { useSdk } from "../services.tsx";
 import { useDevice } from "../ui/device.ts";
-import { Refusal } from "../ui/messages.tsx";
+import { EmptyJarWarning, Refusal } from "../ui/messages.tsx";
 import { PinGate } from "../ui/PinGate.tsx";
+import { POLL } from "../ui/poll.ts";
 import { RecoveryPhraseSetUp } from "../ui/RecoveryPhraseSetUp.tsx";
 
-/** The child's plain statement (story 54, #25). */
+/** The beneficiary's plain statement (story 54, #25). */
 export const NOBODY_CAN_RECOVER =
   "After handover, nobody, Sats Jar included, can recover your jar without this phone or your recovery phrase.";
 
-/** "/jar/:jarId/set-up": "Set up my jar" on the child's own phone, then the claim (stories 41–46). */
+/** "/jar/:jarId/set-up": "Set up my jar" on the beneficiary's own phone, then the claim (stories 41–46). */
 export function ChildSetUp() {
   const { state, changed } = useDevice();
   if (state === undefined) return null;
@@ -43,7 +44,8 @@ function Claim() {
   const { jarId = "" } = useParams();
   // Only a phone set up with a recovery phrase has a guardian code; an adult's device refuses.
   const code = useQuery({ queryKey: ["guardianCode"], queryFn: () => sdk.child.guardianCode() });
-  const jar = useQuery({ queryKey: ["jar", jarId], queryFn: () => sdk.jars.status(jarId) });
+  // Re-read so the empty-jar warning goes once the top-up counts.
+  const jar = useQuery({ queryKey: ["jar", jarId], queryFn: () => sdk.jars.status(jarId), refetchInterval: POLL });
   const claim = useMutation({
     mutationFn: () => sdk.child.claim(jarId),
     onSuccess: async () => {
@@ -52,7 +54,7 @@ function Claim() {
     },
   });
   if (code.error instanceof SatsJarRefusal && code.error.code === "NO_RECOVERY_PHRASE") {
-    return <p className="panel">This device is set up for an adult. Open this link on the child's own phone.</p>;
+    return <p className="panel">This device is set up for an adult. Open this link on the beneficiary's own phone.</p>;
   }
   if (code.data === undefined || jar.data === undefined) return <Refusal error={code.error ?? jar.error} />;
   return (
@@ -61,6 +63,7 @@ function Claim() {
       <p>Your guardians will check this code on your phone, in person:</p>
       <p className="code">{code.data}</p>
       <p>{NOBODY_CAN_RECOVER}</p>
+      {jar.data.balance === 0 && <EmptyJarWarning who="you" before="claim" />}
       <Refusal error={claim.error} />
       <button type="button" disabled={claim.isPending} onClick={() => claim.mutate()}>
         Claim my jar

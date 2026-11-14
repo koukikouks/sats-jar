@@ -8,7 +8,7 @@ export const handoverDone = (jar: JarProof): boolean => jar.history.some((event)
 
 /**
  * Who sent a request, by the part they had in the jar when they sent it (`at`, unix seconds): the
- * child claims before holding the jar, so a claim reads "the child" even once the child holds it.
+ * beneficiary claims before holding the jar, so a claim reads "the beneficiary" even once the beneficiary holds it.
  */
 export function senderRole(jar: JarProof, signer: string, at?: number): string {
   if (signer === jar.giver) return "the giver";
@@ -17,9 +17,9 @@ export function senderRole(jar: JarProof, signer: string, at?: number): string {
   const claimants = jar.history.flatMap((event) => (event.event === "handover_claimed" && event.childAccount ? [event.childAccount] : []));
   const handedOverAt = jar.history.find((event) => event.event === "handover_completed")?.at;
   const beforeHandover = at !== undefined && (handedOverAt === undefined || at < handedOverAt);
-  if (claimants.includes(signer) && beforeHandover) return "the child";
+  if (claimants.includes(signer) && beforeHandover) return "the beneficiary";
   if (signer === jar.holder && jar.holder !== jar.familyAccount) return "the holder";
-  if (claimants.includes(signer)) return "the child";
+  if (claimants.includes(signer)) return "the beneficiary";
   if (signer === config.keeperAccount) return "Sats Jar's keeper";
   return "someone else";
 }
@@ -32,7 +32,7 @@ export const withoutAccounts = (jar: JarProof, reason: string): string =>
   reason
     .replace(ACCOUNT, (account) => senderRole(jar, account))
     // "only the giver, <account>, can cancel" would read "only the giver, the giver, can cancel".
-    .replace(/\b(the giver|a guardian|the holder|the child|Sats Jar's keeper|someone else), \1,/g, "$1");
+    .replace(/\b(the giver|a guardian|the holder|the beneficiary|Sats Jar's keeper|someone else), \1,/g, "$1");
 
 // The contract's change methods (contract/src: lib, spend, emergency, handover, transfer,
 // rehoming, nft). Anything else (the dev-only escape, a method a later contract adds) reads

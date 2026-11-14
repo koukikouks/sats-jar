@@ -26,8 +26,8 @@ export function JoinPage() {
     <section className="panel">
       <h1>Be a guardian of {nickname}</h1>
       <p>
-        Guardians are grown-ups the family trusts. Two of you must agree to any emergency payment to the child, and before the child
-        takes the jar over you'll check a code on their phone, in person. No guardian can send the jar's Bitcoin anywhere else.
+        You and one other guardian approve any emergency payment, and you check a code on the beneficiary's phone before the handover. No
+        guardian can send the jar's Bitcoin anywhere else.
       </p>
       {join.isSuccess ? (
         // Checked first: once this device joins, the link itself reads as used.

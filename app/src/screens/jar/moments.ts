@@ -6,7 +6,7 @@ export const nowSeconds = (): number => Math.floor(Date.now() / 1000);
 
 /**
  * No allowance or emergency payment goes out: the handover's waiting time has ended, or the jar's
- * Bitcoin is moving to the child or has moved (story 53a, the contract's payouts_stopped).
+ * Bitcoin is moving to the beneficiary or has moved (story 53a, the contract's payouts_stopped).
  */
 export function payoutsStopped(jar: JarStatus): boolean {
   const { handover } = jar;

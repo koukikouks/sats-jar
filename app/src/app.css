@@ -87,8 +87,37 @@ a:hover {
   content: "";
   width: var(--logo-size);
   height: var(--logo-size);
+  margin-right: -0.2rem;
+  background: url("../landing/assets/logo-mark.png") center / contain no-repeat;
+}
+.wordmark {
+  -webkit-mask-image: url("../landing/assets/grain.png");
+  mask-image: url("../landing/assets/grain.png");
+  -webkit-mask-size: var(--grain-size) var(--grain-size);
+  mask-size: var(--grain-size) var(--grain-size);
+  padding-block: 0.14em;
+  margin-block: -0.14em;
+}
+.wordmark .j {
+  position: relative;
+  display: inline-block;
+}
+/* The coin dots the j, as on the landing's logo. */
+.wordmark .j::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 0.42em;
+  height: 0.42em;
   background: url("../landing/assets/coin-2.png") center / contain no-repeat;
-  transform: rotate(-8deg);
+  transform: translateX(-45%) rotate(-12deg);
+}
+.step {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--blue);
 }
 .main {
   max-width: var(--page-width);
@@ -256,6 +285,28 @@ fieldset.field {
 .check-it {
   font-size: var(--text-small);
 }
+.warning {
+  background: var(--waiting-tint);
+  border-radius: var(--radius-wobble);
+  padding: var(--space-2) var(--space-3);
+}
+
+/* ───────── the top-up box's steps and the folded-away More ───────── */
+.top-up-steps {
+  padding-left: var(--space-5);
+}
+.top-up-steps > li + li {
+  margin-top: var(--space-3);
+}
+.top-up-steps .qr {
+  margin-top: var(--space-3);
+}
+.more > summary {
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin-bottom: var(--space-8);
+}
 
 /* ───────── lists and cards ───────── */
 .plain {
@@ -299,6 +350,18 @@ fieldset.field {
   width: var(--picture-size);
   height: var(--picture-size);
   flex: none;
+}
+.jar-picture {
+  display: block;
+  width: var(--jar-picture-size);
+  max-width: 100%;
+  height: auto;
+}
+.jar-figure {
+  flex: none;
+  width: var(--jar-picture-size);
+  max-width: 100%;
+  margin: 0;
 }
 .qr {
   display: block;
@@ -352,7 +415,8 @@ fieldset.field {
   gap: var(--space-5);
   align-items: flex-start;
   border: none;
-  padding: var(--space-8);
+  /* Room for the crayon frame's thick, tilted edge around the taller app-drawn picture. */
+  padding: var(--space-10) var(--space-10) calc(var(--space-10) + var(--space-2)) calc(var(--space-10) + var(--space-8));
   isolation: isolate;
 }
 .jar-head::before {
@@ -414,8 +478,10 @@ fieldset.field {
   .panel {
     padding: var(--space-5);
   }
+  /* The picture stacks above the words on a phone, inside the frame's thick edge. */
   .jar-head {
-    padding: var(--space-6);
+    flex-direction: column;
+    padding: var(--space-8) var(--space-8) calc(var(--space-10) + var(--space-5)) var(--space-10);
   }
   .words {
     columns: 1;
