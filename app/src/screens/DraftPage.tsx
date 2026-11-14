@@ -2,12 +2,14 @@ import { FULL_PERIOD, SatsJarRefusal, type Draft } from "@sats-jar/sdk";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useId, useState, type FormEvent } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
+import { config } from "../config.ts";
 import { useSdk } from "../services.tsx";
 import { POLL } from "../ui/poll.ts";
 import { Copy } from "../ui/Copy.tsx";
 import { Field } from "../ui/Field.tsx";
 import { Refusal } from "../ui/messages.tsx";
 import { PinGate } from "../ui/PinGate.tsx";
+import { Step } from "../ui/Step.tsx";
 
 /** Demo timing: one allowance every 10 minutes (spec #1, Demo timing). */
 export const DEMO_PERIOD = 600;
@@ -72,7 +74,7 @@ function Invites(props: { draft: Draft }) {
   });
   const joined = progress.data?.joined ?? draft.inviteTokens.map(() => false);
   const joinedCount = joined.filter(Boolean).length;
-  const firstOpen = draft.inviteTokens.find((_, n) => !joined[n]);
+  const firstOpen = draft.inviteTokens.findIndex((_, n) => !joined[n]);
   const [isGuardianHere, setGuardianHere] = useState(() => joinedHere(draft.draftId));
   const markJoinedHere = () => {
     rememberJoinedHere(draft.draftId);
@@ -92,8 +94,12 @@ function Invites(props: { draft: Draft }) {
   return (
     <>
       <section className="panel">
+        <Step n={2} />
         <h1>{draft.nickname}: invite the guardians</h1>
-        <p>Send each guardian their own link. Each link works once.</p>
+        <p className="hint">
+          Send each guardian their own link. Trying it alone? Be guardian 1 here, then open guardian 2's link in a private window and keep it
+          open until the handover.
+        </p>
         <ul className="plain">
           {draft.inviteTokens.map((token, n) => {
             const link = `${window.location.origin}/join/${token}`;
@@ -108,20 +114,17 @@ function Invites(props: { draft: Draft }) {
         </ul>
         {alreadyGuardian && <p className="done">You're already one of this jar's guardians on this device.</p>}
         {joinMyself.isSuccess && <p className="done">You're one of this jar's guardians now.</p>}
-        {firstOpen !== undefined && !isGuardianHere && (
-          <>
-            <button type="button" className="secondary" disabled={joinMyself.isPending} onClick={() => joinMyself.mutate(firstOpen)}>
-              Use a link myself
-            </button>
-            <p className="hint">Makes you one of the guardians, on this device.</p>
-          </>
+        {firstOpen !== -1 && !isGuardianHere && (
+          <button type="button" className="secondary" disabled={joinMyself.isPending} onClick={() => joinMyself.mutate(draft.inviteTokens[firstOpen]!)}>
+            Be guardian {firstOpen + 1} myself
+          </button>
         )}
         <Refusal error={(alreadyGuardian ? null : joinMyself.error) ?? progress.error} />
       </section>
       {joinedCount >= 2 ? (
         <RuleForm draft={draft} joinedCount={joinedCount} />
       ) : (
-        <p className="panel">Once 2 guardians have joined, you can set the jar's rule and make it.</p>
+        <p className="panel">Once 2 guardians have joined, the rules come next. This page updates by itself.</p>
       )}
     </>
   );
@@ -136,7 +139,8 @@ function RuleForm(props: { draft: Draft; joinedCount: number }) {
   const [cap, setCap] = useState("");
   const [demo, setDemo] = useState(false);
   const [unlockDate, setUnlockDate] = useState("");
-  const [unlockMinutes, setUnlockMinutes] = useState("");
+  // Long enough for a top-up to count before the jar can be handed over.
+  const [unlockMinutes, setUnlockMinutes] = useState("30");
   const create = useMutation({
     mutationFn: () =>
       sdk.jars.create({
@@ -166,13 +170,17 @@ function RuleForm(props: { draft: Draft; joinedCount: number }) {
   };
   return (
     <form className="panel" onSubmit={submit}>
+      <Step n={3} />
       <h2>The jar's rule</h2>
       <Field
         label="Where should the allowance go?"
-        hint="The beneficiary's Bitcoin address, from a wallet a parent controls: open it, tap Receive and copy the address. Not an exchange's deposit address. Until handover the jar can only ever pay this address."
+        hint="The beneficiary's Bitcoin address. Until handover the jar can only pay this address."
       >
         <input placeholder="tb1q…" value={childAddress} onChange={(e) => setChildAddress(e.target.value)} />
       </Field>
+      <button type="button" className="secondary" onClick={() => setChildAddress(config.demoAddress)}>
+        No test wallet? Use our demo address
+      </button>
       <Field label="Allowance cap (sats each period)" hint="The most the beneficiary receives each period. Bitcoin fees come out of the jar, never out of the allowance.">
         <input inputMode="numeric" value={cap} onChange={(e) => setCap(e.target.value.replace(/\D/g, ""))} />
       </Field>
@@ -186,14 +194,14 @@ function RuleForm(props: { draft: Draft; joinedCount: number }) {
           <input type="radio" name="timing" checked={demo} onChange={() => setDemo(true)} />
           Demo timing: every 10 minutes
         </label>
-        {demo && (
-          <span className="hint">
-            Shortens every wait so a jar's whole life fits in an afternoon. The jar shows a Demo timing badge.
-          </span>
-        )}
+        <span className="hint">
+          {demo
+            ? "Shortens every wait so a jar's whole life fits in an afternoon. The jar shows a Demo timing badge."
+            : "Trying it today? Choose Demo timing."}
+        </span>
       </fieldset>
       {demo ? (
-        <Field label="Unlocks in (minutes)" hint="The earliest the jar can be handed over to the beneficiary.">
+        <Field label="Unlocks in (minutes)" hint="Leaves time for your top-up to count before the handover.">
           <input inputMode="numeric" value={unlockMinutes} onChange={(e) => setUnlockMinutes(e.target.value.replace(/\D/g, ""))} />
         </Field>
       ) : (

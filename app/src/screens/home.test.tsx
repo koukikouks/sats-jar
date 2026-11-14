@@ -10,6 +10,7 @@ describe("home", () => {
   it("offers a new device its three ways in, and no PIN yet", async () => {
     renderApp("/", (sdk) => sdk.device.state.mockResolvedValue("new"));
     expect(await screen.findByRole("heading", { name: "A jar of Bitcoin for someone you love" })).toBeTruthy();
+    expect(screen.getByText("1 Name your jar · 2 Invite 2 guardians · 3 Set the rules · 4 Top it up · 5 Hand it over. About 30 minutes on test Bitcoin.")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Make a jar" }).getAttribute("href")).toBe("/new");
     expect(screen.getByRole("link", { name: "Restore my jar from its recovery phrase" }).getAttribute("href")).toBe("/restore");
     expect(screen.getByRole("link", { name: "Someone is giving me a jar" }).getAttribute("href")).toBe("/receive");

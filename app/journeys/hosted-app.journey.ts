@@ -113,7 +113,7 @@ test("C1: a giver starts a jar and a guardian joins, through the hosted backend"
     const how = await passGate(page, page.getByLabel("Jar nickname"));
     await page.getByLabel("Jar nickname").fill(nickname);
     await page.getByLabel("2 guardians", { exact: true }).check();
-    await page.getByRole("button", { name: "Make invite links" }).click();
+    await page.getByRole("button", { name: "Next: invite guardians" }).click();
     await expect(page.getByRole("heading", { name: `${nickname}: invite the guardians` })).toBeVisible();
     links = await page.locator(".invite .mono").allTextContents();
     expect(links).toHaveLength(2);
