@@ -8,11 +8,11 @@ const picture = "data:image/svg+xml;base64,PHN2Zy8+";
 describe("home", () => {
   it("offers a new device its three ways in, and no PIN yet", async () => {
     renderApp("/", (sdk) => sdk.device.state.mockResolvedValue("new"));
-    expect(await screen.findByRole("heading", { name: "Sats Jar" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Start a jar" }).getAttribute("href")).toBe("/new");
-    expect(screen.getByRole("link", { name: "I have a recovery phrase: restore my jar" }).getAttribute("href")).toBe("/restore");
+    expect(await screen.findByRole("heading", { name: "A jar of Bitcoin for someone you love" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Make a jar" }).getAttribute("href")).toBe("/new");
+    expect(screen.getByRole("link", { name: "Restore my jar from its recovery phrase" }).getAttribute("href")).toBe("/restore");
     expect(screen.getByRole("link", { name: "Someone is giving me a jar" }).getAttribute("href")).toBe("/receive");
-    expect(screen.getByText("Invited as a guardian, or setting up your own jar? Open the link you were sent.")).toBeTruthy();
+    expect(screen.getByText("Asked to be a guardian, or setting up your own jar? Open the link you were sent.")).toBeTruthy();
     expect(screen.queryByLabelText("PIN")).toBeNull();
   });
 
@@ -41,7 +41,7 @@ describe("home", () => {
       ]);
       sdk.invites.progress.mockResolvedValue({ nickname: "Sunny's jar", joined: [true, false, false] });
     });
-    const draft = await screen.findByRole("link", { name: "Being set up: Sunny's jar, 1 of 3 guardians joined" });
+    const draft = await screen.findByRole("link", { name: "Sunny's jar: 1 of 3 guardians joined so far" });
     expect(draft.getAttribute("href")).toBe("/draft/d1");
     expect(sdk.invites.progress).toHaveBeenCalledWith("d1");
     expect(screen.queryByText(/Made already/)).toBeNull();
@@ -49,7 +49,7 @@ describe("home", () => {
 
   it("says so when there are no jars", async () => {
     renderApp("/");
-    expect(await screen.findByText("No jars on this device yet.")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Start a jar" })).toBeTruthy();
+    expect(await screen.findByText("No jars here yet. Make one, or open a link someone sent you.")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Make a jar" })).toBeTruthy();
   });
 });

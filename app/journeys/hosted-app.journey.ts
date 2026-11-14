@@ -65,14 +65,14 @@ async function save(device: Device): Promise<void> {
 
 /** Sets the device up with a PIN, or unlocks it on a rerun, then waits for `ready`. */
 async function passGate(page: Page, ready: Locator): Promise<"set up" | "unlocked" | "open"> {
-  const setUp = page.getByRole("heading", { name: "Set up Sats Jar on this device" });
+  const setUp = page.getByRole("heading", { name: "Choose a PIN for this device" });
   const unlock = page.getByRole("heading", { name: "Unlock Sats Jar" });
   await expect(setUp.or(unlock).or(ready).first()).toBeVisible();
   let how: "set up" | "unlocked" | "open" = "open";
   if (await setUp.isVisible()) {
     await page.getByLabel("PIN", { exact: true }).fill(PIN);
     await page.getByLabel("Type it again").fill(PIN);
-    await page.getByRole("button", { name: "Set up" }).click();
+    await page.getByRole("button", { name: "Save my PIN" }).click();
     how = "set up";
   } else if (await unlock.isVisible()) {
     await page.getByLabel("PIN", { exact: true }).fill(PIN);
@@ -96,7 +96,7 @@ test("C1: a giver starts a jar and a guardian joins, through the hosted backend"
     await page.goto("/new");
     const how = await passGate(page, page.getByLabel("Jar nickname"));
     await page.getByLabel("Jar nickname").fill(nickname);
-    await page.getByLabel("2", { exact: true }).check();
+    await page.getByLabel("2 guardians", { exact: true }).check();
     await page.getByRole("button", { name: "Make invite links" }).click();
     await expect(page.getByRole("heading", { name: `${nickname}: invite the guardians` })).toBeVisible();
     links = await page.locator(".invite .mono").allTextContents();
@@ -142,7 +142,7 @@ test("C1: a giver starts a jar and a guardian joins, through the hosted backend"
     const record = page.getByRole("heading", { name: /: public record$/ });
     const noJar = page.getByText("There is no such jar.");
     await expect(record.or(noJar).first()).toBeVisible();
-    await expect(page.getByRole("heading", { name: /^(Unlock Sats Jar|Set up Sats Jar on this device)$/ })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: /^(Unlock Sats Jar|Choose a PIN for this device)$/ })).toHaveCount(0);
     passed(`/proof/1 loads with no sign-in and shows ${(await record.isVisible()) ? "the jar's public record" : '"There is no such jar." read from the chain'}`);
     await context.close();
   });

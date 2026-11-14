@@ -80,5 +80,7 @@
 @media (max-width: 480px) {
   :root {
     --doodle-size: 40px;
+    --logo-size: 34px;
+    --text-brand: 1.55rem;
   }
 }

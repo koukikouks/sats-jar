@@ -90,13 +90,13 @@ async function open(page: Page, path: string, ready: (page: Page) => Locator): P
 }
 
 async function passGate(page: Page, ready: Locator): Promise<void> {
-  const setUp = page.getByRole("heading", { name: "Set up Sats Jar on this device" });
+  const setUp = page.getByRole("heading", { name: "Choose a PIN for this device" });
   const unlock = page.getByRole("heading", { name: "Unlock Sats Jar" });
   await expect(setUp.or(unlock).or(ready).first()).toBeVisible();
   if (await setUp.isVisible()) {
     await page.getByLabel("PIN", { exact: true }).fill(PIN);
     await page.getByLabel("Type it again").fill(PIN);
-    await page.getByRole("button", { name: "Set up" }).click();
+    await page.getByRole("button", { name: "Save my PIN" }).click();
   } else if (await unlock.isVisible()) {
     await page.getByLabel("PIN", { exact: true }).fill(PIN);
     await page.getByRole("button", { name: "Unlock" }).click();
@@ -165,7 +165,7 @@ async function pressUntil(page: Page, button: string, done: Locator): Promise<vo
 async function tryIt(page: Page, button: string): Promise<Locator> {
   const press = page.getByRole("button", { name: button });
   await press.click();
-  const gate = page.getByRole("heading", { name: /^(Unlock Sats Jar|Set up Sats Jar on this device)$/ });
+  const gate = page.getByRole("heading", { name: /^(Unlock Sats Jar|Choose a PIN for this device)$/ });
   const tried = section(page, "Try to break the rule").getByText(/^Refused: /);
   await expect(gate.or(tried).first()).toBeVisible();
   if (await gate.isVisible()) {
@@ -228,11 +228,11 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
     const { page } = giver;
     const home = () => page.getByRole("heading", { name: "Your jars" });
     await page.goto("/");
-    const welcome = page.getByRole("link", { name: "Start a jar" });
+    const welcome = page.getByRole("link", { name: "Make a jar" });
     await expect(welcome.or(page.getByRole("heading", { name: "Unlock Sats Jar" })).first()).toBeVisible();
     if (await page.getByRole("heading", { name: "Sats Jar", exact: true }).isVisible()) {
       await welcome.click();
-      await passGate(page, page.getByRole("heading", { name: "Start a jar" }));
+      await passGate(page, page.getByRole("heading", { name: "Make a jar" }));
       record([1], "a new device is set up with a PIN");
       await saveKeys(giver);
       await page.goto("/");
@@ -289,10 +289,10 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
     ];
     for (const attempt of attempts) {
       await page.getByLabel("Where should the allowance go?").fill(attempt.address ?? CHILD_ADDRESS);
-      await page.getByLabel("Allowance per period (sats)").fill(attempt.cap ?? "2500");
+      await page.getByLabel("Allowance cap (sats each period)").fill(attempt.cap ?? "2500");
       await page.getByLabel("Every 30 days").check();
       await page.getByLabel("Unlock date").fill(attempt.date ?? "2040-05-01");
-      await page.getByRole("button", { name: "Create the jar" }).click();
+      await page.getByRole("button", { name: "Make the jar" }).click();
       const alert = page.getByRole("alert");
       await expect(alert).toContainText(attempt.message);
       record([8], `${attempt.code}: "${(await alert.textContent())?.replace(" Check it yourself ↗", "")}"`, { explorerUrl: await checkIt(alert) });
@@ -305,12 +305,12 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
   await step("[8, 10, 11, 12, 13] the giver creates a demo-timing jar and sees it, empty", async () => {
     const { page } = giver;
     await page.getByLabel("Where should the allowance go?").fill(CHILD_ADDRESS);
-    await page.getByLabel("Allowance per period (sats)").fill("2500");
+    await page.getByLabel("Allowance cap (sats each period)").fill("2500");
     await page.getByLabel("Demo timing: every 10 minutes").check();
     // Unlocks after the emergency payment and the claim steps; the handover delay is 3 minutes.
     await page.getByLabel("Unlocks in (minutes)").fill("8");
     unlockAt = Math.floor(Date.now() / 1000) + 8 * 60;
-    await page.getByRole("button", { name: "Create the jar" }).click();
+    await page.getByRole("button", { name: "Make the jar" }).click();
     await page.waitForURL(/\/jar\/\d+$/);
     jarId = page.url().split("/").at(-1) ?? "";
     await expect(page.getByRole("heading", { name: nickname })).toBeVisible();
