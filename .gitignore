@@ -14,3 +14,6 @@ app/playwright-report/
 *.mp4
 *.webm
 crayon-style-test.png
+
+# The story video the landing page serves (web-sized, about 4.5 MB)
+!app/landing/assets/story/*.mp4
