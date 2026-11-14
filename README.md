@@ -178,27 +178,27 @@ Every row in [Testnet proof](#testnet-proof) opens on NearBlocks or mempool.spac
 
 ## Use it
 
-The app is at [app.satsjar.app](https://app.satsjar.app/new). It costs nothing: the app funds each new account with the NEAR it needs. Topping up needs testnet3 Bitcoin from a faucet in an ordinary testnet wallet.
+The app is at [app.satsjar.app](https://app.satsjar.app/new). It costs nothing: the app funds each new account with the NEAR it needs.
 
-### Make a jar for a child
+### Try it in 30 minutes
 
-1. Open [app.satsjar.app/new](https://app.satsjar.app/new). Under "Choose a PIN for this device", type a 6-digit PIN twice and press **Save my PIN**. Nobody can reset it, so keep it. You see "Make a jar". Coming back later, the same PIN unlocks the app at "Unlock Sats Jar", and a jar still being set up is listed on the home page.
-2. Type a jar nickname, choose 2 or 3 guardians and press **Make invite links**. You see one link per guardian.
-3. To be a guardian yourself, press **Use a link myself**. Send each other link to a guardian.
-4. The guardian opens their link, types a PIN twice and presses **Join as a guardian**. Each link works once. On your page their link shows "Joined" within 10 seconds. To try this alone, open the link in a second browser or browser profile: each one is a separate device.
-5. Once 2 guardians have joined, fill in "The jar's rule". Under "Where should the allowance go?", paste the child's `tb1q…` address from a testnet3 wallet you control. Set "Allowance cap (sats each period)", choose **Demo timing: every 10 minutes**, and the unlock date becomes "Unlocks in (minutes)". Press **Make the jar**.
-6. You see the jar's QR code and address. Send at least 1,000 testnet3 sats to it from your wallet. It counts after 3 confirmations and the keeper's next pass, which runs every 2 minutes; the app says usually within two hours.
-7. Once a top-up counts, the allowance goes to the child's address every period without anyone pressing anything.
+Make a jar, add 2 guardians, set the rules, top it up and hand it over, playing every person yourself. The app shows "Step N of 5" on each screen.
+
+**What you need:** a browser, and a second browser (or your phone) for the beneficiary. No wallet: the app has a demo address for the allowance, and a test Bitcoin faucet can send straight to the jar.
+
+**Each person is a separate browser.** Keys live in the browser, so open guardian 2 in a private window and keep it open until the handover. Private windows share one storage space, so the beneficiary needs a different browser or your phone. Each reload asks for that person's PIN again.
+
+1. **Name your jar.** Open [app.satsjar.app/new](https://app.satsjar.app/new), type a 6-digit PIN twice and press **Save my PIN**. Type a jar nickname, keep **2 guardians** and press **Next: invite guardians**.
+2. **Invite 2 guardians.** Press **Be guardian 1 myself**. Copy guardian 2's link, open it in a private window, type a PIN twice and press **Join as a guardian**. Back in your first window, both links say "Joined" within about 10 seconds.
+3. **Set the rules.** Press **No test wallet? Use our demo address**. Type an allowance cap, for example 2000. Under "How often?" choose **Demo timing: every 10 minutes** ("Every 30 days" is the real-life default). Keep "Unlocks in (minutes)" at 30, which leaves time for the top-up to count first. Press **Make the jar**.
+4. **Top it up.** Copy the jar's address from "Top it up" and send at least 1,000 test sats to it, from a testnet3 wallet or straight from the [coinfaucet.eu testnet faucet](https://coinfaucet.eu/en/btc-testnet/). Wait until "Top-ups" says **Counted**, usually 10 to 30 minutes. The page updates by itself. From then on, the allowance goes to the demo address every 10 minutes with nobody pressing anything.
+5. **Hand it over.** Wait until your top-up says Counted. Under "Handover", press **Copy link** and open it in a different browser or on your phone, as the beneficiary: press **Show my recovery phrase**, then **I've written them down**, type the 3 words it asks for and a PIN, press **Finish**, then **Claim my jar**. Within about 7 minutes, in both guardian windows, press **Check the beneficiary's code**, compare it with the beneficiary's screen and press **It matches: confirm**. After a public 3-minute wait, and once the jar has unlocked, the jar and its Bitcoin move to the beneficiary within about 2 minutes.
 
 ### Try to break a jar's rule, without coins
 
 1. Open jar 1's public record at [app.satsjar.app/proof/1](https://app.satsjar.app/proof/1). No sign-in is needed to read it.
 2. Under "Try to break the rule", press **Spend it without holding it** or **Approve its emergency payment as an outsider**. The first time, choose a PIN when asked, press **Save my PIN**, then press the button again.
 3. You see "Refused:" with the contract's reason, and **Check it yourself ↗** opens the failed transaction on NearBlocks.
-
-### Hand the jar to the child
-
-From the jar page, a guardian or the giver presses **Copy link** under "Handover" and sends the link to the child. On their own phone the child presses **Show my recovery phrase**, writes down the 12 words, presses **I've written them down**, types 3 of them back with a PIN, presses **Finish**, then **Claim my jar**. Each guardian presses **Check the child's code**, compares it with the child's phone in person and presses **It matches: confirm**. After a public delay and the unlock date, the keeper moves the jar's Bitcoin and then the jar to the child.
 
 ## Architecture
 
