@@ -39,10 +39,7 @@ interface ViewJar {
   create_args: { guardians: string[]; nickname: string; unlock_at: string };
   proven_balance: string;
   demo_timing: boolean;
-  locktime: number;
   handover: unknown;
-  emergency: unknown;
-  transfer: unknown;
 }
 
 export function jarReader(deps: { http: typeof fetch; near: Near; contract: string; me: () => Promise<string | null> }) {

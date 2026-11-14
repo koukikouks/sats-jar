@@ -100,9 +100,8 @@ describe("jar status", () => {
     };
     // The next poll, 10 s on: a read under 5 s old would be shared (spec #58).
     const nextPoll = Date.now() + 10_000;
-    vi.spyOn(Date, "now").mockReturnValue(nextPoll);
-    const claimed = await someone.jars.status("1");
-    vi.restoreAllMocks();
+    const clock = vi.spyOn(Date, "now").mockReturnValue(nextPoll);
+    const claimed = await someone.jars.status("1").finally(() => clock.mockRestore());
     expect(claimed.roles).toEqual(["child"]);
     expect(claimed.handover).toMatchObject({ state: "claimed", claimedAt: 1794269000, lapsesAt: 1794269420, confirmations: 1, confirmedByMe: false });
   });
