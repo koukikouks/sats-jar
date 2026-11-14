@@ -1,11 +1,11 @@
 # Sats Jar
 
-A piggy-bank NFT that holds a child's real Bitcoin: anyone can top it up, the child gets a capped allowance each period, and the jar's holder gets full control at the unlock date.
+A piggy-bank NFT that holds a beneficiary's real Bitcoin: anyone can top it up, the beneficiary gets a capped allowance each period, and the jar's holder gets full control at the unlock date.
 
 ## Jar
 
 **Jar**:
-One gift of Bitcoin for one child, with its own rule and its own Bitcoin address. The jar is an NFT.
+One gift of Bitcoin for one beneficiary, with its own rule and its own Bitcoin address. The jar is an NFT.
 _Avoid_: Vault, wallet, account, piggy bank
 
 **Jar address**:
@@ -31,49 +31,49 @@ One of the 2–3 people named when a jar is created, who together can approve an
 _Avoid_: Trustee, cosigner, approver
 
 **Holder**:
-Whoever holds the jar NFT. Until handover that is the family account; from then on it is the child's account, or whoever the child later transfers the jar to.
+Whoever holds the jar NFT. Until handover that is the family account; from then on it is the beneficiary's account, or whoever the beneficiary later transfers the jar to.
 _Avoid_: Owner
 
 **Family account**:
-The account a parent manages that holds a child's jar until handover.
+The account a parent manages that holds a beneficiary's jar until handover.
 _Avoid_: Parent wallet, custodial account
 
-**Child's account**:
-The account the child sets up on their own phone, whose only key is on that phone; nobody else, the app included, can use or recover it.
-_Avoid_: Child wallet, sub-account
+**Beneficiary's account**:
+The account the beneficiary sets up on their own phone, whose only key is on that phone; nobody else, the app included, can use or recover it.
+_Avoid_: Child's account, child wallet, sub-account
 
 **Recovery phrase**:
-The words the child saves when setting up their account, the only way to restore it without their phone.
+The words the beneficiary saves when setting up their account, the only way to restore it without their phone.
 _Avoid_: Seed, mnemonic, backup code
 
 **Handover**:
-The moment from the unlock date on when, after the guardians confirm the child's account and a public delay passes, the jar moves from the family account to the child's account and its Bitcoin moves to an address that only the child's recovery phrase can recover. Every adult's access ends there.
+The moment from the unlock date on when, after the guardians confirm the beneficiary's account and a public delay passes, the jar moves from the family account to the beneficiary's account and its Bitcoin moves to an address that only the beneficiary's recovery phrase can recover. Every adult's access ends there.
 _Avoid_: Coming of age, graduation, release
 
 **Handover code**:
-The digits a child's phone shows after claiming a jar, which each guardian compares in person with the same code read from the chain before confirming the handover.
+The digits a beneficiary's phone shows after claiming a jar, which each guardian compares in person with the same code read from the chain before confirming the handover.
 _Avoid_: Guardian code, PIN, verification code
 
 **Receive code**:
 What a new holder's phone gives the person handing them a jar, so the transfer can only go to keys made on that phone.
 _Avoid_: Address, invite code
 
-**Child**:
+**Beneficiary**:
 The person the jar is for.
-_Avoid_: Beneficiary, recipient, kid
+_Avoid_: Child, recipient, kid
 
-**Child's address**:
-The one Bitcoin address a parent registers for the child, the only place the jar can pay before handover.
-_Avoid_: Payout address, destination
+**Beneficiary's address**:
+The one Bitcoin address a parent registers for the beneficiary, the only place the jar can pay before handover.
+_Avoid_: Child's address, payout address, destination
 
 ## Payments
 
 **Allowance**:
-A payment to the child's address of at most the cap in one period.
+A payment to the beneficiary's address of at most the cap in one period.
 _Avoid_: Withdrawal, drip, payout
 
 **Cap**:
-The most the child's address may receive as allowance in one period.
+The most the beneficiary's address may receive as allowance in one period.
 _Avoid_: Limit, max
 
 **Period**:
@@ -85,7 +85,7 @@ The most a jar may spend on Bitcoin fees for allowances in one period: 10% of th
 _Avoid_: Fee cap, gas budget
 
 **Emergency payment**:
-A capped extra payment to the child's address before unlock that more than one guardian approves and that waits out a public delay during which it can be cancelled.
+A capped extra payment to the beneficiary's address before unlock that more than one guardian approves and that waits out a public delay during which it can be cancelled.
 _Avoid_: Override, early withdrawal
 
 **Unlock date**:
@@ -93,7 +93,7 @@ The earliest date the jar can be handed over. The rule keeps running until hando
 _Avoid_: Maturity, release date, 18th birthday
 
 **Carry-over**:
-Allowance the child did not receive in a period, still available later, with at most three periods' allowance waiting at once.
+Allowance the beneficiary did not receive in a period, still available later, with at most three periods' allowance waiting at once.
 _Avoid_: Rollover, backlog
 
 **Re-homing**:
@@ -105,7 +105,7 @@ A top-up sent to an address the jar has already moved away from. It still counts
 _Avoid_: Orphan, lost deposit
 
 **Bitcoin-only exit**:
-The way to take a jar's coins out with Bitcoin alone, open only two years after the unlock date (or, once re-homed, two years after the move), for when NEAR's signing network has stopped. Before handover it goes to the child's address; after, to the child's recovery phrase.
+The way to take a jar's coins out with Bitcoin alone, open only two years after the unlock date (or, once re-homed, two years after the move), for when NEAR's signing network has stopped. Before handover it goes to the beneficiary's address; after, to the beneficiary's recovery phrase.
 _Avoid_: Recovery, escape hatch, fallback
 
 ## Proof
