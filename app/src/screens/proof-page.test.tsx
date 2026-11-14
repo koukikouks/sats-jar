@@ -119,6 +119,17 @@ describe("the public record", () => {
     expect(await within(topUp).findByAltText("QR code of the jar's Bitcoin address")).toBeTruthy();
   });
 
+  it("shows the same 4 top-up steps as the jar page, without the giver's step", async () => {
+    renderApp("/proof/7", record(jar()));
+    const topUp = (await screen.findByRole("heading", { name: "Top it up" })).closest("section")!;
+    expect(within(topUp).getAllByRole("listitem")).toHaveLength(4);
+    expect(within(topUp).getByRole("link", { name: /faucet/ }).getAttribute("href")).toBe("https://coinfaucet.eu/en/btc-testnet/");
+    expect(within(topUp).getByText(/Under 1,000 sats doesn't count/)).toBeTruthy();
+    expect(within(topUp).getByText(/usually 10–30 minutes/)).toBeTruthy();
+    expect(screen.queryByText(/Step 4 of 5/)).toBeNull();
+    expect(document.body.textContent).not.toMatch(/two hours/);
+  });
+
   it("lists the jar's requests oldest first, naming each sender by role and never by account", async () => {
     const requests = [
       tx({ hash: "A", method: "create_jar", signer: "ruth-1.sats-jar-dev-2.testnet" }),

@@ -285,6 +285,28 @@ fieldset.field {
 .check-it {
   font-size: var(--text-small);
 }
+.warning {
+  background: var(--waiting-tint);
+  border-radius: var(--radius-wobble);
+  padding: var(--space-2) var(--space-3);
+}
+
+/* ───────── the top-up box's steps and the folded-away More ───────── */
+.top-up-steps {
+  padding-left: var(--space-5);
+}
+.top-up-steps > li + li {
+  margin-top: var(--space-3);
+}
+.top-up-steps .qr {
+  margin-top: var(--space-3);
+}
+.more > summary {
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin-bottom: var(--space-8);
+}
 
 /* ───────── lists and cards ───────── */
 .plain {

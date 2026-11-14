@@ -32,6 +32,7 @@ function FamilyPage() {
   const proofLink = `/proof/${jarId}`;
   // Privacy, not security: the chain data behind this page is public (story 60).
   if (jar.roles.length === 0) return <NotFamily jarId={jarId} mayHaveClaimed={jar.handover.state === "none"} />;
+  const beneficiary = jar.roles.includes("child");
   return (
     <>
       <section className="panel jar-head">
@@ -44,13 +45,19 @@ function FamilyPage() {
           <Link to={proofLink}>See the public record</Link>
         </div>
       </section>
-      <TopUpBox address={jar.address} qrPayload={jar.qrPayload} />
+      {/* The beneficiary came for the handover, so it comes first for them (story 21). */}
+      {beneficiary && <HandoverSection jar={jar} />}
+      <TopUpBox address={jar.address} qrPayload={jar.qrPayload} journeyStep={jar.roles.includes("giver")} />
       <TopUpsSection jarId={jarId} />
       <AllowanceSection jar={jar} />
-      <EmergencySection jar={jar} />
-      <HandoverSection jar={jar} />
+      {!beneficiary && <HandoverSection jar={jar} />}
       <HolderSection jar={jar} />
-      <ExitSection jar={jar} />
+      {/* Off the happy path, so folded away; open while an emergency payment is live, so a guardian asked to approve sees it (story 22). */}
+      <details className="more" open={jar.emergency.state === "open"}>
+        <summary>More: emergency payment and the Bitcoin-only exit</summary>
+        <EmergencySection jar={jar} />
+        <ExitSection jar={jar} />
+      </details>
     </>
   );
 }

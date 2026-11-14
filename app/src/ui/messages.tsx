@@ -26,6 +26,18 @@ export function CheckIt(props: { url: string | null | undefined }) {
   );
 }
 
+/**
+ * Before a handover of a jar with 0 sats: the beneficiary would get an empty jar. A warning, not a
+ * block: the contract allows it and an empty jar may be intended (stories 18, 19).
+ */
+export function EmptyJarWarning(props: { who: "the beneficiary" | "you"; before: "confirm" | "claim" }) {
+  return (
+    <p className="warning">
+      The jar has 0 sats, so {props.who} would get an empty jar. Wait for a top-up to say Counted before you {props.before}.
+    </p>
+  );
+}
+
 /** Shown while a read of the chain is under way, so a slow answer never looks like an empty jar (finding 20). */
 export function Reading() {
   return (

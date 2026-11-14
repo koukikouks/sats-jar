@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router";
 import { useSdk } from "../services.tsx";
 import { useDevice } from "../ui/device.ts";
-import { Refusal } from "../ui/messages.tsx";
+import { EmptyJarWarning, Refusal } from "../ui/messages.tsx";
 import { PinGate } from "../ui/PinGate.tsx";
 import { RecoveryPhraseSetUp } from "../ui/RecoveryPhraseSetUp.tsx";
 
@@ -61,6 +61,7 @@ function Claim() {
       <p>Your guardians will check this code on your phone, in person:</p>
       <p className="code">{code.data}</p>
       <p>{NOBODY_CAN_RECOVER}</p>
+      {jar.data.balance === 0 && <EmptyJarWarning who="you" before="claim" />}
       <Refusal error={claim.error} />
       <button type="button" disabled={claim.isPending} onClick={() => claim.mutate()}>
         Claim my jar
