@@ -22,6 +22,9 @@ export interface JarView {
   demo_timing: boolean;
   clock: { started_at: string | null };
   handover: unknown;
+  /** Builds before emergency payments and transfers (the T06 dev contract) leave these out. */
+  emergency?: unknown;
+  transfer?: unknown;
   proven_balance: string;
   available_allowance: string;
   fee_budget_left: string;
@@ -124,6 +127,10 @@ export interface JarProof {
   clockStartedAt: number | null;
   /** `"none"`, or the contract's handover record as it reads it. */
   handover: unknown;
+  /** The open emergency proposal, or null, as the contract reads it. */
+  emergency: unknown;
+  /** The holder's transfer in progress, or null, as the contract reads it. */
+  transfer: unknown;
   nft: { title: string; description: string; media: string };
   coins: Coin[];
   payments: Payment[];
@@ -161,6 +168,8 @@ export function toJarProof(
     nextAllowanceAt: view.next_allowance_at === null ? null : Number(view.next_allowance_at),
     clockStartedAt: view.clock.started_at === null ? null : Number(view.clock.started_at),
     handover: view.handover,
+    emergency: view.emergency ?? null,
+    transfer: view.transfer ?? null,
     nft: { title: token.metadata.title, description: token.metadata.description, media: token.metadata.media },
     coins: coins.map((c) => ({
       txid: c.txid,
