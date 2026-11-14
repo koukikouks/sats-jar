@@ -32,9 +32,9 @@ long, regenerate it rather than speeding it up.
 |-------|-------------|-----------------------|
 | 0:00 | "Draw my life (and my jar)" | `[Warm, intimate narration] This is my life... and my jar.` |
 | 0:03 | **Day 1.** Grandpa holds the baby, tosses a coin into a new jar. "This one's for later." | `The day I was born, Grandpa made me a jar. One coin... [softly] "This one's for later."` |
-| 0:09 | **The rules**, on a note tied to the jar. | `Then he set the rules. A little each month. All of it at eighteen. And NOBODY can change them... [gentle amusement] not even him.` |
+| 0:09 | **The rule**, on a note tied to the jar. | `Then he set the rule. A little each month. All of it at eighteen. And NOBODY can change it... [gentle amusement] not even him.` |
 | 0:17 | **Ages 1, 5, 7:** first steps, first day of school, a lost tooth. Aunt, Mum and Mr. Lee drop coins in. | `First steps. First day of school. First lost tooth. Every big moment — someone dropped a coin in.` |
-| 0:25 | **Age 9.** Dad at a table of bills; the jar on a shelf, stamped RULES SAY NO. | `[Quiet, reflective narration] When money got tight... the rules said no. Nobody could touch it.` |
+| 0:25 | **Age 9.** Dad at a table of bills; the jar on a shelf, stamped THE RULE SAYS NO. | `[Quiet, reflective narration] When money got tight... the rule said no. Nobody could touch it.` |
 | 0:30 | **Age 12.** "Your monthly gift arrived!" A sketchbook: "Draw my life". | `[Brighter] At twelve, my monthly gift bought THIS sketchbook.` |
 | 0:34 | **Age 16.** Grandpa at Sunny Days Care Home, phone up; a coin arcs to her birthday jar. | `Grandpa moved into a care home. But every birthday... a coin still arrived.` |
 | 0:40 | **Age 18.** "The jar is yours now." The jar fills to the brim and heaps over the top. | `At eighteen, the jar became mine. Every coin, from everyone who loved me. [Gentle pause, then quiet realization] And Grandpa's first one... right at the bottom.` |
@@ -49,11 +49,11 @@ If you'd rather generate it in one go and cut it apart in the edit, paste this:
 
 The day I was born, Grandpa made me a jar. One coin... [softly] "This one's for later."
 
-Then he set the rules. A little each month. All of it at eighteen. And NOBODY can change them... [gentle amusement] not even him.
+Then he set the rule. A little each month. All of it at eighteen. And NOBODY can change it... [gentle amusement] not even him.
 
 First steps. First day of school. First lost tooth. Every big moment — someone dropped a coin in.
 
-[Quiet, reflective narration] When money got tight... the rules said no. Nobody could touch it.
+[Quiet, reflective narration] When money got tight... the rule said no. Nobody could touch it.
 
 [Brighter] At twelve, my monthly gift bought THIS sketchbook.
 
@@ -81,11 +81,12 @@ speed up or glitch.
 
 ## What it claims, checked against the product
 
-- **The rules, set once:** the giver sets the cap, the unlock date, the child's address and the
-  guardians when making the jar, and nobody can change them afterwards (glossary: Rule; ADR 0005).
+- **One rule, set once:** each jar has one rule. The giver sets its parts when making the jar (the
+  cap, the unlock date, the beneficiary's address and the guardians), and nobody can change it
+  afterwards (glossary: Rule; ADR 0005).
 - **A little each month:** the allowance, up to the cap once per 30-day period, paid only to the
-  child's address, which a parent registers.
-- **Dad couldn't touch it:** before handover the jar can only pay the child's address, capped. The
+  beneficiary's address, which a parent registers.
+- **Dad couldn't touch it:** before handover the jar can only pay the beneficiary's address, capped. The
   refusal is kept on the record.
 - **All of it at eighteen:** handover, on or after the unlock date, once the guardians confirm her
   own account and a public delay passes. The film shows it as one moment.

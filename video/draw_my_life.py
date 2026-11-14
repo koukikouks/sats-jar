@@ -24,7 +24,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "..", "app", "art-src"))
 import make_story as S  # noqa: E402  (Frame, crayon helpers, props)
-import make_art as M  # noqa: E402
+import story_art as M  # noqa: E402
 from crayon_lib import brk_line, ring, hatch_poly, quad, rad, rrect, path  # noqa: E402
 
 W, H = S.W, S.H
@@ -243,20 +243,20 @@ def s1():
 
 def s2():
     sc = Scene("rules")
-    sc.say("Then he set the rules.", 0.15)
+    sc.say("Then he set the rule.", 0.15)
     jar(sc, 560, 990, 1.3, 1)
     card = (1000, 160, 1840, 940)
     sc.raw(f'<path d="{S.rect_d(*card, 18)}" fill="#ffffff"/>')
     pts = rrect(*card, 18)
     sc._add("art", brk_line(pts + [pts[0]], INK, 9, 2, amp=2.2, dense=8, seg=(10, 22)), mode="tb")
     sc._add("art", brk_line(quad((700, 420), (860, 330), (1000, 300), 16), BROWN, 7, 2, amp=1.2), mode="lr")
-    sc.text(1420, 300, "THE RULES", size=92, fill=RED[2])
+    sc.text(1420, 300, "THE RULE", size=92, fill=RED[2])
     underline(sc, 1180, 1660, 330, RED, 12)
     sc.say("A little each month. [[slnc 100]] All of it at eighteen.", 0.15)
     sc.text(1060, 440, "1. A little each month.", size=54, anchor="start")
     sc.text(1060, 550, "2. All of it at 18.", size=54, anchor="start")
-    sc.say("And nobody can change them. [[slnc 150]] Not even him.", 0.4)
-    sc.text(1060, 660, "3. Nobody can change these.", size=54, anchor="start")
+    sc.say("And nobody can change it. [[slnc 150]] Not even him.", 0.4)
+    sc.text(1060, 660, "3. Nobody can change it.", size=54, anchor="start")
     sc.text(1060, 760, "Not even me.", size=54, anchor="start")
     sc.text(1560, 870, "- Grandpa", size=52, fill=BLUE[2])
     return sc
@@ -309,8 +309,8 @@ def s4():
     sc.text(615, 727, "BILL", size=26, fill=RED[2])
     sc._add("art", brk_line([(1300, 700), (1800, 696)], BROWN, 12, 2, amp=1.2), mode="lr")
     jar(sc, 1550, 696, .7, 4)
-    sc.say("the rules said no. [[slnc 120]] Nobody could touch it.", 0.5)
-    stamp(sc, 1550, 400, 520, 190, ["RULES", "SAY NO"], rot=-8)
+    sc.say("the rule said no. [[slnc 120]] Nobody could touch it.", 0.5)
+    stamp(sc, 1550, 400, 520, 190, ["THE RULE", "SAYS NO"], rot=-8)
     return sc
 
 

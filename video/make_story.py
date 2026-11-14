@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "app", "art-src"))
-import make_art as M  # noqa: E402  (stick figures, jar, coins)
+import story_art as M  # noqa: E402  (stick figures, jar, coins)
 from crayon_lib import *  # noqa: E402,F401,F403
 
 W, H = 1920, 1080
