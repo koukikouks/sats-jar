@@ -2,3 +2,10 @@
 project-brief.md
 .env
 docs/plans/
+
+# Rendered media: too big for git (some are over GitHub's 100 MB limit). Keep sources, not renders.
+.DS_Store
+*.mov
+*.mp4
+*.webm
+crayon-style-test.png
