@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import { useSdk } from "../services.tsx";
 import { DemoBadge } from "../ui/DemoBadge.tsx";
 import { useDevice } from "../ui/device.ts";
+import { JarPicture } from "../ui/JarPicture.tsx";
 import { roleLine, sats } from "../ui/format.ts";
 import { Refusal } from "../ui/messages.tsx";
 import { PinGate } from "../ui/PinGate.tsx";
@@ -81,7 +82,7 @@ function JarCard(props: { jar: JarSummary }) {
   return (
     <li className="card">
       <Link to={`/jar/${jar.jarId}`}>
-        <img className="picture" src={jar.picture} alt="" />
+        <JarPicture className="picture" nickname={jar.nickname} balance={jar.balance} />
         <span className="card-title">{jar.nickname}</span>
       </Link>
       <DemoBadge demoTiming={jar.demoTiming} />

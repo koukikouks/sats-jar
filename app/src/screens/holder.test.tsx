@@ -169,7 +169,7 @@ describe("accepting a transfer", () => {
     });
     await user.click(await screen.findByRole("button", { name: "Accept the jar" }));
     await user.click(await screen.findByRole("link", { name: "Sats Jar, home" }));
-    const card = (await screen.findByText("Sunny's jar")).closest("li")!;
+    const card = (await screen.findByRole("img", { name: "Picture of Sunny's jar" })).closest("li")!;
     expect(within(card).getByText("You hold this jar")).toBeTruthy();
     expect(sdk.jars.mine).toHaveBeenCalled();
   });

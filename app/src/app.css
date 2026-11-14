@@ -329,6 +329,18 @@ fieldset.field {
   height: var(--picture-size);
   flex: none;
 }
+.jar-picture {
+  display: block;
+  width: var(--jar-picture-size);
+  max-width: 100%;
+  height: auto;
+}
+.jar-figure {
+  flex: none;
+  width: var(--jar-picture-size);
+  max-width: 100%;
+  margin: 0;
+}
 .qr {
   display: block;
   width: var(--qr-size);

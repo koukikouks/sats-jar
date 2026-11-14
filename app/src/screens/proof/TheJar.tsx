@@ -1,6 +1,7 @@
 import type { JarProof } from "@sats-jar/proof";
 import { contractExplorerUrl } from "../../config.ts";
 import { day, period, sats, when } from "../../ui/format.ts";
+import { JarPicture } from "../../ui/JarPicture.tsx";
 
 /** The jar's picture and settings as the contract reads them (story 38). */
 export function TheJar(props: { jar: JarProof }) {
@@ -8,7 +9,15 @@ export function TheJar(props: { jar: JarProof }) {
   return (
     <section className="panel">
       <h2>The jar</h2>
-      <img className="picture" src={jar.nft.media} alt={`Picture of ${jar.nickname}`} />
+      <JarPicture
+        className="jar-picture"
+        nickname={jar.nickname}
+        balance={jar.provenBalance}
+        cap={jar.cap}
+        unlockAt={jar.unlockAt}
+        nextAllowanceAt={jar.nextAllowanceAt}
+        demoTiming={jar.demoTiming}
+      />
       <ul className="plain">
         <li>Balance: {sats(jar.provenBalance)}</li>
         <li>
