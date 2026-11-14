@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sats Jar: set your loved one up for life</title>
-  <meta name="description" content="A piggy bank for a child's Bitcoin. Anyone can top it up, the child gets a small allowance, and on the day you choose the whole jar becomes theirs. Testnet demo.">
+  <meta name="description" content="A piggy bank for a beneficiary's Bitcoin. Anyone can top it up, the beneficiary gets a small allowance, and on the day you choose the whole jar becomes theirs. Testnet demo.">
   <link rel="icon" href="favicon.ico" sizes="48x48">
   <link rel="icon" href="assets/favicon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -14,7 +14,7 @@
   <meta property="og:site_name" content="Sats Jar">
   <meta property="og:url" content="https://satsjar.app/">
   <meta property="og:title" content="Sats Jar: set your loved one up for life">
-  <meta property="og:description" content="A piggy bank for a child's Bitcoin. Anyone can top it up, the child gets a small allowance, and on the day you choose the whole jar becomes theirs. Testnet demo.">
+  <meta property="og:description" content="A piggy bank for a beneficiary's Bitcoin. Anyone can top it up, the beneficiary gets a small allowance, and on the day you choose the whole jar becomes theirs. Testnet demo.">
   <meta property="og:image" content="https://satsjar.app/assets/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -30,11 +30,11 @@
 
   <header class="nav">
     <a class="logo" href="#top" aria-label="Sats Jar, home">
-      <img src="assets/coin-2.png" alt="" width="44" height="44">
-      <span class="grainy">Sats Jar</span>
+      <img src="assets/logo.png" alt="" width="131" height="48">
     </a>
     <nav aria-label="Main">
       <a href="#how">How it works</a>
+      <a href="#roadmap">Roadmap</a>
       <a href="#trust">What you're trusting</a>
       <a href="#proof">Check it yourself</a>
     </nav>
@@ -48,7 +48,7 @@
       <img class="doodle d-dots" src="assets/doodle-dots.png" alt="" width="60" height="50">
 
       <div class="hero-copy">
-        <p class="kicker">A piggy bank for a child's Bitcoin</p>
+        <p class="kicker">A piggy bank for a beneficiary's Bitcoin</p>
 
         <!-- The rotating word is decoration for sighted users; screen readers get the whole sentence. -->
         <h1 aria-label="Set your loved one up for life">
@@ -60,7 +60,7 @@
           <span class="line grainy" aria-hidden="true">up for life.</span>
         </h1>
 
-        <p class="lede">Put Bitcoin in a jar for a child you love. Anyone can top it up, the child gets a small allowance on a schedule, and on the day you choose the whole jar becomes theirs.</p>
+        <p class="lede">Put Bitcoin in a jar for someone you love, the beneficiary. Anyone can top it up, the beneficiary gets a small allowance on a schedule, and on the day you choose the whole jar becomes theirs.</p>
 
         <div class="cta">
           <a class="btn btn-primary" href="https://app.satsjar.app/new" data-app-link>Make a jar</a>
@@ -106,7 +106,7 @@
         <li class="step step-1">
           <img class="step-art" src="assets/step-1.png" alt="" width="260" height="220" loading="lazy">
           <h3 class="grainy"><span class="num">1</span> Make a jar</h3>
-          <p>Pick the child, how much they can get each period, and the day the jar becomes theirs. Name two or three guardians for emergencies.</p>
+          <p>Pick the beneficiary, how much they can get each period, and the day the jar becomes theirs. Name two or three guardians for emergencies.</p>
         </li>
         <li class="step step-2">
           <img class="step-art" src="assets/step-2.png" alt="" width="260" height="220" loading="lazy">
@@ -116,9 +116,40 @@
         <li class="step step-3">
           <img class="step-art" src="assets/step-3.png" alt="" width="260" height="220" loading="lazy">
           <h3 class="grainy"><span class="num">3</span> A little at a time, then all of it</h3>
-          <p>The child gets a capped allowance each period. On the unlock date the jar, and the Bitcoin in it, moves to the child's own account. Every adult's access ends there.</p>
+          <p>The beneficiary gets a capped allowance each period. On the unlock date the jar, and the Bitcoin in it, moves to the beneficiary's own account. Every adult's access ends there.</p>
         </li>
       </ol>
+    </section>
+
+    <!-- ───────────── Roadmap: a kid's dotted treasure map. Planned features only; none of it exists yet. ───────────── -->
+    <section class="section" id="roadmap" aria-labelledby="roadmap-h">
+      <h2 class="grainy" id="roadmap-h">Where the map goes next</h2>
+      <p class="section-lede">Not built yet. This is where we want to take the jar, and you can tell us where to go.</p>
+      <div class="road">
+        <svg class="road-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <path d="M16 82 C 26 30, 38 98, 50 50 C 62 4, 74 70, 84 18" />
+        </svg>
+        <ol class="road-stops">
+          <li class="stop stop-now">
+            <span class="pin" aria-hidden="true"><img src="assets/logo-mark.png" alt="" width="40" height="40"></span>
+            <h3 class="grainy">You are here</h3>
+            <p>Make a jar, top it up, a capped allowance, handover. Live on testnet.</p>
+          </li>
+          <li class="stop stop-yield">
+            <span class="pin pin-text" aria-hidden="true">%</span>
+            <h3 class="grainy">Yield <span class="soon">Planned</span></h3>
+            <p>Whatever goes into a jar will earn yield while it waits. The rate isn't set yet.</p>
+          </li>
+          <li class="stop stop-end">
+            <a class="pin pin-flag" href="https://github.com/koukikouks/sats-jar/issues/new?title=Roadmap%20idea%3A%20" aria-label="Suggest a feature">
+              <svg viewBox="0 0 40 40" width="24" height="24" aria-hidden="true"><path d="M10 35V6M10 8c8-4 12 4 20 0v14c-8 4-12-4-20 0" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <h3 class="grainy">What should we add?</h3>
+            <p>Tell us what you'd want on this map.</p>
+            <a class="btn btn-ghost btn-small" href="https://github.com/koukikouks/sats-jar/issues/new?title=Roadmap%20idea%3A%20">Suggest a feature</a>
+          </li>
+        </ol>
+      </div>
     </section>
 
     <!-- ───────────── What you are trusting ─────────────
@@ -130,7 +161,7 @@
         <div class="trust-col">
           <h3 class="grainy">You can check</h3>
           <ul>
-            <li>The rule: each jar can only pay a capped allowance to the child's address, or an emergency payment that guardians approve and that waits out a public delay.</li>
+            <li>The rule: each jar can only pay a capped allowance to the beneficiary's address, or an emergency payment that guardians approve and that waits out a public delay.</li>
             <li>Every top-up and every payment, with links to the public records.</li>
             <li>Every attempt the rule refused, and why.</li>
           </ul>
@@ -141,7 +172,7 @@
             <li>NEAR's signing network, which signs a jar's Bitcoin payments once the rule says yes.</li>
             <li>A Bitcoin light client, which tells the jar that a top-up really happened. It has a few named admins and one relayer.</li>
             <li>Our helper accounts. They pay fees and start scheduled payments. They cannot move coins outside the rule.</li>
-            <li>The child's login. After handover, whoever holds it holds the jar, so the child saves a recovery phrase.</li>
+            <li>The beneficiary's login. After handover, whoever holds it holds the jar, so the beneficiary saves a recovery phrase.</li>
           </ul>
         </div>
       </div>

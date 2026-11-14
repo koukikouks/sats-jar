@@ -34,7 +34,7 @@ a { color: inherit; }
 /* ───────── nav ───────── */
 .nav { max-width: var(--wrap); margin: 0 auto; padding: 1.1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .logo { display: inline-flex; align-items: center; gap: .55rem; text-decoration: none; font-family: var(--hand); font-size: 1.9rem; line-height: 1; }
-.logo img { width: 44px; height: 44px; transform: rotate(-8deg); }
+.logo img { width: auto; height: 48px; }
 .nav nav { display: flex; gap: 1.4rem; font-weight: 500; font-size: .98rem; }
 .nav nav a { text-decoration: none; padding: .25rem 0; background: linear-gradient(var(--yellow), var(--yellow)) 0 100% / 0 .4em no-repeat; transition: background-size .2s; }
 .nav nav a:hover { background-size: 100% .4em; }
@@ -130,6 +130,29 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
 .testnet-note { max-width: 40rem; }
 .footer a { font-weight: 500; }
 
+/* ───────── roadmap: a dotted treasure-map path through three stops, left to right at every width.
+   The pins sit in a band of height --band at heights along the path; the text lines up below it. ───────── */
+.road { --band: 190px; --pin: 56px; position: relative; margin-top: 1rem; }
+.road-line { position: absolute; left: 0; right: 0; top: 0; height: var(--band); width: 100%; overflow: visible; pointer-events: none; }
+.road-line path { fill: none; stroke: var(--blue); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 0.1 14; vector-effect: non-scaling-stroke; }
+.road-stops { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; position: relative; }
+.stop { position: relative; padding-top: calc(var(--band) + .9rem); text-align: center; }
+.pin { position: absolute; left: 50%; top: calc(var(--y) * var(--band) - var(--pin) / 2); transform: translateX(-50%); display: grid; place-items: center; width: var(--pin); height: var(--pin); border-radius: 50% 46% 52% 48%; background: #fff; border: 3px solid var(--ink); color: var(--ink); text-decoration: none; transition: transform .16s ease; }
+.stop-now { --y: .82; }
+.stop-yield { --y: .5; }
+.stop-end { --y: .18; }
+.pin img { width: 70%; height: 70%; }
+.pin-text { font: 400 1.7rem/1 var(--hand); color: var(--orange); border-color: var(--orange); }
+.pin-flag { background: var(--ink); color: #fff; box-shadow: 4px 4px 0 var(--orange); }
+.pin-flag:active { transform: translateX(-50%) scale(.94); }
+.stop h3 { font-family: var(--hand); font-weight: 400; font-size: 1.75rem; line-height: 1.1; margin: 0 0 .4rem; }
+.stop p { margin: 0 auto .9rem; max-width: 17rem; }
+.soon { display: inline-block; vertical-align: middle; margin-left: .2rem; padding: .2rem .55rem .15rem; font: 700 .7rem/1 var(--body); text-transform: uppercase; letter-spacing: .05em; color: var(--ink); background: url("assets/swatch-yellow.png") center / 100% 100% no-repeat; }
+.btn-small { font-size: .95rem; padding: .75rem 1.1rem; }
+@media (hover: hover) and (pointer: fine) {
+  .pin-flag:hover { transform: translateX(-50%) scale(1.08) rotate(-6deg); }
+}
+
 /* ───────── small screens ───────── */
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; padding-top: .5rem; }
@@ -148,6 +171,15 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
   .d-star, .d-dots { display: none; }
   .swatch-lilac { display: none; }
 }
+@media (max-width: 600px) {
+  /* the map stays left to right; the band, pins and text shrink to fit three columns */
+  .road { --band: 130px; --pin: 44px; }
+  .road-stops { gap: .6rem; }
+  .stop h3 { font-size: 1.3rem; }
+  .stop p { font-size: .85rem; line-height: 1.4; }
+  .soon { display: block; width: max-content; margin: .3rem auto 0; }
+  .btn-small { font-size: .8rem; padding: .6rem .5rem; }
+}
 @media (max-width: 480px) {
   .btn { width: 100%; text-align: center; }
   .doodle.d-spiral { display: none; }
@@ -155,6 +187,6 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  h1 .role-word, .btn, .roles button { transition: none; }
+  h1 .role-word, .btn, .roles button, .pin { transition: none; }
   .card.is-popping { animation: none; }
 }
