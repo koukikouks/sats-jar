@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What you're trusting | Sats Jar</title>
+  <meta name="description" content="What you can check yourself about a Sats Jar, and what you are relying on: NEAR's signing network, a Bitcoin light client, our helper accounts and the beneficiary's login.">
+  <link rel="icon" href="assets/favicon.ico" sizes="48x48">
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="canonical" href="https://satsjar.app/trust">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Sats Jar">
+  <meta property="og:url" content="https://satsjar.app/trust">
+  <meta property="og:title" content="What you're trusting">
+  <meta property="og:description" content="What you can check yourself about a Sats Jar, and what you are relying on: NEAR's signing network, a Bitcoin light client, our helper accounts and the beneficiary's login.">
+  <meta property="og:image" content="https://satsjar.app/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Set your loved one up for life: a crayon jar of Bitcoin coins beside a stick figure.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="landing.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav">
+    <a class="logo" href="./" aria-label="Sats Jar, home">
+      <img class="logo-mark" src="assets/logo-mark.png" alt="" width="44" height="44">
+      <!-- The README logo's wordmark: "sats jar" with the j dotted by a coin (a dotless j plus the coin). -->
+      <span class="wordmark grainy" aria-hidden="true">sats <span class="j">&#x237;<img src="assets/coin-2.png" alt="" width="16" height="16"></span>ar</span>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="./#how">How it works</a>
+      <a href="story.html">The story</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="trust.html" aria-current="page">What you're trusting</a>
+      <a class="nav-cta" href="https://app.satsjar.app/new">Make a jar</a>
+    </nav>
+    <!-- Phones: the same links behind a Menu button (nav.js closes it after a pick) -->
+    <details class="menu" data-menu>
+      <summary>Menu</summary>
+      <nav class="menu-panel" aria-label="Main">
+        <a href="./#how">How it works</a>
+        <a href="story.html">The story</a>
+        <a href="roadmap.html">Roadmap</a>
+        <a href="trust.html" aria-current="page">What you're trusting</a>
+        <a href="https://app.satsjar.app/proof/1">Check it yourself</a>
+        <a class="nav-cta" href="https://app.satsjar.app/new">Make a jar</a>
+      </nav>
+    </details>
+  </header>
+
+  <main id="main">
+    <section class="section page" id="trust">
+      <p class="kicker">What you're trusting</p>
+      <h1 class="page-title grainy">Who and what a jar relies on</h1>
+      <p class="section-lede">Sats Jar hides the plumbing, not the trust. Here is what you can check yourself, and what you are relying on.</p>
+      <div class="trust-grid">
+        <div class="trust-col">
+          <h3 class="grainy">You can check</h3>
+          <ul>
+            <li>The jar contract has no keys, so nobody can change it, the team included, and its code matches the open-source code on GitHub.</li>
+            <li>The rule: before handover a jar can only pay the beneficiary's address, either a capped allowance or a capped emergency payment that guardians approve and that waits out a public delay, during which it can be cancelled.</li>
+            <li>Every top-up and every payment, with links to the public records.</li>
+            <li>Every attempt the rule refused, and why.</li>
+          </ul>
+        </div>
+        <div class="trust-col trust-col-2">
+          <h3 class="grainy">You're trusting</h3>
+          <ul>
+            <li><strong>NEAR's signing network</strong>, which signs a jar's Bitcoin payments once the rule says yes. Its committee can change, and its contract can be upgraded through NEAR's own process. If it ever stopped for good, the coins could still leave through a Bitcoin-only exit that opens two years after the unlock date (or after the coins moved at handover) and pays the beneficiary's key on Bitcoin alone.</li>
+            <li><strong>NEAR's Bitcoin light client</strong>, which tells the jar a top-up really happened. It has one full-access key, three pause managers and one relayer.</li>
+            <li><strong>Our helper accounts.</strong> One pays each new account's NEAR fees and has no role in any jar. The other proves top-ups, asks for allowances and moves coins at handover, and can only do what anyone may do.</li>
+            <li><strong>A parent</strong>, who controls the beneficiary's address until handover.</li>
+            <li><strong>The guardians, at handover.</strong> If two of them colluded, they could confirm an account they control as the beneficiary's.</li>
+            <li><strong>The app's code in the browser.</strong> The beneficiary's keys are made on their phone by the app, so "nobody else can use them" holds only if the app serves this open-source code.</li>
+            <li><strong>The beneficiary's login.</strong> After handover, whoever holds it holds the jar, so the beneficiary saves a recovery phrase.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="cta page-cta">
+        <a class="btn btn-primary" href="https://app.satsjar.app/proof/1">Check it yourself</a>
+        <a class="btn btn-ghost" href="./#how">See how it works</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p class="testnet-note"><strong>This is a testnet demo.</strong> It runs on Bitcoin's test network. Test coins have no value, so please don't send real Bitcoin to a jar.</p>
+    <p class="footer-links"><a href="https://github.com/koukikouks/sats-jar">Source on GitHub</a></p>
+  </footer>
+
+  <script src="nav.js" defer></script>
+</body>
+</html>

@@ -7,3 +7,13 @@ node_modules/
 app/dist/
 app/test-results/
 app/playwright-report/
+
+# Rendered media: too big for git (some are over GitHub's 100 MB limit). Keep sources, not renders.
+.DS_Store
+*.mov
+*.mp4
+*.webm
+crayon-style-test.png
+
+# The story video the landing page serves (web-sized, about 4.5 MB)
+!app/landing/assets/story/*.mp4

@@ -13,17 +13,17 @@ The landing page (`app/landing/`) sets Sats Jar's look and voice. The web app we
 
 | Role | Font | Size | Notes |
 |---|---|---|---|
-| Display (h1) | Caveat Brush 400 | `clamp(3.3rem, 8.4vw, 6.9rem)`, line-height .98 | grain mask (`.grainy`) |
-| Section heading (h2) | Caveat Brush 400 | `clamp(2.4rem, 5vw, 3.6rem)`, line-height 1 | grain mask |
-| Card heading (h3) | Caveat Brush 400 | 1.75–1.9rem, line-height 1.1 | grain mask |
-| Kicker | Caveat Brush | 1.45rem, blue, rotated −1.5° | one short line above a heading |
-| Logo | Caveat Brush | 1.9rem, coin icon 44px rotated −8° | |
+| Display (h1) | Satoshi 900, letter-spacing −.04em | `clamp(3rem, 7.4vw, 6rem)`, line-height 1 | grain mask (`.grainy`) |
+| Section heading (h2) | Satoshi 900 | `clamp(2.2rem, 4.4vw, 3.2rem)`, line-height 1.05 | grain mask |
+| Card heading (h3) | Satoshi 900 | 1.45–1.55rem, line-height 1.15 | grain mask |
+| Kicker | Satoshi 700 | 1.15rem, blue | one short line above a heading |
+| Logo | Satoshi 900 | the README logo: crayon jar mark 44px, then "sats jar" at 1.75rem with a coin dotting the j | |
 | Body | DM Sans 400 | 1.0625rem, line-height 1.55 | antialiased |
 | Lede | DM Sans | 1.15–1.2rem, max 33–40rem wide | |
 | Small / note | DM Sans | .95rem, muted | |
 | Button | DM Sans 700 | 1.05rem, line-height 1 | |
 
-Fonts load from Google Fonts: `Caveat Brush` and `DM Sans` (opsz 9..40, weights 400/500/700). Fallbacks: hand `"Segoe Print", "Bradley Hand", "Chalkboard SE", cursive`; body `system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`.
+Fonts: `Satoshi` (weights 700/900) from Fontshare, and `DM Sans` (opsz 9..40, weights 400/500/700) from Google Fonts. Fallbacks: display `"DM Sans", system-ui, sans-serif`; body `system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`.
 
 ## Colour
 
@@ -52,7 +52,7 @@ Status colours the app needs and the landing doesn't have are drawn from this pa
 
 - **Primary button:** ink fill, white text, 3px ink border, wobbly radius `16px 20px 14px 22px / 20px 14px 22px 16px`, padding 1rem 1.5rem, hard offset shadow `5px 5px 0 orange`.
 - **Ghost button:** white fill, ink text, same border and radius, shadow `5px 5px 0 lilac`.
-- **Pill (role picker):** white, 2px ink border, fully round, DM Sans 500 .95rem; pressed = ink fill, white text.
+- **Pill (badges):** white, 2px ink border, fully round, DM Sans 500 .95rem.
 - **Testnet note:** a yellow blob dot with a 2px ink border, then muted text.
 - **Bullets:** blob dots (`border-radius: 50% 40% 55% 45%`), green or yellow, 2px ink border.
 - **Swatches and underlines:** crayon PNGs (`swatch-*.png`, `underline-*.png`) behind a word to highlight it.

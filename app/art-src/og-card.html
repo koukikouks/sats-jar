@@ -1,0 +1,61 @@
+<!doctype html>
+<!-- Share card for the landing page: app/landing/assets/og-image.png, 1200x630. Serve app/ over
+     http (the lettering's grain mask is blocked on file://), then from the repo root:
+     python3 -m http.server 4180 -d app &
+     chrome --headless=new --hide-scrollbars --window-size=1200,630 \
+       --screenshot=$PWD/app/landing/assets/og-image.png http://127.0.0.1:4180/art-src/og-card.html -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../landing/landing.css">
+  <style>
+    html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+    .og { position: relative; display: grid; grid-template-columns: 1fr 480px; align-items: center; gap: 1.5rem; height: 630px; padding: 0 70px 0 80px; box-sizing: border-box; }
+    .og .logo { display: flex; width: max-content; margin-bottom: 1.4rem; font-size: 2rem; }
+    .og .logo-mark { width: 60px; height: 60px; }
+    .og .wordmark { font-size: 2.3rem; }
+    .og .kicker { display: block; width: max-content; font-size: 1.6rem; margin-bottom: .8rem; }
+    .og h1 { font-size: 5.6rem; margin: 0; }
+    .og .stage { max-width: 480px; }
+    .og .d-star { left: 50%; top: 9%; }
+    .og .d-heart { right: 4%; top: 6%; }
+  </style>
+</head>
+<body>
+  <div class="og">
+    <img class="doodle d-star" src="../landing/assets/doodle-star.png" alt="" width="60" height="60">
+    <img class="doodle d-heart" src="../landing/assets/doodle-heart.png" alt="" width="54" height="54">
+    <div>
+      <div class="logo"><img class="logo-mark" src="../landing/assets/logo-mark.png" alt=""><span class="wordmark grainy">sats <span class="j">&#x237;<img src="../landing/assets/coin-2.png" alt=""></span>ar</span></div>
+      <p class="kicker">A piggy bank for a beneficiary's Bitcoin</p>
+      <h1><span class="line grainy">Set your</span>
+        <span class="role"><span class="role-word grainy">loved one</span><img class="role-underline" src="../landing/assets/underline-orange.png" alt=""></span>
+        <span class="line grainy">up for life.</span></h1>
+    </div>
+    <div class="stage">
+      <div class="card">
+        <img class="card-patch" src="../landing/assets/patch-1.png" alt="">
+        <img class="card-figure" src="../landing/assets/figure-loved-one.png" alt="">
+        <img class="card-frame" src="../landing/assets/frame-1.png" alt="">
+        <p class="card-tag grainy">your loved one</p>
+      </div>
+      <div class="jar-wrap">
+        <div class="pile">
+          <img class="coin" src="../landing/assets/coin-1.png" alt="" style="--x:57.76%;--y:85.64%;--r:-33.1deg">
+          <img class="coin" src="../landing/assets/coin-2.png" alt="" style="--x:33.26%;--y:85.64%;--r:-11.4deg">
+          <img class="coin" src="../landing/assets/coin-3.png" alt="" style="--x:76.29%;--y:76.91%;--r:25.3deg">
+          <img class="coin" src="../landing/assets/coin-4.png" alt="" style="--x:42.79%;--y:71.19%;--r:-20.3deg">
+          <img class="coin" src="../landing/assets/coin-1.png" alt="" style="--x:62.74%;--y:64.28%;--r:24.0deg">
+          <img class="coin" src="../landing/assets/coin-2.png" alt="" style="--x:24.00%;--y:62.77%;--r:-2.9deg">
+          <img class="coin" src="../landing/assets/coin-3.png" alt="" style="--x:44.41%;--y:55.23%;--r:-27.3deg">
+          <img class="coin" src="../landing/assets/coin-4.png" alt="" style="--x:77.59%;--y:52.43%;--r:2.6deg">
+          <img class="coin" src="../landing/assets/coin-1.png" alt="" style="--x:28.41%;--y:44.19%;--r:-14.1deg">
+        </div>
+        <img class="jar" src="../landing/assets/jar.png" alt="">
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -10,7 +10,7 @@
   --blue: #2f6fd8;
   --green: #3a9d4f;
   --lilac: #b79bdc;
-  --hand: "Caveat Brush", "Segoe Print", "Bradley Hand", "Chalkboard SE", cursive;
+  --display: "Satoshi", "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --wrap: 1180px;
 }
@@ -26,6 +26,8 @@ a { color: inherit; }
 .grainy {
   -webkit-mask-image: url("assets/grain.png"); mask-image: url("assets/grain.png");
   -webkit-mask-size: 256px 256px; mask-size: 256px 256px;
+  /* The mask clips to the box, so give descenders (y, g, p) room inside it without moving the layout. */
+  padding-block: .14em; margin-block: -.14em;
 }
 
 .skip { position: absolute; left: -999px; top: 0; background: var(--ink); color: #fff; padding: .6rem 1rem; z-index: 50; }
@@ -33,23 +35,41 @@ a { color: inherit; }
 
 /* ───────── nav ───────── */
 .nav { max-width: var(--wrap); margin: 0 auto; padding: 1.1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.logo { display: inline-flex; align-items: center; gap: .55rem; text-decoration: none; font-family: var(--hand); font-size: 1.9rem; line-height: 1; }
-.logo img { width: 44px; height: 44px; transform: rotate(-8deg); }
-.nav nav { display: flex; gap: 1.4rem; font-weight: 500; font-size: .98rem; }
-.nav nav a { text-decoration: none; padding: .25rem 0; background: linear-gradient(var(--yellow), var(--yellow)) 0 100% / 0 .4em no-repeat; transition: background-size .2s; }
-.nav nav a:hover { background-size: 100% .4em; }
+.logo { display: inline-flex; align-items: center; gap: .5rem; text-decoration: none; font-family: var(--display); font-weight: 900; font-size: 1.6rem; letter-spacing: -.03em; line-height: 1; }
+.logo-mark { width: 44px; height: 44px; margin-right: -.2rem; }
+.wordmark { font-size: 1.75rem; }
+.wordmark .j { position: relative; display: inline-block; }
+.wordmark .j img { position: absolute; left: 50%; top: 0; width: .42em; height: .42em; transform: translateX(-45%) rotate(-12deg); }
+/* The coin on the j flips like a tossed coin: one full turn, then a rest. */
+.wordmark .j img { animation: coin-spin 3.2s ease-in-out infinite; }
+@keyframes coin-spin {
+  0%, 55% { transform: translateX(-45%) rotate(-12deg) rotateY(0deg); }
+  100% { transform: translateX(-45%) rotate(-12deg) rotateY(360deg); }
+}
+.nav .nav-links { display: flex; gap: 1.4rem; font-weight: 500; font-size: .98rem; }
+.nav .nav-links a { text-decoration: none; padding: .25rem 0; background: linear-gradient(var(--yellow), var(--yellow)) 0 100% / 0 .4em no-repeat; transition: background-size .2s; }
+.nav .nav-links a:hover { background-size: 100% .4em; }
+.nav .nav-links { align-items: center; }
+.nav .nav-links a.nav-cta { padding: .55rem 1.05rem; font-weight: 800; color: var(--ink); background: var(--yellow); border: 2.5px solid var(--ink); border-radius: 12px 15px 11px 16px / 15px 11px 16px 12px; box-shadow: 4px 4px 0 var(--orange); transition: transform .12s ease, box-shadow .12s ease; }
+.nav .nav-links a.nav-cta:hover { background: var(--yellow); transform: translate(-1px, -1px); box-shadow: 6px 6px 0 var(--orange); }
+.nav .nav-links a.nav-cta:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--orange); }
 
 /* ───────── hero ───────── */
 .hero { position: relative; max-width: var(--wrap); margin: 0 auto; padding: 1.5rem 1.25rem 3.5rem; display: grid; grid-template-columns: 1.05fr .95fr; gap: 1rem 2rem; align-items: center; }
 .hero-copy { position: relative; z-index: 2; }
-.kicker { font-family: var(--hand); font-size: 1.45rem; margin: 0 0 .3rem; color: var(--blue); transform: rotate(-1.5deg); transform-origin: left; display: inline-block; }
+.kicker { font-family: var(--display); font-weight: 700; font-size: 1.15rem; letter-spacing: -.01em; margin: 0 0 .6rem; color: var(--blue); display: inline-block; }
 
-h1 { margin: 0 0 1.2rem; font-family: var(--hand); font-weight: 400; line-height: .98; letter-spacing: .005em; font-size: clamp(3.3rem, 8.4vw, 6.9rem); }
+h1 { margin: 0 0 1.2rem; font-family: var(--display); font-weight: 900; line-height: 1; letter-spacing: -.04em; font-size: clamp(3rem, 7.4vw, 6rem); }
 h1 .line { display: block; }
-h1 .role { display: inline-block; position: relative; padding: .04em .02em .22em; margin: .02em 0; min-width: 2ch; }
-h1 .role-word { display: inline-block; font-size: 1.12em; transition: opacity .2s ease, transform .2s ease; will-change: transform, opacity; }
+h1 .role { display: inline-grid; position: relative; padding: .04em .02em .22em; margin: .02em 0; min-width: 2ch; }
+/* during a swap the outgoing word sits on top of the incoming one, in the same spot */
+h1 .role .role-word { grid-area: 1 / 1; justify-self: start; }
+h1 .role .is-leaving { z-index: 1; }
+h1 .role-word { display: inline-block; transition: opacity .2s ease, transform .2s ease; will-change: transform, opacity; }
 h1 .role-word.is-out { opacity: 0; transform: translateY(-.18em) rotate(-3deg); }
 h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); transition: none; }
+/* word swap: landing.js drives an eraser across the word, then writes the new one in */
+.eraser { position: absolute; left: 0; top: -.1em; height: 1.1em; width: auto; opacity: 0; pointer-events: none; z-index: 3; will-change: transform; }
 .role-underline { position: absolute; left: -2%; bottom: .02em; width: 104%; height: .26em; pointer-events: none; object-fit: fill; }
 
 .lede { font-size: 1.2rem; max-width: 33rem; margin: 0 0 1.5rem; }
@@ -79,13 +99,8 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
 .card-figure { inset: 8% 6% 4% 6% !important; width: 88% !important; height: 88% !important; object-fit: contain; }
 .card.is-popping { animation: pop .55s cubic-bezier(.3, 1.5, .5, 1); }
 @keyframes pop { 0% { transform: rotate(-12deg) scale(.7); opacity: .2; } 60% { transform: rotate(-3deg) scale(1.05); opacity: 1; } 100% { transform: rotate(-5deg) scale(1); } }
-.card-tag { position: absolute; left: 50%; bottom: -7%; transform: translateX(-50%) rotate(2deg); margin: 0; white-space: nowrap; font-family: var(--hand); font-size: clamp(1.15rem, 2.6vw, 1.6rem); padding: .15em .7em .05em; background: url("assets/swatch-yellow.png") center / 100% 100% no-repeat; }
+.card-tag { position: absolute; left: 50%; bottom: -7%; transform: translateX(-50%) rotate(2deg); margin: 0; white-space: nowrap; font-family: var(--display); font-weight: 700; letter-spacing: -.01em; font-size: clamp(1rem, 2.2vw, 1.3rem); padding: .2em .7em .15em; background: url("assets/swatch-yellow.png") center / 100% 100% no-repeat; }
 
-/* little role picker (also the way to drive it with reduced motion) */
-.roles { grid-column: 1 / -1; list-style: none; margin: .5rem 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem .6rem; position: relative; z-index: 2; }
-.roles button { font: 500 .95rem/1 var(--body); background: #fff; color: var(--ink); border: 2px solid var(--ink); border-radius: 999px; padding: .5rem .9rem; cursor: pointer; transition: background .15s, transform .12s; }
-.roles button:hover { transform: translateY(-2px); }
-.roles button[aria-pressed="true"] { background: var(--ink); color: #fff; }
 
 /* confetti doodles */
 .doodle { position: absolute; z-index: 0; pointer-events: none; }
@@ -96,23 +111,26 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
 
 /* ───────── sections ───────── */
 .section { position: relative; max-width: var(--wrap); margin: 0 auto; padding: 3.5rem 1.25rem; }
-.section h2 { font-family: var(--hand); font-weight: 400; font-size: clamp(2.4rem, 5vw, 3.6rem); line-height: 1; margin: 0 0 1.4rem; }
+.section h2 { font-family: var(--display); font-weight: 900; letter-spacing: -.035em; font-size: clamp(2.2rem, 4.4vw, 3.2rem); line-height: 1.05; margin: 0 0 1.4rem; }
 .section-lede { font-size: 1.15rem; max-width: 40rem; margin: -.4rem 0 2rem; }
 
 .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.75rem; counter-reset: s; }
-.step { position: relative; padding: 2.8rem 3rem 3rem; background: transparent; }
-.step::before { content: ""; position: absolute; inset: 0; background-size: 100% 100%; background-repeat: no-repeat; z-index: 0; }
-.step-1::before { background-image: url("assets/frame-4.png"); transform: rotate(-1.5deg); }
-.step-2::before { background-image: url("assets/frame-3.png"); transform: rotate(1deg); }
-.step-3::before { background-image: url("assets/frame-2.png"); transform: rotate(-.8deg); }
+/* Each frame is drawn as a 9-slice border image, so its crayon border keeps one thickness (36px)
+   however wide or tall the card gets, and the padding keeps the text clear of it. The slice
+   (15% of the art on each side) takes in the deepest stroke, frame-2's wavy double line. */
+.step { position: relative; padding: 3.4rem 3.1rem 3.6rem; background: transparent; }
+.step::before { content: ""; position: absolute; inset: 0; z-index: 0; border: 1px solid transparent; border-image-slice: 15%; border-image-width: 36px; border-image-repeat: stretch; }
+.step-1::before { border-image-source: url("assets/frame-4.png"); transform: rotate(-1.5deg); }
+.step-2::before { border-image-source: url("assets/frame-3.png"); transform: rotate(1deg); }
+.step-3::before { border-image-source: url("assets/frame-2.png"); transform: rotate(-.8deg); }
 .step > * { position: relative; z-index: 1; }
-.step-art { width: 70%; margin: 0 auto .6rem; }
-.step h3 { font-family: var(--hand); font-weight: 400; font-size: 1.75rem; line-height: 1.1; margin: 0 0 .5rem; }
+.step-art { width: 100%; height: auto; margin: 0 0 .8rem; }
+.step h3 { font-family: var(--display); font-weight: 900; letter-spacing: -.025em; font-size: 1.45rem; line-height: 1.15; margin: 0 0 .5rem; }
 .step .num { display: inline-block; min-width: 1.5em; text-align: center; margin-right: .2em; background: url("assets/swatch-yellow.png") center / 100% 100% no-repeat; }
 .step p { margin: 0; }
 
 .trust-grid { display: grid; grid-template-columns: 1fr 1.25fr; gap: 2.5rem; align-items: start; }
-.trust-col h3 { font-family: var(--hand); font-weight: 400; font-size: 1.9rem; margin: 0 0 .7rem; }
+.trust-col h3 { font-family: var(--display); font-weight: 900; letter-spacing: -.025em; font-size: 1.55rem; margin: 0 0 .7rem; }
 .trust-col ul { margin: 0; padding: 0; list-style: none; display: grid; gap: .9rem; }
 .trust-col li { position: relative; padding-left: 1.9rem; }
 .trust-col li::before { content: ""; position: absolute; left: 0; top: .5em; width: .9rem; height: .9rem; border-radius: 50% 40% 55% 45%; background: var(--green); border: 2px solid var(--ink); }
@@ -127,24 +145,107 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
 .testnet-note { max-width: 40rem; }
 .footer a { font-weight: 500; }
 
+/* ───────── roadmap: a dotted treasure-map path through three stops, left to right at every width.
+   The pins sit in a band of height --band at heights along the path; the text lines up below it. ───────── */
+.road { --band: 190px; --pin: 56px; position: relative; margin-top: 1rem; }
+.road-line { position: absolute; left: 0; right: 0; top: 0; height: var(--band); width: 100%; overflow: visible; pointer-events: none; }
+.road-line path { fill: none; stroke: var(--blue); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 0.1 14; vector-effect: non-scaling-stroke; }
+.road-stops { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; position: relative; }
+.stop { position: relative; padding-top: calc(var(--band) + .9rem); text-align: center; }
+.pin { position: absolute; left: 50%; top: calc(var(--y) * var(--band) - var(--pin) / 2); transform: translateX(-50%); display: grid; place-items: center; width: var(--pin); height: var(--pin); border-radius: 50% 46% 52% 48%; background: #fff; border: 3px solid var(--ink); color: var(--ink); text-decoration: none; transition: transform .16s ease; }
+.stop-now { --y: .82; }
+.stop-yield { --y: .5; }
+.stop-end { --y: .18; }
+.pin img { width: 70%; height: 70%; }
+.pin-text { font: 900 1.4rem/1 var(--display); color: var(--orange); border-color: var(--orange); }
+.pin-flag { background: var(--ink); color: #fff; box-shadow: 4px 4px 0 var(--orange); }
+.pin-flag:active { transform: translateX(-50%) scale(.94); }
+.stop h3 { font-family: var(--display); font-weight: 900; letter-spacing: -.025em; font-size: 1.45rem; line-height: 1.15; margin: 0 0 .4rem; }
+.stop p { margin: 0 auto .9rem; max-width: 17rem; }
+.soon { display: inline-block; vertical-align: middle; margin-left: .2rem; padding: .2rem .55rem .15rem; font: 700 .7rem/1 var(--body); text-transform: uppercase; letter-spacing: .05em; color: var(--ink); background: url("assets/swatch-yellow.png") center / 100% 100% no-repeat; }
+.btn-small { font-size: .95rem; padding: .75rem 1.1rem; }
+@media (hover: hover) and (pointer: fine) {
+  .pin-flag:hover { transform: translateX(-50%) scale(1.08) rotate(-6deg); }
+}
+
+/* roadmap suggestion form */
+.suggest { max-width: 36rem; margin: 3rem auto 0; padding: 1.8rem; background: #fff; border: 3px solid var(--ink); border-radius: 16px 20px 14px 22px / 20px 14px 22px 16px; box-shadow: 6px 6px 0 var(--lilac); scroll-margin-top: 1.5rem; }
+.suggest h3 { font-family: var(--display); font-weight: 900; letter-spacing: -.025em; font-size: 1.45rem; margin: 0 0 1rem; }
+.suggest label { display: block; font-weight: 700; margin: 0 0 .4rem; }
+.suggest label span { font-weight: 400; color: var(--muted); }
+.suggest textarea, .suggest input[type=email] { display: block; width: 100%; margin: 0 0 1.1rem; padding: .8rem .9rem; font: 400 1rem/1.5 var(--body); color: var(--ink); background: #fff; border: 2px solid var(--ink); border-radius: 10px; }
+.suggest textarea { resize: vertical; min-height: 6.5rem; }
+.suggest textarea:focus-visible, .suggest input:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.suggest-trap { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.suggest-row { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; }
+.suggest button[disabled] { opacity: .6; cursor: progress; }
+.suggest-status { margin: 0; font-weight: 700; }
+.suggest-status.is-sent { color: var(--green); }
+.suggest-status.is-error { color: var(--red); }
+.suggest-note { margin: 1rem 0 0; font-size: .85rem; color: var(--muted); }
+
+/* ───────── story page and the link to it ───────── */
+.story-link { margin: 2rem 0 0; text-align: center; }
+.story-link a { display: inline-flex; align-items: center; gap: .6rem; font-weight: 700; text-decoration: none; padding: .25rem 0; background: linear-gradient(var(--yellow), var(--yellow)) 0 100% / 100% .4em no-repeat; }
+.play { width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--ink); position: relative; flex: none; }
+.play::after { content: ""; position: absolute; left: 55%; top: 50%; transform: translate(-50%, -50%); border-style: solid; border-width: .32rem 0 .32rem .5rem; border-color: transparent transparent transparent #fff; }
+.story-title, .page-title { font-family: var(--display); font-weight: 900; letter-spacing: -.04em; line-height: 1.02; font-size: clamp(2.4rem, 5.6vw, 4.4rem); margin: 0 0 1rem; max-width: 16ch; }
+.story-video { margin: 0 0 1.6rem; }
+.story-video video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #f6f3ec; border: 3px solid var(--ink); border-radius: 14px 18px 12px 20px / 18px 12px 20px 14px; box-shadow: 6px 6px 0 var(--orange); }
+.story-video figcaption { margin-top: 1rem; }
+.story-transcript { margin-top: 2.2rem; max-width: 44rem; border-top: 1px solid #e6e2da; }
+.story-transcript summary { cursor: pointer; padding: 1rem 0; font-weight: 700; }
+.story-transcript ol { margin: 0 0 1rem; padding-left: 1.3rem; display: grid; gap: .55rem; }
+
+/* phone menu (shown below 900px, where the header links are hidden) */
+.menu { display: none; position: relative; }
+.menu summary { list-style: none; cursor: pointer; font: 700 .95rem/1 var(--body); padding: .7rem 1rem; border: 2px solid var(--ink); border-radius: 12px 14px 11px 15px / 14px 11px 15px 12px; background: #fff; box-shadow: 3px 3px 0 var(--lilac); -webkit-tap-highlight-color: transparent; }
+.menu summary::-webkit-details-marker { display: none; }
+.menu summary::after { content: ""; display: inline-block; width: .45rem; height: .45rem; margin-left: .5rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-.15rem) rotate(45deg); transition: transform .16s ease; }
+.menu[open] summary::after { transform: translateY(.05rem) rotate(-135deg); }
+.menu-panel { position: absolute; right: 0; top: calc(100% + .5rem); z-index: 40; display: grid; min-width: 14.5rem; padding: .4rem; background: #fff; border: 2px solid var(--ink); border-radius: 14px; box-shadow: 5px 5px 0 var(--orange); }
+.menu-panel a { display: block; padding: .75rem .8rem; border-radius: 9px; font-weight: 500; text-decoration: none; }
+.menu-panel a:hover, .menu-panel a:focus-visible { background: #f6f3ec; }
+.menu-panel a[aria-current="page"] { font-weight: 700; }
+.menu-panel a.nav-cta { margin: .4rem .2rem .3rem; text-align: center; font-weight: 800; color: var(--ink); background: var(--yellow); border: 2.5px solid var(--ink); border-radius: 12px 15px 11px 16px / 15px 11px 16px 12px; box-shadow: 4px 4px 0 var(--orange); }
+.menu-panel a.nav-cta:hover, .menu-panel a.nav-cta:focus-visible { background: var(--yellow); }
+.menu-panel a.nav-cta:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--orange); }
+
+/* stand-alone pages (roadmap, what you're trusting) */
+.section.page { padding-top: 2rem; }
+.page-cta { margin-top: 2.5rem; }
+
 /* ───────── small screens ───────── */
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; padding-top: .5rem; }
-  /* headline, then the figure and jar, then the pitch and buttons */
+  /* The figure and jar stay beside the headline at every width, scaled down to fit:
+     kicker across the top, headline and stage side by side, then the pitch and buttons. */
+  .hero { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); column-gap: .75rem; }
   .hero-copy { display: contents; }
-  .kicker { order: 1; justify-self: start; }
-  h1 { order: 2; margin-bottom: .4rem; }
-  .stage { order: 3; }
-  .lede { order: 4; margin-top: 1rem; }
-  .cta { order: 5; }
-  .testnet { order: 6; justify-self: start; }
-  .roles { order: 7; }
-  .stage { max-width: 440px; margin-top: 1.8rem; }
-  .nav nav { display: none; }
+  .kicker { order: 1; grid-column: 1 / -1; justify-self: start; }
+  h1 { order: 2; grid-column: 1; margin: 0; font-size: clamp(1.9rem, calc((100vw - 52px) * .12), 4.4rem); }
+  /* the three longest words ("granddaughter", "little brother", "little sister") shrink to fit the column */
+  h1 .role-word.is-long { font-size: .7em; }
+  .stage { order: 3; grid-column: 2; max-width: none; margin: 0; }
+  .card-tag { font-size: clamp(.62rem, 2.6vw, 1rem); }
+  .lede { order: 4; grid-column: 1 / -1; margin-top: 1.2rem; }
+  .cta { order: 5; grid-column: 1 / -1; }
+  .testnet { order: 6; grid-column: 1 / -1; justify-self: start; }
+  .nav .nav-links { display: none; }
+  .menu { display: block; }
   .steps { grid-template-columns: 1fr; max-width: 460px; margin-inline: auto; }
   .trust-grid { grid-template-columns: 1fr; gap: 1.8rem; }
-  .d-star, .d-dots { display: none; }
+  .d-star, .d-dots, .d-heart { display: none; }
   .swatch-lilac { display: none; }
+}
+@media (max-width: 600px) {
+  /* the map stays left to right; the band, pins and text shrink to fit three columns */
+  .road { --band: 130px; --pin: 44px; }
+  .road-stops { gap: .6rem; }
+  .stop h3 { font-size: 1.1rem; }
+  .stop p { font-size: .85rem; line-height: 1.4; }
+  .soon { display: block; width: max-content; margin: .3rem auto 0; }
+  .btn-small { font-size: .8rem; padding: .6rem .5rem; }
 }
 @media (max-width: 480px) {
   .btn { width: 100%; text-align: center; }
@@ -153,6 +254,7 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  h1 .role-word, .btn, .roles button { transition: none; }
+  h1 .role-word, .btn, .pin, .menu summary::after, .nav .nav-links a.nav-cta { transition: none; }
+  .wordmark .j img { animation: none; }
   .card.is-popping { animation: none; }
 }

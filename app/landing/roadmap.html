@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Roadmap | Sats Jar</title>
+  <meta name="description" content="Where Sats Jar goes next: yield on what is in a jar, and whatever you suggest. Testnet demo.">
+  <link rel="icon" href="assets/favicon.ico" sizes="48x48">
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="canonical" href="https://satsjar.app/roadmap">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Sats Jar">
+  <meta property="og:url" content="https://satsjar.app/roadmap">
+  <meta property="og:title" content="Roadmap">
+  <meta property="og:description" content="Where Sats Jar goes next: yield on what is in a jar, and whatever you suggest. Testnet demo.">
+  <meta property="og:image" content="https://satsjar.app/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Set your loved one up for life: a crayon jar of Bitcoin coins beside a stick figure.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="landing.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav">
+    <a class="logo" href="./" aria-label="Sats Jar, home">
+      <img class="logo-mark" src="assets/logo-mark.png" alt="" width="44" height="44">
+      <!-- The README logo's wordmark: "sats jar" with the j dotted by a coin (a dotless j plus the coin). -->
+      <span class="wordmark grainy" aria-hidden="true">sats <span class="j">&#x237;<img src="assets/coin-2.png" alt="" width="16" height="16"></span>ar</span>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="./#how">How it works</a>
+      <a href="story.html">The story</a>
+      <a href="roadmap.html" aria-current="page">Roadmap</a>
+      <a href="trust.html">What you're trusting</a>
+      <a class="nav-cta" href="https://app.satsjar.app/new">Make a jar</a>
+    </nav>
+    <!-- Phones: the same links behind a Menu button (nav.js closes it after a pick) -->
+    <details class="menu" data-menu>
+      <summary>Menu</summary>
+      <nav class="menu-panel" aria-label="Main">
+        <a href="./#how">How it works</a>
+        <a href="story.html">The story</a>
+        <a href="roadmap.html" aria-current="page">Roadmap</a>
+        <a href="trust.html">What you're trusting</a>
+        <a href="https://app.satsjar.app/proof/1">Check it yourself</a>
+        <a class="nav-cta" href="https://app.satsjar.app/new">Make a jar</a>
+      </nav>
+    </details>
+  </header>
+
+  <main id="main">
+    <section class="section page" id="roadmap" aria-labelledby="roadmap-h">
+      <p class="kicker">Roadmap</p>
+      <h1 class="page-title grainy" id="roadmap-h">Where the map goes next</h1>
+      <p class="section-lede">Not built yet. This is where we want to take the jar, and you can tell us where to go.</p>
+      <div class="road">
+        <svg class="road-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <path d="M16 82 C 26 30, 38 98, 50 50 C 62 4, 74 70, 84 18" />
+        </svg>
+        <ol class="road-stops">
+          <li class="stop stop-now">
+            <span class="pin" aria-hidden="true"><img src="assets/logo-mark.png" alt="" width="40" height="40"></span>
+            <h3 class="grainy">You are here</h3>
+            <p>Make a jar, top it up, a capped allowance, handover. Live on testnet.</p>
+          </li>
+          <li class="stop stop-yield">
+            <span class="pin pin-text" aria-hidden="true">%</span>
+            <h3 class="grainy">Yield <span class="soon">Planned</span></h3>
+            <p>Whatever goes into a jar will earn yield while it waits. The rate isn't set yet.</p>
+          </li>
+          <li class="stop stop-end">
+            <a class="pin pin-flag" href="#suggest" aria-label="Suggest a feature">
+              <svg viewBox="0 0 40 40" width="24" height="24" aria-hidden="true"><path d="M10 35V6M10 8c8-4 12 4 20 0v14c-8 4-12-4-20 0" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <h3 class="grainy">What should we add?</h3>
+            <p>Tell us what you'd want on this map.</p>
+            <a class="btn btn-ghost btn-small" href="#suggest">Suggest a feature</a>
+          </li>
+        </ol>
+      </div>
+        <!-- Suggestions are emailed to the team through FormSubmit (formsubmit.co); assets/feedback.js sends
+             them in the background. Without JavaScript the form posts there directly and comes back here. -->
+        <form class="suggest" id="suggest" data-suggest action="https://formsubmit.co/satsjar99@gmail.com" method="POST">
+          <h3 class="grainy">Suggest a feature</h3>
+          <label for="suggest-idea">What would you want a jar to do?</label>
+          <textarea id="suggest-idea" name="idea" rows="4" maxlength="2000" required placeholder="I'd love it if a jar could…"></textarea>
+          <label for="suggest-email">Your email <span>(optional, only if you'd like a reply)</span></label>
+          <input id="suggest-email" name="email" type="email" autocomplete="email" inputmode="email">
+          <div class="suggest-trap" aria-hidden="true"><input type="text" name="_honey" tabindex="-1" autocomplete="off"></div>
+          <input type="hidden" name="_subject" value="Sats Jar: a roadmap idea">
+          <input type="hidden" name="_template" value="box">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="_next" value="https://satsjar.app/roadmap#suggest">
+          <div class="suggest-row">
+            <button class="btn btn-primary" type="submit">Send idea</button>
+            <p class="suggest-status" role="status" aria-live="polite" data-suggest-status></p>
+          </div>
+          <p class="suggest-note">Sent to the Sats Jar team through FormSubmit. Never paste a recovery phrase or PIN here.</p>
+        </form>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p class="testnet-note"><strong>This is a testnet demo.</strong> It runs on Bitcoin's test network. Test coins have no value, so please don't send real Bitcoin to a jar.</p>
+    <p class="footer-links"><a href="https://github.com/koukikouks/sats-jar">Source on GitHub</a></p>
+  </footer>
+
+  <script src="nav.js" defer></script>
+  <script src="assets/feedback.js" defer></script>
+</body>
+</html>

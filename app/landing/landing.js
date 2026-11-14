@@ -30,7 +30,7 @@
   var tagEl = document.querySelector("[data-card-tag]");
   var jarEl = document.querySelector("[data-jar]");
   var pileEl = document.querySelector("[data-pile]");
-  var rolesEl = document.querySelector("[data-roles]");
+  var eraserEl = document.querySelector("[data-eraser]");
   if (!wordEl || !figureEl || !pileEl || !jarEl) return;
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -39,25 +39,12 @@
 
   var index = -1;
   var timer = null;
-  var buttons = [];
   var pending = [];
 
   // preload art so the first pop is not blank
   ROLES.forEach(function (r) { new Image().src = "assets/figure-" + r.slug + ".png"; });
   [1, 2, 3, 4].forEach(function (n) { new Image().src = "assets/frame-" + n + ".png"; new Image().src = "assets/patch-" + n + ".png"; });
   UNDERLINES.forEach(function (c) { new Image().src = "assets/underline-" + c + ".png"; });
-
-  // ── role picker ──
-  ROLES.forEach(function (role, i) {
-    var li = document.createElement("li");
-    var b = document.createElement("button");
-    b.type = "button";
-    b.textContent = role.word;
-    b.setAttribute("aria-pressed", "false");
-    li.appendChild(b);
-    rolesEl.appendChild(li);
-    buttons.push(b);
-  });
 
   function setLater(fn, ms) {
     var t = setTimeout(fn, ms);
@@ -74,10 +61,10 @@
     var role = ROLES[i];
     var c = i % 4;
     index = i;
-    buttons.forEach(function (b, k) { b.setAttribute("aria-pressed", String(k === i)); });
 
     function apply() {
       wordEl.textContent = role.word;
+      wordEl.classList.toggle("is-long", role.word.length > 9);
       underlineEl.src = "assets/underline-" + UNDERLINES[c] + ".png";
       figureEl.src = "assets/figure-" + role.slug + ".png";
       frameEl.src = "assets/frame-" + FRAME_FOR[c] + ".png";
@@ -85,21 +72,82 @@
       tagEl.textContent = "your " + role.word;
     }
 
-    if (!animate || reduceMotion) {
+    if (!animate || reduceMotion || !wordEl.animate || !eraserEl) {
       apply();
       return;
     }
-    wordEl.classList.add("is-out");
-    setLater(function () {
-      apply();
-      wordEl.classList.remove("is-out");
-      wordEl.classList.add("is-in");
-      void wordEl.offsetWidth; // let the "in" start state paint
-      wordEl.classList.remove("is-in");
-      cardEl.classList.remove("is-popping");
-      void cardEl.offsetWidth;
-      cardEl.classList.add("is-popping");
-    }, 200);
+    eraseAndWrite(apply);
+  }
+
+  // The eraser rubs the old word (and its underline) out from left to right while the new word is
+  // drawn in right behind it: the old word sits on top of the new one, and as the eraser passes, the
+  // old one is clipped away and the new one revealed up to the same edge. The figure card pops as
+  // the new word starts to appear.
+  function eraseAndWrite(apply) {
+    var roleEl = wordEl.parentNode;
+    // finish any swap still running (a background tab can start the next one before this one ends)
+    Array.prototype.forEach.call(roleEl.querySelectorAll(".is-leaving"), function (el) { roleEl.removeChild(el); });
+    wordEl.getAnimations().concat(underlineEl.getAnimations()).forEach(function (a) { a.cancel(); });
+    var oldWord = wordEl, oldLine = underlineEl;
+    var newWord = oldWord.cloneNode(false), newLine = oldLine.cloneNode(false);
+    roleEl.insertBefore(newWord, oldWord);
+    roleEl.insertBefore(newLine, oldLine);
+    oldWord.classList.add("is-leaving");
+    oldLine.classList.add("is-leaving");
+    wordEl = newWord;
+    underlineEl = newLine;
+    apply(); // writes the new word, its underline colour and the new figure
+
+    var wOld = oldWord.offsetWidth, wNew = newWord.offsetWidth;
+    var w = Math.max(wOld, wNew);
+    var ew = eraserEl.offsetWidth;
+    var SWAP_MS = 760;
+
+    // one set of frames drives all three: the eraser's centre is the edge between old and new
+    var steps = 12, eraser = [], oldClip = [], newClip = [];
+    for (var k = 0; k <= steps; k++) {
+      var p = k / steps, x = p * w;
+      var wob = k % 2 === 0 ? -1 : 1;
+      eraser.push({ offset: p, opacity: 1, transform: "translate(" + (x - ew / 2) + "px, " + (wob * 3) + "px) rotate(" + (wob * 5) + "deg)" });
+      oldClip.push({ offset: p, clipPath: "inset(0 0 0 " + Math.min(x, wOld) + "px)" });
+      newClip.push({ offset: p, clipPath: "inset(0 " + Math.max(0, wNew - x) + "px 0 0)" });
+    }
+    eraser[0].opacity = 0;
+    eraser[0].transform = "translate(" + (-ew / 2) + "px, -14px) rotate(-12deg)";
+    // the underlines are a little wider than the word and start a little to its left; follow the same edge
+    var lw = newLine.offsetWidth, lx = newWord.getBoundingClientRect().left - newLine.getBoundingClientRect().left;
+    var lineClipOld = [], lineClipNew = [];
+    for (var j = 0; j <= steps; j++) {
+      var q = j / steps, edge = Math.min(lw, Math.max(0, lx + q * w));
+      lineClipOld.push({ offset: q, clipPath: "inset(0 0 0 " + (j === steps ? lw : edge) + "px)" });
+      lineClipNew.push({ offset: q, clipPath: "inset(0 " + (j === steps ? 0 : lw - edge) + "px 0 0)" });
+    }
+
+    var opts = { duration: SWAP_MS, easing: "linear", fill: "both" };
+    eraserEl.getAnimations().forEach(function (a) { a.cancel(); });
+    eraserEl.animate(eraser, { duration: SWAP_MS, easing: "linear", fill: "forwards" });
+    oldWord.animate(oldClip, opts);
+    oldLine.animate(lineClipOld, opts);
+    newLine.animate(lineClipNew, opts);
+    var reveal = newWord.animate(newClip, opts);
+
+    cardEl.classList.remove("is-popping");
+    void cardEl.offsetWidth;
+    cardEl.classList.add("is-popping");
+
+    reveal.onfinish = function () {
+      if (oldWord.parentNode) roleEl.removeChild(oldWord);
+      if (oldLine.parentNode) roleEl.removeChild(oldLine);
+      newWord.getAnimations().concat(newLine.getAnimations()).forEach(function (a) { a.cancel(); });
+      var wEnd = roleEl.getBoundingClientRect().width;
+      eraserEl.animate(
+        [
+          { opacity: 1, transform: "translate(" + (w - ew / 2) + "px, 3px) rotate(5deg)" },
+          { opacity: 0, transform: "translate(" + (Math.max(w, wEnd) + ew * 0.25) + "px, -18px) rotate(14deg)" },
+        ],
+        { duration: 240, easing: "cubic-bezier(0.23, 1, 0.32, 1)", fill: "forwards" }
+      );
+    };
   }
 
   // ── one coin falls into the jar ──
@@ -154,8 +202,7 @@
   }
 
   // ── the loop: every step shows the next role and drops the next coin; once the jar is full it
-  //    holds a moment, empties, and starts over. Coins are counted separately from roles, so
-  //    picking a role by hand never leaves a coin floating. ──
+  //    holds a moment, empties, and starts over. ──
   var dropped = 0;
   var running = false;
 
@@ -184,7 +231,7 @@
 
   function start() {
     if (reduceMotion) {
-      // No autoplay: the whole pile stays in the jar, and the buttons pick the role.
+      // No autoplay: the whole pile stays in the jar and the headline says "loved one".
       showRole(ROLES.length - 1, false);
       return;
     }
@@ -194,15 +241,6 @@
     setLater(function () { dropCoin(0); dropped = 1; }, 700);
     setLater(step, STEP_MS + 700);
   }
-
-  // a manual pick pauses the rotation for a moment, then it carries on from there
-  buttons.forEach(function (b, i) {
-    b.addEventListener("click", function () {
-      clearPending();
-      showRole(i, true);
-      resumeAfter(STEP_MS * 1.6);
-    });
-  });
 
   // do not stack up drops while the tab is in the background
   document.addEventListener("visibilitychange", function () {

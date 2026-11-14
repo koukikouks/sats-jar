@@ -4,7 +4,7 @@
   "outputDirectory": "dist",
   "redirects": [
     {
-      "source": "/:path((?!assets/|landing\\.).+)",
+      "source": "/:path((?!assets/|landing\\.|(?:story|roadmap|trust)(?:\\.html)?$).+)",
       "has": [{ "type": "host", "value": "satsjar.app" }],
       "destination": "https://app.satsjar.app/:path",
       "permanent": true
@@ -12,6 +12,9 @@
   ],
   "rewrites": [
     { "source": "/", "has": [{ "type": "host", "value": "satsjar.app" }], "destination": "/landing.html" },
+    { "source": "/story", "has": [{ "type": "host", "value": "satsjar.app" }], "destination": "/story.html" },
+    { "source": "/roadmap", "has": [{ "type": "host", "value": "satsjar.app" }], "destination": "/roadmap.html" },
+    { "source": "/trust", "has": [{ "type": "host", "value": "satsjar.app" }], "destination": "/trust.html" },
     {
       "source": "/api/:path*",
       "missing": [{ "type": "host", "value": "satsjar.app" }],

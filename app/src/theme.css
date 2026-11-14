@@ -20,7 +20,7 @@
   --refusal-tint: #fdecea;
   --disabled-fill: #6b6863;
 
-  --font-hand: "Caveat Brush", "Segoe Print", "Bradley Hand", "Chalkboard SE", cursive;
+  --font-display: "Satoshi", "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --text-small: 0.95rem;
@@ -36,7 +36,7 @@
   --highlight-height: 0.4em;
   --underline-offset: 0.2em;
   --line-height: 1.55;
-  --line-height-hand: 1;
+  --line-height-display: 1.1;
   --weight-medium: 500;
   --weight-strong: 700;
 
