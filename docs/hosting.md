@@ -6,7 +6,7 @@ How Sats Jar is hosted until at least 2026-11-25 (spec #45, ADR 0011). Never a s
 
 - **`main` is production on both hosts.** Merging into `main` (the maintainer's pull request merge) is the go-live sign-off. Merges into `integration/web-app` build only Vercel previews and never touch Railway.
 - **Vercel** builds `main` for production. Until #44 merges, `main` has no `app/` folder, so a push to `main` starts a production build that fails; Vercel keeps serving the last good deployment, so this is harmless. Every other branch (`integration/web-app`, ticket branches) builds a preview on each push.
-- **Railway** redeploys `main` only when a backend-affecting path changes (watch paths below). A redeploy briefly stops the backend: the app shows "We could not reach the network just now. Try again shortly." meanwhile. Each start restarts the keeper's hour, so run a keeper pass after a deploy (below).
+- **Railway** redeploys `main` only when a backend-affecting path changes (watch paths below). A redeploy briefly stops the backend: the app shows "We could not reach the network just now. Try again shortly." meanwhile. Each start runs a keeper pass at once, then one every 2 minutes.
 
 ## Vercel: the site
 
@@ -63,7 +63,7 @@ Project `sats-jar-backend` (https://railway.com/project/43fbf8ba-300e-447e-8502-
 | Start command | `./node-runtime backend/src/server.ts` | the Node binary copied by the build |
 | Watch paths | `/backend/**`, `/packages/**`, `/scripts/**`, `/package.json`, `/pnpm-lock.yaml`, `/pnpm-workspace.yaml` | landing and screen changes don't restart the backend |
 | Replicas | 1, US East | the file store works in one process |
-| Serverless | off | the keeper runs hourly and the first visitor never waits |
+| Serverless | off | the keeper runs every 2 minutes and the first visitor never waits |
 | Restart policy | on failure, up to 10 retries | |
 | Healthcheck | none | |
 | CDN caching | off | draft polling must see fresh answers |
@@ -84,7 +84,7 @@ Settings live in Railway's dashboard. There is no `railway.json`: Railway is ret
 ## Running and fixing
 
 - **Run a keeper pass now**: `curl -X POST https://sats-jar-production.up.railway.app/keeper/run` (or through the site, `https://<app address>/api/keeper/run`). It answers with a report of each step.
-- **Logs**: the service's Deployments tab, View logs. The keeper's hourly report is logged as one JSON line.
+- **Logs**: the service's Deployments tab, View logs. Each keeper pass's report (every 2 minutes) is logged as one JSON line.
 - **Roll back**: Deployments tab, an earlier successful deployment, Redeploy. The volume keeps the drafts.
 - **Usage**: workspace Settings, Billing shows the credit left.
 - **Check it**: `node backend/src/verify-hosting.ts backend <address>`, then after a redeploy `node backend/src/verify-hosting.ts after-redeploy <address>`.
