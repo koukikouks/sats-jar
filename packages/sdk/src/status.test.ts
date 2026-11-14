@@ -240,12 +240,46 @@ describe("top-ups", () => {
       ],
     };
     const topUps = await app(testNetwork({ fixtures: [synthetic, ...recordings] })).jars.topUps("1");
+    // Not yet in a block first, then by block, highest first (the public record's order).
     expect(topUps.slice(0, 3)).toEqual([
       { txid: "aa".repeat(32), value: 5_000, status: "on_the_way", confirmations: null, countedAt: null, explorerUrl: `https://mempool.space/testnet/tx/${"aa".repeat(32)}` },
-      { txid: "bb".repeat(32), value: 3_000, status: "confirming", confirmations: 2, countedAt: null, explorerUrl: `https://mempool.space/testnet/tx/${"bb".repeat(32)}` },
       { txid: "cc".repeat(32), value: 600, status: "too_small", confirmations: null, countedAt: null, explorerUrl: `https://mempool.space/testnet/tx/${"cc".repeat(32)}` },
+      { txid: "bb".repeat(32), value: 3_000, status: "confirming", confirmations: 2, countedAt: null, explorerUrl: `https://mempool.space/testnet/tx/${"bb".repeat(32)}` },
     ]);
     expect(topUps).toHaveLength(5);
+  });
+});
+
+describe("top-ups after a re-homing", () => {
+  test("a top-up sent by mistake to the jar's old address shows as on its way; the jar's own payment does not", async () => {
+    // Synthetic, labelled: jar 1 as if it had moved once, and the explorer's page for the old
+    // address holding an unproven stray and the jar's allowance payment, which spent from it.
+    const OLD = "tb1qold0000000000000000000000000000000000000000000000000000";
+    const live = fixture("proof-bitcoin-jar1");
+    const allowance = (live.exchanges[0]?.response.body as { txid: string }[]).find((t) => t.txid === ALLOWANCE);
+    const stray = {
+      txid: "dd".repeat(32),
+      fee: 150,
+      status: { confirmed: false },
+      vin: [{ prevout: { scriptpubkey_address: "tb1q6rz28mcfaxtmd6v789l9rrlrusdprr9pqcpvkl", value: 9_000 } }],
+      vout: [{ scriptpubkey_address: OLD, value: 4_000 }],
+    };
+    const page = (url: string, body: unknown[]) => ({ request: { method: "GET", url, body: null }, response: { status: 200, body } });
+    const base = "https://mempool.space/testnet/api/address";
+    const oldAddress: Fixture = {
+      recorded_at: live.recorded_at,
+      note: "synthetic",
+      exchanges: [page(`${base}/${OLD}/txs`, [stray, allowance]), page(`${base}/${OLD}/txs/chain/${ALLOWANCE}`, [])],
+    };
+    const net = testNetwork({
+      fixtures: [oldAddress, ...recordings],
+      views: [{ method: "get_jar", args: { jar_id: "1" }, result: { ...recordedJar1(), old_addresses: [OLD] } }],
+    });
+
+    const topUps = await app(net).jars.topUps("1");
+
+    expect(topUps[0]).toMatchObject({ txid: "dd".repeat(32), value: 4_000, status: "on_the_way" });
+    expect(topUps.map((t) => t.txid)).not.toContain(ALLOWANCE);
   });
 });
 

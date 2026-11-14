@@ -43,6 +43,49 @@ describe("a jar's Bitcoin transactions", () => {
     });
   });
 
+  test("lists the transactions at the jar's old addresses too, newest first, each once", async () => {
+    // jar 1 of sats-jar-dev-2.testnet after its handover (evidence/keeper-handover.json): the
+    // re-homing moved its 2,000-sat coin to the child's key, then a stray 1,500 sats sent to the
+    // old address was swept over, then the child paid 1,000 sats out.
+    const current = "tb1qsl5kuaj5rtxl9uje7mp7t5jwgsu8zjw07svh8n43srnfm6ydxe7qslkptf";
+    const old = "tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q";
+    const reader = createProofReader({ contract: record.contract, fetch: replayFetch(fixture("bitcoin-rehomed")) });
+
+    const txs = await reader.bitcoinTransactions({ ...(await jar1()), address: current, oldAddresses: [old] });
+
+    expect(txs.map((t) => [t.txid.slice(0, 8), t.blockHeight, t.received, t.sent, t.fee])).toEqual([
+      ["0de8d93e", 5_323_955, 1_996, 3_236, 240], // the child's payment, change back to the jar
+      ["de6c9a70", 5_323_947, 1_368, 1_500, 132], // the stray swept to the new address
+      ["adf809f2", 5_323_935, 1_868, 2_000, 132], // the handover's re-homing
+      ["bf9efae9", 5_323_935, 1_500, 0, 153], // the stray, sent to the old address
+      ["f0061d75", 5_323_237, 2_000, 0, 153], // the first top-up
+    ]);
+  });
+
+  test("puts a transaction not yet in a block first, whichever address it is at", async () => {
+    const tx = (txid: string, height: number | null, to: string) => ({
+      txid,
+      fee: 100,
+      status: height === null ? { confirmed: false } : { confirmed: true, block_height: height, block_time: 1_794_000_000 + height },
+      vin: [{ prevout: { scriptpubkey_address: "tb1qoutside", value: 10_000 } }],
+      vout: [{ scriptpubkey_address: to, value: 5_000 }],
+    });
+    // Hand-written explorer answers: a recording cannot hold a transaction still in the mempool.
+    const pages: Record<string, unknown[]> = {
+      "/address/new/txs": [tx("b", 20, "new")],
+      "/address/old/txs": [tx("u", null, "old"), tx("c", 30, "old"), tx("a", 10, "old")],
+    };
+    const http: typeof fetch = async (input) => {
+      const path = new URL(String(input)).pathname.replace("/testnet/api", "");
+      return new Response(JSON.stringify(pages[path] ?? []));
+    };
+    const reader = createProofReader({ contract: record.contract, fetch: http });
+
+    const txs = await reader.bitcoinTransactions({ ...(await jar1()), address: "new", oldAddresses: ["old"] });
+
+    expect(txs.map((t) => t.txid)).toEqual(["u", "c", "b", "a"]);
+  });
+
   test("falls back to Blockstream when mempool.space is down", async () => {
     const reader = createProofReader({
       contract: record.contract,

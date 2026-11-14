@@ -23,6 +23,7 @@ function jar(overrides: Partial<JarProof> = {}): JarProof {
     demoTiming: true,
     address: "tb1qjar00000000000000000000000000000000000000000000000000",
     addressExplorerUrl: "https://mempool.space/testnet/address/tb1qjar",
+    oldAddresses: [],
     witnessScript: "",
     publicKey: "",
     locktime: 0,
@@ -213,6 +214,17 @@ describe("the public record", () => {
     expect(within(rows[1]!).getByText(/^Confirmed /)).toBeTruthy();
     expect(within(rows[1]!).getByRole("link", { name: "t1 ↗" }).getAttribute("href")).toBe("https://mempool.space/testnet/tx/t1");
     expect(proof.bitcoinTransactions).toHaveBeenCalledWith(expect.objectContaining({ jarId: "7" }));
+  });
+
+  it("names a move between the jar's own addresses as a move, not money sent", async () => {
+    // A re-homing: everything spent was the jar's, everything paid out came back to the jar, less the fee.
+    const bitcoin: BitcoinTransaction[] = [
+      { txid: "m1", explorerUrl: "https://mempool.space/testnet/tx/m1", blockHeight: 12, time: 1_760_009_000, received: 9_837, sent: 10_000, fee: 163 },
+    ];
+    renderApp("/proof/7", record(jar({ oldAddresses: ["tb1qold"] }), [], bitcoin));
+    const section = (await screen.findByRole("heading", { name: "Bitcoin transactions" })).closest("section")!;
+    const [row] = await within(section).findAllByRole("listitem");
+    expect(within(row!).getByText("Moved to the jar's new address, fee 163 sats")).toBeTruthy();
   });
 });
 

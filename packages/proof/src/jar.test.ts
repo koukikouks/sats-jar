@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import { createProofReader, JarNotFoundError, ProofUnavailableError } from "./index.ts";
+import { toJarProof, type JarView } from "./jar.ts";
 import { evidence, fixture, replayFetch, type Fixture } from "./test-fetch.ts";
 
 const record = evidence();
@@ -80,6 +82,21 @@ describe("a jar's contract views", () => {
 
     expect(jar.nft.title).toBe("Sats Jar #1");
     expect(jar.nft.media.startsWith("data:image/svg+xml;base64,")).toBe(true);
+  });
+
+  test("keeps the addresses the jar moved away from, oldest first", () => {
+    // jar 1 of sats-jar-dev-2.testnet once its handover completed (evidence/keeper-handover.json).
+    const handover = JSON.parse(readFileSync(new URL("../../../evidence/keeper-handover.json", import.meta.url), "utf8")) as {
+      steps: { step: string; jar?: JarView }[];
+    };
+    const done = handover.steps.find((s) => s.step === "get_jar recorded (done)")?.jar;
+    if (done === undefined) throw new Error("the recorded jar is missing");
+    const token = { metadata: { title: "", description: "", media: "" } };
+
+    const proof = toJarProof(done, [], [], [], token);
+
+    expect(proof.address).toBe("tb1qsl5kuaj5rtxl9uje7mp7t5jwgsu8zjw07svh8n43srnfm6ydxe7qslkptf");
+    expect(proof.oldAddresses).toEqual(["tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q"]);
   });
 
   test("refuses a jar that does not exist", async () => {

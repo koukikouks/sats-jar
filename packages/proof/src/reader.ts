@@ -29,7 +29,7 @@ export interface ProofReader {
   jar(jarId: string): Promise<JarProof>;
   /** The contract's transactions for the jar, failed ones included, oldest first. */
   nearTransactions(jarId: string): Promise<NearTransaction[]>;
-  /** The Bitcoin transactions at the jar's address, newest first, from a public explorer. */
+  /** The Bitcoin transactions at every address the jar has used, newest first, from a public explorer. */
   bitcoinTransactions(jar: JarProof): Promise<BitcoinTransaction[]>;
 }
 
@@ -94,8 +94,8 @@ export function createProofReader(options: ProofReaderOptions): ProofReader {
       return toJarProof(jar, coins, payments, history, token);
     },
 
-    // get_jar exposes the current address only; once re-homing keeps old addresses, they join here.
-    bitcoinTransactions: (jar) => bitcoinTransactions(http, [jar.address]),
+    // Newest address first, so a move sorts below a later spend in the same block.
+    bitcoinTransactions: (jar) => bitcoinTransactions(http, [jar.address, ...[...jar.oldAddresses].reverse()]),
 
     async nearTransactions(jarId) {
       const rows = await contractHistory(http, contract);

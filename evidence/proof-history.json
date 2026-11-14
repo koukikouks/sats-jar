@@ -1,0 +1,53 @@
+{
+  "about": "T41 (#61, spec #58): the public record of jar 1 on the locked contract sats-jar.testnet, re-homed twice on 2026-11-13 (handover to Sunny's key, then transfer to Leo), lists the Bitcoin transactions at every address the jar has used. Read from the rendered page's Bitcoin transactions list, newest first; times are the page's local time (block timestamps; testnet3's run ahead of the clock).",
+  "page": "https://sats-jar-git-t41-whole-history-sats-jar.vercel.app/proof/1",
+  "deployed_commit": "8bf56b8",
+  "read_at": "2026-11-14T00:29:35+00:00",
+  "before": "Before T41 the list showed only the current address: the transfer's move and nothing earlier (e2e finding 25).",
+  "rows": [
+    {
+      "shows": "Moved to the jar's new address, fee 132 sats",
+      "when": "Confirmed 13 Nov 2026, 18:26",
+      "txid": "5f90716bd2a9a8acf5df517d7ac0b13a9a72b0cb6a085f8286db13a280332393",
+      "explorer": "https://mempool.space/testnet/tx/5f90716bd2a9a8acf5df517d7ac0b13a9a72b0cb6a085f8286db13a280332393"
+    },
+    {
+      "shows": "Sent 1,000 sats, fee 163 sats",
+      "when": "Confirmed 13 Nov 2026, 18:06",
+      "txid": "63f76f9702df1c0da3800eeb66edac3343ffc34ecddc8944879b611d424141d0",
+      "explorer": "https://mempool.space/testnet/tx/63f76f9702df1c0da3800eeb66edac3343ffc34ecddc8944879b611d424141d0"
+    },
+    {
+      "shows": "Moved to the jar's new address, fee 132 sats",
+      "when": "Confirmed 13 Nov 2026, 18:06",
+      "txid": "c34af883d7a3ba5c83e6631ed4013a09319d93401ca9d0d62867a9a5a82d5484",
+      "explorer": "https://mempool.space/testnet/tx/c34af883d7a3ba5c83e6631ed4013a09319d93401ca9d0d62867a9a5a82d5484"
+    },
+    {
+      "shows": "Sent 5,000 sats, fee 163 sats",
+      "when": "Confirmed 13 Nov 2026, 17:46",
+      "txid": "c9d3f1faaf1fa6c372339808f6263105e9642bbad59975d751f1094854490b5e",
+      "explorer": "https://mempool.space/testnet/tx/c9d3f1faaf1fa6c372339808f6263105e9642bbad59975d751f1094854490b5e"
+    },
+    {
+      "shows": "Sent 3,000 sats, fee 163 sats",
+      "when": "Confirmed 13 Nov 2026, 17:06",
+      "txid": "0ac6f2b82e5b987980b77d4eaf82c2c11aa09029ba1652c373e4a2609f3e2cf1",
+      "explorer": "https://mempool.space/testnet/tx/0ac6f2b82e5b987980b77d4eaf82c2c11aa09029ba1652c373e4a2609f3e2cf1"
+    },
+    {
+      "shows": "Received 12,000 sats",
+      "when": "Confirmed 13 Nov 2026, 16:26",
+      "txid": "f8612183f39e0b4c9ecb7069aa4edeb4fbdb61fb2bbce8eb809b83201f1c8449",
+      "explorer": "https://mempool.space/testnet/tx/f8612183f39e0b4c9ecb7069aa4edeb4fbdb61fb2bbce8eb809b83201f1c8449"
+    }
+  ],
+  "checks": {
+    "top-up 12,000 sats": "f8612183",
+    "emergency payment 3,000 sats": "0ac6f2b8",
+    "allowance 5,000 sats (2 periods carried over)": "c9d3f1fa",
+    "handover re-homing to the child's key": "c34af883",
+    "the holder's send of 1,000 sats": "63f76f97",
+    "transfer re-homing to the new holder's key": "5f90716b"
+  }
+}
