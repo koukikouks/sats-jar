@@ -25,7 +25,9 @@ describe("the jar page", () => {
     expect(
       await screen.findByText("If the signing network behind Sats Jar ever stops, the Bitcoin-only exit opens on 1 May 2042, and only the holder's recovery phrase can use it."),
     ).toBeTruthy();
-    expect(document.body.textContent).not.toMatch(/NEAR/);
+    // The page's one NEAR mention is the jar picture's note (T45); the exit section names no chain.
+    const exit = screen.getByRole("heading", { name: "If Sats Jar's signing ever stops" }).closest("section")!;
+    expect(exit.textContent).not.toMatch(/NEAR/);
   });
 
   it("shows a funded jar's balance, top-up address, counted top-ups and paid allowance from live data", async () => {
@@ -35,6 +37,11 @@ describe("the jar page", () => {
     expect(await screen.findByRole("heading", { name: jar1.nickname })).toBeTruthy();
     expect(sdk.jars.status).toHaveBeenCalledWith("1");
     expect(screen.getByText("1,260 sats in the jar")).toBeTruthy();
+    const drawn = screen.getByRole("img", { name: `Picture of ${jar1.nickname}` });
+    expect(within(drawn).getByText(jar1.nickname)).toBeTruthy();
+    expect(within(drawn).getByText("1,260 sats")).toBeTruthy();
+    expect(within(drawn).getByText(/^Next allowance /)).toBeTruthy();
+    expect(screen.getByText("NEAR wallets and explorers show the jar's on-chain picture, which the contract draws and can't change.")).toBeTruthy();
     expect(screen.getByText("You gave this jar")).toBeTruthy();
     expect(screen.getByText(jar1.address)).toBeTruthy();
     const topUps = screen.getByRole("heading", { name: "Top-ups" }).closest("section")!;

@@ -25,14 +25,17 @@ describe("home", () => {
         { jarId: "8", nickname: "Kit's jar", roles: ["guardian"], balance: 0, picture, demoTiming: false },
       ]),
     );
-    const sunny = (await screen.findByText("Sunny's jar")).closest("li")!;
+    const sunnyPicture = await screen.findByRole("img", { name: "Picture of Sunny's jar" });
+    expect(within(sunnyPicture).getByText("Sunny's jar")).toBeTruthy();
+    expect(within(sunnyPicture).getByText("20,000 sats")).toBeTruthy();
+    const sunny = sunnyPicture.closest("li")!;
     expect(within(sunny).getByRole("link").getAttribute("href")).toBe("/jar/7");
     expect(within(sunny).getByText("Demo timing")).toBeTruthy();
-    expect(within(sunny).getByText("20,000 sats")).toBeTruthy();
+    expect(within(sunny).getAllByText("20,000 sats")).toHaveLength(2);
     // The giver's own account is the family account that holds the jar until handover.
     expect(within(sunny).getByText("You gave this jar")).toBeTruthy();
     expect(within(sunny).queryByText(/You hold this jar/)).toBeNull();
-    const kit = screen.getByText("Kit's jar").closest("li")!;
+    const kit = screen.getByRole("img", { name: "Picture of Kit's jar" }).closest("li")!;
     expect(within(kit).queryByText("Demo timing")).toBeNull();
     expect(within(kit).getByText("You're a guardian")).toBeTruthy();
   });
@@ -49,9 +52,9 @@ describe("home", () => {
           : ({ handover: { state: "claimed", claimedAt: 1, lapsesAt: 2, confirmations: 0, confirmedByMe: false, pausesAllowancesEarly: false } } as JarStatus),
       );
     });
-    const given = (await screen.findByText("Sunny's jar")).closest("li")!;
+    const given = (await screen.findByRole("img", { name: "Picture of Sunny's jar" })).closest("li")!;
     expect(await within(given).findByText("You gave this jar away")).toBeTruthy();
-    const claimed = screen.getByText("Claimed jar").closest("li")!;
+    const claimed = screen.getByRole("img", { name: "Picture of Claimed jar" }).closest("li")!;
     expect(await within(claimed).findByText("You've claimed this jar")).toBeTruthy();
   });
 

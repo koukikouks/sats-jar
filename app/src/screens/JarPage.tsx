@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router";
 import { useSdk } from "../services.tsx";
 import { POLL } from "../ui/poll.ts";
 import { DemoBadge } from "../ui/DemoBadge.tsx";
+import { JarPicture } from "../ui/JarPicture.tsx";
 import { roleLine, sats } from "../ui/format.ts";
 import { Refusal } from "../ui/messages.tsx";
 import { PinGate } from "../ui/PinGate.tsx";
@@ -36,7 +37,20 @@ function FamilyPage() {
   return (
     <>
       <section className="panel jar-head">
-        <img className="picture" src={jar.picture} alt="" />
+        <figure className="jar-figure">
+          <JarPicture
+            className="jar-picture"
+            nickname={jar.nickname}
+            balance={jar.balance}
+            cap={jar.cap}
+            unlockAt={jar.unlockAt}
+            nextAllowanceAt={jar.nextAllowanceAt}
+            demoTiming={jar.demoTiming}
+          />
+          <figcaption className="hint">
+            NEAR wallets and explorers show the jar's on-chain picture, which the contract draws and can't change.
+          </figcaption>
+        </figure>
         <div>
           <h1>{jar.nickname}</h1>
           <DemoBadge demoTiming={jar.demoTiming} />

@@ -86,7 +86,11 @@ describe("the public record", () => {
       screen.getByText("Everything here is read straight from the public NEAR and Bitcoin chains, not from Sats Jar. Check any line on an explorer."),
     ).toBeTruthy();
     const theJar = screen.getByRole("heading", { name: "The jar" }).closest("section")!;
-    expect(within(theJar).getByRole("img").getAttribute("src")).toBe(picture);
+    const drawn = within(theJar).getByRole("img", { name: "Picture of Sunny's jar" });
+    expect(within(drawn).getByText("Sunny's jar")).toBeTruthy();
+    expect(within(drawn).getByText("20,000 sats")).toBeTruthy();
+    expect(within(drawn).getByText("Up to 2,500 sats an allowance")).toBeTruthy();
+    expect(within(drawn).getByText(/^Unlocks /)).toBeTruthy();
     expect(within(theJar).getByText("Balance: 20,000 sats")).toBeTruthy();
     const address = within(theJar).getByRole("link", { name: /^Bitcoin address: tb1qjar0+ ↗$/ });
     expect(address.getAttribute("href")).toBe("https://mempool.space/testnet/address/tb1qjar");
