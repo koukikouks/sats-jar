@@ -29,7 +29,10 @@ export function BitcoinTransactions(props: { jar: JarProof }) {
 }
 
 // A spend's change comes back to the jar, so what left is what went in, less the change and the fee.
+// A re-homing pays nothing out: all of it comes back to the jar's new address, less the fee.
 function movement(tx: BitcoinTransaction): string {
   if (tx.sent === 0) return `Received ${sats(tx.received)}`;
-  return `Sent ${sats(tx.sent - tx.received - tx.fee)}, fee ${sats(tx.fee)}`;
+  const out = tx.sent - tx.received - tx.fee;
+  if (out === 0) return `Moved to the jar's new address, fee ${sats(tx.fee)}`;
+  return `Sent ${sats(out)}, fee ${sats(tx.fee)}`;
 }
