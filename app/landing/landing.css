@@ -207,6 +207,9 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
 .menu-panel a { display: block; padding: .75rem .8rem; border-radius: 9px; font-weight: 500; text-decoration: none; }
 .menu-panel a:hover, .menu-panel a:focus-visible { background: #f6f3ec; }
 .menu-panel a[aria-current="page"] { font-weight: 700; }
+.menu-panel a.nav-cta { margin: .4rem .2rem .3rem; text-align: center; font-weight: 800; color: var(--ink); background: var(--yellow); border: 2.5px solid var(--ink); border-radius: 12px 15px 11px 16px / 15px 11px 16px 12px; box-shadow: 4px 4px 0 var(--orange); }
+.menu-panel a.nav-cta:hover, .menu-panel a.nav-cta:focus-visible { background: var(--yellow); }
+.menu-panel a.nav-cta:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--orange); }
 
 /* stand-alone pages (roadmap, what you're trusting) */
 .section.page { padding-top: 2rem; }
