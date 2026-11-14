@@ -415,7 +415,8 @@ fieldset.field {
   gap: var(--space-5);
   align-items: flex-start;
   border: none;
-  padding: var(--space-8);
+  /* Room for the crayon frame's thick, tilted edge around the taller app-drawn picture. */
+  padding: var(--space-10) var(--space-10) calc(var(--space-10) + var(--space-2)) calc(var(--space-10) + var(--space-8));
   isolation: isolate;
 }
 .jar-head::before {
@@ -477,8 +478,10 @@ fieldset.field {
   .panel {
     padding: var(--space-5);
   }
+  /* The picture stacks above the words on a phone, inside the frame's thick edge. */
   .jar-head {
-    padding: var(--space-6);
+    flex-direction: column;
+    padding: var(--space-8) var(--space-8) calc(var(--space-10) + var(--space-5)) var(--space-10);
   }
   .words {
     columns: 1;

@@ -82,13 +82,13 @@ export function HandoverSection(props: { jar: JarStatus }) {
   );
 }
 
+/** ", in about 5 minutes" until a time, or nothing once it has passed. */
+const inTime = (at: number): string => (at > nowSeconds() ? `, in ${aboutHowLong(at - nowSeconds())}` : "");
+
 /**
  * When a confirmed handover goes ahead: once the public waiting time has passed and the jar has unlocked
  * (stories 20, 53a). "About N minutes" is computed from now, so it holds for real timing too.
  */
-/** ", in about 5 minutes" until a time, or nothing once it has passed. */
-const inTime = (at: number): string => (at > nowSeconds() ? `, in ${aboutHowLong(at - nowSeconds())}` : "");
-
 function goesAhead(jar: JarStatus, delayEndsAt: number): string {
   const at = Math.max(delayEndsAt, jar.unlockAt);
   const left = at - nowSeconds();
