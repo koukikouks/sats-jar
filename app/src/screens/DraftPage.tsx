@@ -174,7 +174,7 @@ function RuleForm(props: { draft: Draft; joinedCount: number }) {
       <h2>The jar's rule</h2>
       <Field
         label="Where should the allowance go?"
-        hint="The jar can only ever pay this address until the handover, so use a wallet the family controls, not an exchange."
+        hint="The beneficiary's Bitcoin address. Until handover the jar can only pay this address."
       >
         <input placeholder="tb1q…" value={childAddress} onChange={(e) => setChildAddress(e.target.value)} />
       </Field>

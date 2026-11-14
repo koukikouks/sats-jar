@@ -145,7 +145,7 @@ describe("creating the jar", () => {
     const { user } = renderApp("/draft/d1", (sdk) => withDraft(sdk, [true, true, false]));
     const address = await screen.findByLabelText("Where should the allowance go?");
     expect(
-      screen.getByText("The jar can only ever pay this address until the handover, so use a wallet the family controls, not an exchange."),
+      screen.getByText("The beneficiary's Bitcoin address. Until handover the jar can only pay this address."),
     ).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "No test wallet? Use our demo address" }));
     expect(address).toHaveProperty("value", "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj");
