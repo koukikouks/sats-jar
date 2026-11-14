@@ -16,22 +16,25 @@ body {
 }
 h1,
 h2 {
-  font-family: var(--font-hand);
-  font-weight: 400;
-  line-height: var(--line-height-hand);
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: var(--line-height-display);
   /* Waxy lettering: a speckle mask lets the paper show through, like crayon on tooth. */
   -webkit-mask-image: url("../landing/assets/grain.png");
   mask-image: url("../landing/assets/grain.png");
   -webkit-mask-size: var(--grain-size) var(--grain-size);
   mask-size: var(--grain-size) var(--grain-size);
+  /* The mask clips to the box, so give descenders room inside it; the margins below take it back. */
+  padding-block: 0.14em;
 }
 h1 {
   font-size: var(--text-h1);
-  margin: 0 0 var(--space-4);
+  margin: -0.14em 0 calc(var(--space-4) - 0.14em);
 }
 h2 {
   font-size: var(--text-h2);
-  margin: 0 0 var(--space-3);
+  margin: -0.14em 0 calc(var(--space-3) - 0.14em);
 }
 h3 {
   font-size: var(--text-h3);
@@ -70,7 +73,9 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  font-family: var(--font-hand);
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.03em;
   font-size: var(--text-brand);
   line-height: 1;
   color: var(--ink);
@@ -285,9 +290,10 @@ fieldset.field {
   text-decoration: none;
 }
 .card-title {
-  font-family: var(--font-hand);
+  font-family: var(--font-display);
   font-size: var(--text-h3);
-  font-weight: 400;
+  font-weight: 900;
+  letter-spacing: -0.02em;
 }
 .picture {
   width: var(--picture-size);

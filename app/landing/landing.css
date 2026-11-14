@@ -10,7 +10,7 @@
   --blue: #2f6fd8;
   --green: #3a9d4f;
   --lilac: #b79bdc;
-  --hand: "Caveat Brush", "Segoe Print", "Bradley Hand", "Chalkboard SE", cursive;
+  --display: "Satoshi", "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --wrap: 1180px;
 }
@@ -26,6 +26,8 @@ a { color: inherit; }
 .grainy {
   -webkit-mask-image: url("assets/grain.png"); mask-image: url("assets/grain.png");
   -webkit-mask-size: 256px 256px; mask-size: 256px 256px;
+  /* The mask clips to the box, so give descenders (y, g, p) room inside it without moving the layout. */
+  padding-block: .14em; margin-block: -.14em;
 }
 
 .skip { position: absolute; left: -999px; top: 0; background: var(--ink); color: #fff; padding: .6rem 1rem; z-index: 50; }
@@ -33,8 +35,8 @@ a { color: inherit; }
 
 /* ───────── nav ───────── */
 .nav { max-width: var(--wrap); margin: 0 auto; padding: 1.1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.logo { display: inline-flex; align-items: center; gap: .55rem; text-decoration: none; font-family: var(--hand); font-size: 1.9rem; line-height: 1; }
-.logo img { width: auto; height: 48px; }
+.logo { display: inline-flex; align-items: center; gap: .5rem; text-decoration: none; font-family: var(--display); font-weight: 900; font-size: 1.6rem; letter-spacing: -.03em; line-height: 1; }
+.logo img { width: 44px; height: 44px; transform: rotate(-8deg); }
 .nav nav { display: flex; gap: 1.4rem; font-weight: 500; font-size: .98rem; }
 .nav nav a { text-decoration: none; padding: .25rem 0; background: linear-gradient(var(--yellow), var(--yellow)) 0 100% / 0 .4em no-repeat; transition: background-size .2s; }
 .nav nav a:hover { background-size: 100% .4em; }
@@ -42,12 +44,12 @@ a { color: inherit; }
 /* ───────── hero ───────── */
 .hero { position: relative; max-width: var(--wrap); margin: 0 auto; padding: 1.5rem 1.25rem 3.5rem; display: grid; grid-template-columns: 1.05fr .95fr; gap: 1rem 2rem; align-items: center; }
 .hero-copy { position: relative; z-index: 2; }
-.kicker { font-family: var(--hand); font-size: 1.45rem; margin: 0 0 .3rem; color: var(--blue); transform: rotate(-1.5deg); transform-origin: left; display: inline-block; }
+.kicker { font-family: var(--display); font-weight: 700; font-size: 1.15rem; letter-spacing: -.01em; margin: 0 0 .6rem; color: var(--blue); display: inline-block; }
 
-h1 { margin: 0 0 1.2rem; font-family: var(--hand); font-weight: 400; line-height: .98; letter-spacing: .005em; font-size: clamp(3.3rem, 8.4vw, 6.9rem); }
+h1 { margin: 0 0 1.2rem; font-family: var(--display); font-weight: 900; line-height: 1; letter-spacing: -.04em; font-size: clamp(3rem, 7.4vw, 6rem); }
 h1 .line { display: block; }
 h1 .role { display: inline-block; position: relative; padding: .04em .02em .22em; margin: .02em 0; min-width: 2ch; }
-h1 .role-word { display: inline-block; font-size: 1.12em; transition: opacity .2s ease, transform .2s ease; will-change: transform, opacity; }
+h1 .role-word { display: inline-block; transition: opacity .2s ease, transform .2s ease; will-change: transform, opacity; }
 h1 .role-word.is-out { opacity: 0; transform: translateY(-.18em) rotate(-3deg); }
 h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); transition: none; }
 .role-underline { position: absolute; left: -2%; bottom: .02em; width: 104%; height: .26em; pointer-events: none; object-fit: fill; }
@@ -79,7 +81,7 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
 .card-figure { inset: 8% 6% 4% 6% !important; width: 88% !important; height: 88% !important; object-fit: contain; }
 .card.is-popping { animation: pop .55s cubic-bezier(.3, 1.5, .5, 1); }
 @keyframes pop { 0% { transform: rotate(-12deg) scale(.7); opacity: .2; } 60% { transform: rotate(-3deg) scale(1.05); opacity: 1; } 100% { transform: rotate(-5deg) scale(1); } }
-.card-tag { position: absolute; left: 50%; bottom: -7%; transform: translateX(-50%) rotate(2deg); margin: 0; white-space: nowrap; font-family: var(--hand); font-size: clamp(1.15rem, 2.6vw, 1.6rem); padding: .15em .7em .05em; background: url("assets/swatch-yellow.png") center / 100% 100% no-repeat; }
+.card-tag { position: absolute; left: 50%; bottom: -7%; transform: translateX(-50%) rotate(2deg); margin: 0; white-space: nowrap; font-family: var(--display); font-weight: 700; letter-spacing: -.01em; font-size: clamp(1rem, 2.2vw, 1.3rem); padding: .2em .7em .15em; background: url("assets/swatch-yellow.png") center / 100% 100% no-repeat; }
 
 /* little role picker (also the way to drive it with reduced motion) */
 .roles { grid-column: 1 / -1; list-style: none; margin: .5rem 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem .6rem; position: relative; z-index: 2; }
@@ -96,7 +98,7 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
 
 /* ───────── sections ───────── */
 .section { position: relative; max-width: var(--wrap); margin: 0 auto; padding: 3.5rem 1.25rem; }
-.section h2 { font-family: var(--hand); font-weight: 400; font-size: clamp(2.4rem, 5vw, 3.6rem); line-height: 1; margin: 0 0 1.4rem; }
+.section h2 { font-family: var(--display); font-weight: 900; letter-spacing: -.035em; font-size: clamp(2.2rem, 4.4vw, 3.2rem); line-height: 1.05; margin: 0 0 1.4rem; }
 .section-lede { font-size: 1.15rem; max-width: 40rem; margin: -.4rem 0 2rem; }
 
 .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.75rem; counter-reset: s; }
@@ -110,12 +112,12 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
 .step-3::before { border-image-source: url("assets/frame-2.png"); transform: rotate(-.8deg); }
 .step > * { position: relative; z-index: 1; }
 .step-art { width: 70%; margin: 0 auto .6rem; }
-.step h3 { font-family: var(--hand); font-weight: 400; font-size: 1.75rem; line-height: 1.1; margin: 0 0 .5rem; }
+.step h3 { font-family: var(--display); font-weight: 900; letter-spacing: -.025em; font-size: 1.45rem; line-height: 1.15; margin: 0 0 .5rem; }
 .step .num { display: inline-block; min-width: 1.5em; text-align: center; margin-right: .2em; background: url("assets/swatch-yellow.png") center / 100% 100% no-repeat; }
 .step p { margin: 0; }
 
 .trust-grid { display: grid; grid-template-columns: 1fr 1.25fr; gap: 2.5rem; align-items: start; }
-.trust-col h3 { font-family: var(--hand); font-weight: 400; font-size: 1.9rem; margin: 0 0 .7rem; }
+.trust-col h3 { font-family: var(--display); font-weight: 900; letter-spacing: -.025em; font-size: 1.55rem; margin: 0 0 .7rem; }
 .trust-col ul { margin: 0; padding: 0; list-style: none; display: grid; gap: .9rem; }
 .trust-col li { position: relative; padding-left: 1.9rem; }
 .trust-col li::before { content: ""; position: absolute; left: 0; top: .5em; width: .9rem; height: .9rem; border-radius: 50% 40% 55% 45%; background: var(--green); border: 2px solid var(--ink); }
@@ -142,10 +144,10 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
 .stop-yield { --y: .5; }
 .stop-end { --y: .18; }
 .pin img { width: 70%; height: 70%; }
-.pin-text { font: 400 1.7rem/1 var(--hand); color: var(--orange); border-color: var(--orange); }
+.pin-text { font: 900 1.4rem/1 var(--display); color: var(--orange); border-color: var(--orange); }
 .pin-flag { background: var(--ink); color: #fff; box-shadow: 4px 4px 0 var(--orange); }
 .pin-flag:active { transform: translateX(-50%) scale(.94); }
-.stop h3 { font-family: var(--hand); font-weight: 400; font-size: 1.75rem; line-height: 1.1; margin: 0 0 .4rem; }
+.stop h3 { font-family: var(--display); font-weight: 900; letter-spacing: -.025em; font-size: 1.45rem; line-height: 1.15; margin: 0 0 .4rem; }
 .stop p { margin: 0 auto .9rem; max-width: 17rem; }
 .soon { display: inline-block; vertical-align: middle; margin-left: .2rem; padding: .2rem .55rem .15rem; font: 700 .7rem/1 var(--body); text-transform: uppercase; letter-spacing: .05em; color: var(--ink); background: url("assets/swatch-yellow.png") center / 100% 100% no-repeat; }
 .btn-small { font-size: .95rem; padding: .75rem 1.1rem; }
@@ -175,7 +177,7 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
   /* the map stays left to right; the band, pins and text shrink to fit three columns */
   .road { --band: 130px; --pin: 44px; }
   .road-stops { gap: .6rem; }
-  .stop h3 { font-size: 1.3rem; }
+  .stop h3 { font-size: 1.1rem; }
   .stop p { font-size: .85rem; line-height: 1.4; }
   .soon { display: block; width: max-content; margin: .3rem auto 0; }
   .btn-small { font-size: .8rem; padding: .6rem .5rem; }
