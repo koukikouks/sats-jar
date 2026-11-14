@@ -377,11 +377,11 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
     await expect(show.or(page.getByRole("heading", { name: "Unlock Sats Jar" })).first()).toBeVisible();
     if (await show.isVisible()) {
       await setUpPhone(page, false);
-      await expect(page.getByRole("heading", { name: "Your receive code" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Your receive link" })).toBeVisible();
       await saveKeys(friend);
     }
-    await passGate(page, page.getByRole("heading", { name: "Your receive code" }));
-    receiveCode = (await page.locator(".mono").first().textContent()) ?? "";
+    await passGate(page, page.getByRole("heading", { name: "Your receive link" }));
+    receiveCode = (await page.locator("[data-receive-code]").textContent())?.trim() ?? "";
     expect(receiveCode.length).toBeGreaterThan(20);
     record([17, 26], "the friend's receive code", { detail: receiveCode });
   });
@@ -515,7 +515,7 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
     const start = async () => {
       await page.getByLabel("Their receive code").fill(receiveCode);
       await page.getByRole("button", { name: "Start the transfer" }).click();
-      await expect(page.getByText("Send them this link so they can accept:")).toBeVisible();
+      await expect(page.getByText("Send them this link. They open it on their phone and press Accept:")).toBeVisible();
     };
     await start();
     record([27], "a transfer to the friend's receive code", { explorerUrl: await checkIt(page) });
@@ -528,7 +528,8 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
     await friend.page.goto(acceptLink);
     await passGate(friend.page, friend.page.getByRole("heading", { name: `Accept ${nickname}` }));
     await friend.page.getByRole("button", { name: "Accept the jar" }).click();
-    await friend.page.waitForURL(new RegExp(`/jar/${jarId}$`));
+    // The accept page stays and follows the move until this phone holds the jar.
+    await friend.page.getByRole("link", { name: "Open your jar" }).click();
     await expect(friend.page.getByText("You hold this jar", { exact: false })).toBeVisible();
     record([29], "the friend accepted with their own key and holds the jar");
   });

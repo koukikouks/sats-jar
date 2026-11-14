@@ -1,10 +1,11 @@
 import type { JarStatus, Sent } from "@sats-jar/sdk";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router";
 import { useSdk } from "../../services.tsx";
 import { Copy } from "../../ui/Copy.tsx";
 import { Field } from "../../ui/Field.tsx";
-import { coinsStillToGo } from "../../ui/format.ts";
+import { coinsStillToGo, sats } from "../../ui/format.ts";
 import { CheckIt, Refusal } from "../../ui/messages.tsx";
 
 /** The holder after handover: send the jar's Bitcoin, or give the jar to someone (stories 55–58). */
@@ -15,7 +16,8 @@ export function HolderSection(props: { jar: JarStatus }) {
   const [sent, setSent] = useState<Sent | null>(null);
   const done = (result: Sent) => {
     setSent(result);
-    return client.invalidateQueries({ queryKey: ["jar", jar.jarId] });
+    // Every query: Your jars must show the change too, not only this page.
+    return client.invalidateQueries();
   };
   const cancel = useMutation({ mutationFn: () => sdk.holder.cancelTransfer(jar.jarId), onSuccess: done });
   if (!jar.roles.includes("holder") || jar.handover.state !== "done") return null;
@@ -25,14 +27,14 @@ export function HolderSection(props: { jar: JarStatus }) {
     <section className="panel">
       {transfer.state === "none" && (
         <>
-          <Spend jarId={jar.jarId} onSent={done} />
+          <Spend jarId={jar.jarId} />
           <StartTransfer jarId={jar.jarId} onSent={done} />
         </>
       )}
       {transfer.state === "offered" && (
         <>
           <h2>Give the jar to someone</h2>
-          <p>Send them this link so they can accept:</p>
+          <p>Send them this link. They open it on their phone and press Accept:</p>
           <p className="mono">{acceptLink}</p>
           <Copy text={acceptLink} label="Copy link" />
           <button type="button" className="secondary" disabled={cancel.isPending} onClick={() => cancel.mutate()}>
@@ -49,15 +51,20 @@ export function HolderSection(props: { jar: JarStatus }) {
   );
 }
 
-function Spend(props: { jarId: string; onSent: (sent: Sent) => Promise<unknown> }) {
+/** Sending the jar's Bitcoin; its own "on its way" line carries its transaction link. */
+function Spend(props: { jarId: string }) {
   const sdk = useSdk();
+  const client = useQueryClient();
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
   // No fee rate: the SDK uses the explorer's half-hour recommendation.
-  const spend = useMutation({ mutationFn: () => sdk.holder.spend(props.jarId, { to: to.trim(), amount: Number(amount) }), onSuccess: props.onSent });
+  const spend = useMutation({
+    mutationFn: (payment: { to: string; amount: number }) => sdk.holder.spend(props.jarId, payment),
+    onSuccess: () => client.invalidateQueries(),
+  });
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    spend.mutate();
+    spend.mutate({ to: to.trim(), amount: Number(amount) });
   };
   return (
     <form onSubmit={submit}>
@@ -72,13 +79,20 @@ function Spend(props: { jarId: string; onSent: (sent: Sent) => Promise<unknown> 
       <button type="submit" disabled={spend.isPending || to.trim() === "" || amount === ""}>
         Send
       </button>
+      {spend.isSuccess && (
+        <p className="done">
+          On its way: {sats(spend.variables.amount)} to {spend.variables.to}. <CheckIt url={spend.data?.explorerUrl} />
+        </p>
+      )}
     </form>
   );
 }
 
 function StartTransfer(props: { jarId: string; onSent: (sent: Sent) => Promise<unknown> }) {
   const sdk = useSdk();
-  const [code, setCode] = useState("");
+  // A receive link arrives as ?give=<code>; it only fills the box, the person still presses Start.
+  const [searchParams] = useSearchParams();
+  const [code, setCode] = useState(() => searchParams.get("give") ?? "");
   const start = useMutation({ mutationFn: () => sdk.holder.startTransfer(props.jarId, code.trim()), onSuccess: props.onSent });
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -87,7 +101,7 @@ function StartTransfer(props: { jarId: string; onSent: (sent: Sent) => Promise<u
   return (
     <form onSubmit={submit}>
       <h2>Give the jar to someone</h2>
-      <Field label="Their receive code" hint="They get it on their own phone, under 'Someone is giving me a jar'.">
+      <Field label="Their receive code" hint="They find it on their own phone, under 'Someone is giving me a jar'. If they sent you a link, it's already filled in.">
         <input autoComplete="off" value={code} onChange={(e) => setCode(e.target.value)} />
       </Field>
       <Refusal error={start.error} />

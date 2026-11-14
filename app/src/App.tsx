@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router";
 import { AcceptTransfer } from "./screens/AcceptTransfer.tsx";
 import { ChildSetUp } from "./screens/ChildSetUp.tsx";
 import { DraftPage } from "./screens/DraftPage.tsx";
+import { GivePage } from "./screens/GivePage.tsx";
 import { Home } from "./screens/Home.tsx";
 import { JarPage } from "./screens/JarPage.tsx";
 import { JoinPage } from "./screens/JoinPage.tsx";
@@ -26,6 +27,7 @@ export function App() {
           <Route path="/jar/:jarId/accept" element={<AcceptTransfer />} />
           <Route path="/restore" element={<Restore />} />
           <Route path="/receive" element={<Receive />} />
+          <Route path="/give/:code" element={<GivePage />} />
           <Route path="/proof/:jarId" element={<ProofPage />} />
         </Routes>
       </main>

@@ -110,14 +110,13 @@ describe("restoring the child's phone", () => {
     expect(await screen.findByRole("heading", { name: "Your jars" })).toBeTruthy();
   });
 
-  it("shows the SDK's sentence for a device already set up", async () => {
-    const { user } = renderApp("/restore", (sdk) =>
-      sdk.child.restore.mockRejectedValue(new SatsJarRefusal("ALREADY_SET_UP", "This device is already set up.")),
-    );
-    await user.type(await screen.findByLabelText("Recovery phrase"), words.join(" "));
-    await user.type(screen.getByLabelText("PIN"), "771204");
-    await user.type(screen.getByLabelText("Type it again"), "771204");
-    await user.click(screen.getByRole("button", { name: "Restore" }));
-    expect(await screen.findByText("This device is already set up.")).toBeTruthy();
+  it("tells a device already set up before asking for 12 words", async () => {
+    const { sdk } = renderApp("/restore");
+    expect(
+      await screen.findByText("This device is already set up, so a recovery phrase can't be restored here. Restore on a phone that hasn't used Sats Jar yet."),
+    ).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Your jars" }).getAttribute("href")).toBe("/");
+    expect(screen.queryByLabelText("Recovery phrase")).toBeNull();
+    expect(sdk.child.restore).not.toHaveBeenCalled();
   });
 });
