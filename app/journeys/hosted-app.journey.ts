@@ -84,6 +84,22 @@ async function passGate(page: Page, ready: Locator): Promise<"set up" | "unlocke
   return how;
 }
 
+/** Joins from an open invite page: a new device sets its PIN in the same press, a locked one unlocks first. */
+async function joinAsGuardian(page: Page): Promise<"set up" | "unlocked" | "open"> {
+  const join = page.getByRole("button", { name: "Join as a guardian" });
+  const unlock = page.getByRole("heading", { name: "Unlock Sats Jar" });
+  await expect(join.or(unlock).first()).toBeVisible();
+  if (await page.getByLabel("Type it again").isVisible()) {
+    await page.getByLabel("PIN", { exact: true }).fill(PIN);
+    await page.getByLabel("Type it again").fill(PIN);
+    await join.click();
+    return "set up";
+  }
+  const how = await passGate(page, join);
+  await join.click();
+  return how;
+}
+
 test("C1: a giver starts a jar and a guardian joins, through the hosted backend", async ({ browser, request }) => {
   const baseURL = test.info().project.use.baseURL ?? "";
   const giver = await device(browser, "giver");
@@ -113,8 +129,7 @@ test("C1: a giver starts a jar and a guardian joins, through the hosted backend"
     const { page } = guardian;
     await page.goto(links[0] ?? "");
     await expect(page.getByRole("heading", { name: `Be a guardian of ${nickname}` })).toBeVisible();
-    const how = await passGate(page, page.getByRole("button", { name: "Join as a guardian" }));
-    await page.getByRole("button", { name: "Join as a guardian" }).click();
+    const how = await joinAsGuardian(page);
     await expect(page.getByText(`You're a guardian of ${nickname}.`, { exact: false })).toBeVisible();
     // Joining is when the backend makes the guardian's sponsored account.
     await expect.poll(() => accountOf(guardian), { message: "the guardian's device holds its sponsored account" }).not.toBeNull();

@@ -5,11 +5,11 @@ import { Field } from "./Field.tsx";
 import { Refusal } from "./messages.tsx";
 import { pinDigits, pinProblem } from "./PinGate.tsx";
 
-type Step = { name: "intro" } | { name: "words"; words: string[]; check: number[] } | { name: "check"; check: number[] };
+type Step = { name: "intro" } | { name: "words"; words: string[]; check: number[] } | { name: "check"; words: string[]; check: number[] };
 
 /**
  * Sets up a phone whose keys come from a recovery phrase: the child's (stories 41–44) or a new
- * holder's (story 58a). The words show once and live only in memory until they are checked.
+ * holder's (story 58a). The words live only in this screen's memory, so they can be shown again until the check passes.
  */
 export function RecoveryPhraseSetUp(props: { heading: string; intro: ReactNode; onDone: () => void }) {
   const sdk = useSdk();
@@ -45,21 +45,17 @@ export function RecoveryPhraseSetUp(props: { heading: string; intro: ReactNode; 
         </ol>
         <button
           type="button"
-          onClick={() => {
-            // Forget the words here as soon as they are written down; the SDK keeps them until the check.
-            start.reset();
-            setStep({ name: "check", check: step.check });
-          }}
+          onClick={() => setStep({ name: "check", words: step.words, check: step.check })}
         >
           I've written them down
         </button>
       </section>
     );
   }
-  return <CheckWords check={step.check} onDone={props.onDone} />;
+  return <CheckWords check={step.check} onDone={props.onDone} onShowAgain={() => setStep({ name: "words", words: step.words, check: step.check })} />;
 }
 
-function CheckWords(props: { check: number[]; onDone: () => void }) {
+function CheckWords(props: { check: number[]; onDone: () => void; onShowAgain: () => void }) {
   const sdk = useSdk();
   const [typed, setTyped] = useState<Record<number, string>>({});
   const [pin, setPin] = useState("");
@@ -78,12 +74,13 @@ function CheckWords(props: { check: number[]; onDone: () => void }) {
   return (
     <form className="panel" onSubmit={submit}>
       <h1>Check your words</h1>
+      <p>Type these words from your paper, so you know you've got them right.</p>
       {props.check.map((index) => (
         <Field key={index} label={`Word ${index + 1}`}>
           <input autoComplete="off" value={typed[index] ?? ""} onChange={(e) => setTyped({ ...typed, [index]: e.target.value })} />
         </Field>
       ))}
-      <Field label="PIN" hint="A 6-digit PIN unlocks your jar on this phone.">
+      <Field label="PIN" hint="6 digits that unlock your jar on this phone.">
         <input type="password" inputMode="numeric" autoComplete="new-password" value={pin} onChange={(e) => setPin(pinDigits(e.target.value))} />
       </Field>
       <Field label="Type it again">
@@ -97,6 +94,9 @@ function CheckWords(props: { check: number[]; onDone: () => void }) {
       <Refusal error={finish.error} />
       <button type="submit" disabled={finish.isPending}>
         Finish
+      </button>
+      <button type="button" className="secondary" onClick={props.onShowAgain}>
+        Show my words again
       </button>
     </form>
   );

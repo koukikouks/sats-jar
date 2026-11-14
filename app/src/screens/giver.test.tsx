@@ -199,16 +199,58 @@ describe("joining as a guardian", () => {
     await user.click(screen.getByRole("button", { name: "Join as a guardian" }));
     expect(sdk.invites.preview).toHaveBeenCalledWith("tok-a");
     expect(sdk.invites.join).toHaveBeenCalledWith("tok-a");
-    expect(await screen.findByText("You're a guardian of Sunny's jar. The jar appears under Your jars once it's created.")).toBeTruthy();
+    expect(await screen.findByText("You're a guardian of Sunny's jar. You'll find the jar under Your jars once it's made.")).toBeTruthy();
   });
 
-  it("asks a new device for a PIN before joining", async () => {
-    renderApp("/join/tok-a", (sdk) => {
+  it("joins a new device with its PIN and one press", async () => {
+    const { user, sdk } = renderApp("/join/tok-a", (sdk) => {
+      sdk.device.state.mockResolvedValue("new");
+      sdk.device.setUp.mockImplementation(async () => void sdk.device.state.mockResolvedValue("unlocked"));
+      sdk.invites.preview.mockResolvedValue({ nickname: "Sunny's jar", joined: false });
+      sdk.invites.join.mockResolvedValue(undefined);
+    });
+    expect(await screen.findByRole("heading", { name: "Be a guardian of Sunny's jar" })).toBeTruthy();
+    expect(screen.getByText("Choose a 6-digit PIN for this device. Nobody, Sats Jar included, can reset it.")).toBeTruthy();
+    await user.type(screen.getByLabelText("PIN"), "482913");
+    await user.type(screen.getByLabelText("Type it again"), "482913");
+    await user.click(screen.getByRole("button", { name: "Join as a guardian" }));
+    expect(await screen.findByText("You're a guardian of Sunny's jar. You'll find the jar under Your jars once it's made.")).toBeTruthy();
+    expect(sdk.device.setUp).toHaveBeenCalledWith({ pin: "482913" });
+    expect(sdk.invites.join).toHaveBeenCalledWith("tok-a");
+    expect(sdk.device.setUp.mock.invocationCallOrder[0]).toBeLessThan(sdk.invites.join.mock.invocationCallOrder[0]!);
+  });
+
+  it("refuses a short PIN on the join page without calling the SDK", async () => {
+    const { user, sdk } = renderApp("/join/tok-a", (sdk) => {
       sdk.device.state.mockResolvedValue("new");
       sdk.invites.preview.mockResolvedValue({ nickname: "Sunny's jar", joined: false });
     });
-    expect(await screen.findByRole("heading", { name: "Choose a PIN for this device" })).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Be a guardian of Sunny's jar" })).toBeTruthy();
+    await user.type(await screen.findByLabelText("PIN"), "4829");
+    await user.type(screen.getByLabelText("Type it again"), "4829");
+    await user.click(screen.getByRole("button", { name: "Join as a guardian" }));
+    expect(await screen.findByText("Use 6 digits.")).toBeTruthy();
+    expect(sdk.device.setUp).not.toHaveBeenCalled();
+    expect(sdk.invites.join).not.toHaveBeenCalled();
+  });
+
+  it("keeps a refused join on screen after the PIN is set, and retries the join alone", async () => {
+    const { user, sdk } = renderApp("/join/tok-a", (sdk) => {
+      sdk.device.state.mockResolvedValue("new");
+      sdk.device.setUp.mockImplementation(async () => void sdk.device.state.mockResolvedValue("unlocked"));
+      sdk.invites.preview.mockResolvedValue({ nickname: "Sunny's jar", joined: false });
+      sdk.invites.join
+        .mockRejectedValueOnce(new SatsJarRefusal("UNAVAILABLE", "We could not reach the network just now. Try again shortly."))
+        .mockResolvedValueOnce(undefined);
+    });
+    await user.type(await screen.findByLabelText("PIN"), "482913");
+    await user.type(screen.getByLabelText("Type it again"), "482913");
+    await user.click(screen.getByRole("button", { name: "Join as a guardian" }));
+    expect(await screen.findByText("We could not reach the network just now. Try again shortly.")).toBeTruthy();
+    await waitFor(() => expect(screen.queryByLabelText("Type it again")).toBeNull());
+    await user.click(screen.getByRole("button", { name: "Join as a guardian" }));
+    expect(await screen.findByText(/^You're a guardian of Sunny's jar\./)).toBeTruthy();
+    expect(sdk.device.setUp).toHaveBeenCalledTimes(1);
+    expect(sdk.invites.join).toHaveBeenCalledTimes(2);
   });
 
   it("tells a device that already joined to pass the link on, and offers no second join", async () => {

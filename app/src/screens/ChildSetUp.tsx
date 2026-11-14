@@ -21,8 +21,8 @@ export function ChildSetUp() {
         heading="Set up your jar"
         intro={
           <p>
-            This makes your own keys on this phone, so only this phone can use your jar. First you'll write down a recovery
-            phrase: 12 words that bring your jar back if you lose this phone.
+            This makes your own keys on this phone. After handover, your jar answers only to this phone and your recovery phrase.
+            First you'll write down that phrase: 12 words that bring your jar back if you ever lose this phone.
           </p>
         }
         onDone={() => void changed()}
@@ -58,7 +58,7 @@ function Claim() {
   return (
     <section className="panel">
       <h1>Claim {jar.data.nickname}</h1>
-      <p>Your guardians will check this code on your phone in person:</p>
+      <p>Your guardians will check this code on your phone, in person:</p>
       <p className="code">{code.data}</p>
       <p>{NOBODY_CAN_RECOVER}</p>
       <Refusal error={claim.error} />

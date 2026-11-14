@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import type { Allowance, JarStatus, TopUp } from "@sats-jar/sdk";
+import { SatsJarRefusal, type Allowance, type JarStatus, type TopUp } from "@sats-jar/sdk";
 import { screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import live from "../test/fixtures/dev-jar-1.json";
@@ -108,8 +108,38 @@ describe("the jar page", () => {
 
   it("sends anyone without a role to the public record", async () => {
     renderApp("/jar/1", (sdk) => showing(sdk, recorded));
-    expect(await screen.findByText("This page is for the jar's family.")).toBeTruthy();
+    expect(await screen.findByText("This page is for the jar's family. Anyone can see its public record.")).toBeTruthy();
     expect(screen.getByRole("link", { name: "See the jar's public record" }).getAttribute("href")).toBe("/proof/1");
     expect(screen.queryByText(jar1.address)).toBeNull();
+    expect(screen.queryByText(/your claim has lapsed/)).toBeNull();
+  });
+
+  it("tells a phone set up with a recovery phrase that its claim may have lapsed, and how to claim again", async () => {
+    renderApp("/jar/1", (sdk) => {
+      showing(sdk, { ...recorded, roles: [], handover: { state: "none" } });
+      sdk.child.guardianCode.mockResolvedValue("4821 0937 5512 8846 1203");
+    });
+    expect(await screen.findByText("If you claimed this jar, your claim has lapsed or was cancelled. You can claim it again.")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Claim it again" }).getAttribute("href")).toBe("/jar/1/set-up");
+    expect(screen.getByRole("link", { name: "See the jar's public record" }).getAttribute("href")).toBe("/proof/1");
+  });
+
+  it("says nothing about a lapsed claim to an adult's device", async () => {
+    renderApp("/jar/1", (sdk) => {
+      showing(sdk, { ...recorded, roles: [], handover: { state: "none" } });
+      sdk.child.guardianCode.mockRejectedValue(new SatsJarRefusal("NO_RECOVERY_PHRASE", "Only a phone set up with a recovery phrase can do that."));
+    });
+    expect(await screen.findByText("This page is for the jar's family. Anyone can see its public record.")).toBeTruthy();
+    expect(screen.queryByText(/your claim has lapsed/)).toBeNull();
+  });
+
+  it("says nothing about a lapsed claim once a handover is done, and doesn't ask for the code", async () => {
+    const { sdk } = renderApp("/jar/1", (sdk) => {
+      showing(sdk, { ...recorded, roles: [], handover: { state: "done", completedAt: 1_800_000_000 } });
+      sdk.child.guardianCode.mockResolvedValue("4821 0937 5512 8846 1203");
+    });
+    expect(await screen.findByText("This page is for the jar's family. Anyone can see its public record.")).toBeTruthy();
+    expect(screen.queryByText(/your claim has lapsed/)).toBeNull();
+    expect(sdk.child.guardianCode).not.toHaveBeenCalled();
   });
 });
