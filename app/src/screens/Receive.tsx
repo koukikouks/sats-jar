@@ -18,8 +18,8 @@ export function Receive() {
         heading={HEADING}
         intro={
           <p>
-            The jar's Bitcoin will answer only to keys made on this phone. First you'll write down a recovery phrase: 12 words that
-            bring your jars back if you lose this phone.
+            The jar's Bitcoin will answer only to keys made on this phone. First you'll write down your recovery phrase: 12 words
+            that bring your jars back if you ever lose this phone.
           </p>
         }
         onDone={() => void changed()}
@@ -40,15 +40,27 @@ function ReceiveCode() {
   return (
     <section className="panel">
       <h1>{HEADING}</h1>
-      {code.data !== undefined && (
-        <>
-          <h2>Your receive code</h2>
-          <p className="mono">{code.data}</p>
-          <Copy text={code.data} label="Copy code" />
-          <p>Give this code to the person giving you the jar. It can only be used to give you a jar.</p>
-        </>
-      )}
+      {code.data !== undefined && <ReceiveLink code={code.data} />}
       <Refusal error={code.error} />
     </section>
+  );
+}
+
+/** The receive code as a link that opens the giver's "Give the jar" form with it filled in (stories 24, 26). */
+function ReceiveLink(props: { code: string }) {
+  const link = `${window.location.origin}/give/${props.code}`;
+  return (
+    <>
+      <h2>Your receive link</h2>
+      <p>Send this link to the person giving you the jar. It fills in your code for them, and it can only be used to give you a jar.</p>
+      <p className="mono">{link}</p>
+      <Copy text={link} label="Copy link" />
+      <p className="hint">Or read them this code:</p>
+      <p className="mono" data-receive-code>
+        {props.code}
+      </p>
+      <Copy text={props.code} label="Copy code" />
+      <p>Next: they start the transfer and send you a link back. Open it on this phone and press Accept.</p>
+    </>
   );
 }

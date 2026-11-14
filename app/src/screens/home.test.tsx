@@ -1,4 +1,5 @@
 /** @vitest-environment jsdom */
+import type { JarStatus } from "@sats-jar/sdk";
 import { screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { renderApp } from "../test/render.tsx";
@@ -31,6 +32,24 @@ describe("home", () => {
     const kit = screen.getByText("Kit's jar").closest("li")!;
     expect(within(kit).queryByText("Demo timing")).toBeNull();
     expect(within(kit).getByText("You're a guardian")).toBeTruthy();
+  });
+
+  it("says a jar this phone claimed and later gave away was given away", async () => {
+    renderApp("/", (sdk) => {
+      sdk.jars.mine.mockResolvedValue([
+        { jarId: "7", nickname: "Sunny's jar", roles: ["child"], balance: 0, picture, demoTiming: true },
+        { jarId: "9", nickname: "Claimed jar", roles: ["child"], balance: 0, picture, demoTiming: true },
+      ]);
+      sdk.jars.status.mockImplementation(async (id: string) =>
+        id === "7"
+          ? ({ handover: { state: "done", completedAt: 1 } } as JarStatus)
+          : ({ handover: { state: "claimed", claimedAt: 1, lapsesAt: 2, confirmations: 0, confirmedByMe: false, pausesAllowancesEarly: false } } as JarStatus),
+      );
+    });
+    const given = (await screen.findByText("Sunny's jar")).closest("li")!;
+    expect(await within(given).findByText("You gave this jar away")).toBeTruthy();
+    const claimed = screen.getByText("Claimed jar").closest("li")!;
+    expect(await within(claimed).findByText("You've claimed this jar")).toBeTruthy();
   });
 
   it("lists jars still being set up with how many guardians joined", async () => {

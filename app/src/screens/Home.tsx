@@ -72,6 +72,12 @@ function YourJars() {
 
 function JarCard(props: { jar: JarSummary }) {
   const { jar } = props;
+  const sdk = useSdk();
+  // "child" means this device claimed the jar and doesn't hold it: still waiting, or handed over
+  // and since given away. Only those cards read the status to tell which (finding 30).
+  const claimed = jar.roles.includes("child");
+  const status = useQuery({ queryKey: ["jar", jar.jarId], queryFn: () => sdk.jars.status(jar.jarId), enabled: claimed });
+  const givenAway = claimed && status.data?.handover.state === "done";
   return (
     <li className="card">
       <Link to={`/jar/${jar.jarId}`}>
@@ -80,7 +86,7 @@ function JarCard(props: { jar: JarSummary }) {
       </Link>
       <DemoBadge demoTiming={jar.demoTiming} />
       <span>{sats(jar.balance)}</span>
-      <span className="hint">{roleLine(jar.roles)}</span>
+      <span className="hint">{givenAway ? "You gave this jar away" : roleLine(jar.roles)}</span>
     </li>
   );
 }
