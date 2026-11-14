@@ -47,6 +47,20 @@ describe("run now", () => {
 });
 
 describe("one run at a time", () => {
+  it("passes 2 minutes apart over a settled jar with nothing due send no transaction", async () => {
+    const dev = devJar();
+    dev.state.tip = PAYMENT_HEIGHT + 10;
+    const dueAt = Number(dev.jar.next_allowance_at);
+    let clock = dueAt - 600;
+    const keeper = createKeeper({ chain: dev.chain, bitcoin: dev.btc.bitcoin, now: () => clock });
+    await keeper.run();
+    clock += 120;
+    dev.state.block += 100;
+    await keeper.run();
+    expect(dev.sent).toEqual([]);
+    expect(dev.btc.broadcasts).toEqual([]);
+  });
+
   it("two presses at once share one run: the same report, each call sent once", async () => {
     const dev = devJarBeforeProof();
     const handle = backendWith(keeperFor(dev));
@@ -216,24 +230,68 @@ describe("failed signings", () => {
     ]);
   });
 
-  it("a retry whose signing fails again is sent once per run, not again in the same run", async () => {
+  it("a retry whose signing fails again backs off: 10 minutes, then 20, doubling up to 6 hours", async () => {
     // on_payment_signed returns the payment id even when it records SigningFailed (T04), so the
     // retry call itself succeeds while the payment stays signing_failed.
     const dev = signedPayment();
     dev.payments[0] = { ...dev.payments[0]!, status: "signing_failed", signed_tx: null };
-    const keeper = keeperFor(dev);
+    let clock = NOW;
+    const keeper = createKeeper({ chain: dev.chain, bitcoin: dev.btc.bitcoin, now: () => clock });
+    const retries = () => dev.sent.filter((c) => c.method === "retry_signing").length;
 
     const report = await keeper.run();
-    expect(dev.sent.map((c) => c.method)).toEqual(["retry_signing"]);
+    expect(retries()).toBe(1);
     expect(dev.btc.broadcasts).toEqual([]);
     expect(report.steps.map((s) => [s.action, s.result])).toEqual([["retry_signing", "done"]]);
 
-    await keeper.run();
-    expect(dev.sent.length).toBe(1);
-
+    // The next 2-minute pass, a new NEAR block: still waiting.
+    clock += 120;
     dev.state.block += 1;
     await keeper.run();
-    expect(dev.sent.map((c) => c.method)).toEqual(["retry_signing", "retry_signing"]);
+    expect(retries()).toBe(1);
+
+    clock = NOW + 600;
+    await keeper.run();
+    expect(retries()).toBe(2);
+
+    clock = NOW + 600 + 1_199;
+    await keeper.run();
+    expect(retries()).toBe(2);
+    clock = NOW + 600 + 1_200;
+    await keeper.run();
+    expect(retries()).toBe(3);
+
+    // Keeps doubling (2,400, 4,800, 9,600, 19,200 s), then stays at 6 hours.
+    for (const gap of [2_400, 4_800, 9_600, 19_200, 21_600, 21_600]) {
+      clock += gap - 1;
+      await keeper.run();
+      const before = retries();
+      clock += 1;
+      await keeper.run();
+      expect(retries()).toBe(before + 1);
+    }
+  });
+
+  it("a payment whose status changed starts its backoff again at 10 minutes", async () => {
+    const dev = signedPayment();
+    dev.payments[0] = { ...dev.payments[0]!, status: "signing_failed", signed_tx: null };
+    let clock = NOW;
+    const keeper = createKeeper({ chain: dev.chain, bitcoin: dev.btc.bitcoin, now: () => clock });
+    const retries = () => dev.sent.filter((c) => c.method === "retry_signing").length;
+    await keeper.run();
+    clock += 600;
+    await keeper.run();
+    expect(retries()).toBe(2);
+    // Now the 1,200 s gap applies; a status change resets it.
+    dev.payments[0] = { ...dev.payments[0]!, status: "signing" };
+    await keeper.run();
+    expect(retries()).toBe(3);
+    clock += 599;
+    await keeper.run();
+    expect(retries()).toBe(3);
+    clock += 1;
+    await keeper.run();
+    expect(retries()).toBe(4);
   });
 
   it("a request whose signing fails is retried once in the same run", async () => {

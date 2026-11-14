@@ -10,27 +10,27 @@ describe("the PIN gate", () => {
       sdk.device.state.mockResolvedValue("new");
       sdk.device.setUp.mockImplementation(async () => void sdk.device.state.mockResolvedValue("unlocked"));
     });
-    expect(await screen.findByRole("heading", { name: "Set up Sats Jar on this device" })).toBeTruthy();
-    expect(screen.getByText(/We can't reset the PIN, so pick one you'll remember\./)).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Choose a PIN for this device" })).toBeTruthy();
+    expect(screen.getByText(/Nobody, Sats Jar included, can reset your PIN, so choose one you'll remember\./)).toBeTruthy();
     await user.type(screen.getByLabelText("PIN"), "482913");
     await user.type(screen.getByLabelText("Type it again"), "482913");
-    await user.click(screen.getByRole("button", { name: "Set up" }));
+    await user.click(screen.getByRole("button", { name: "Save my PIN" }));
     expect(sdk.device.setUp).toHaveBeenCalledWith({ pin: "482913" });
     expect(await screen.findByRole("button", { name: "Lock" })).toBeTruthy();
-    expect(screen.queryByRole("heading", { name: "Set up Sats Jar on this device" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: "Choose a PIN for this device" })).toBeNull();
   });
 
   it("refuses a short PIN and two PINs that differ without calling the SDK", async () => {
     const { user, sdk } = renderApp("/new", (sdk) => sdk.device.state.mockResolvedValue("new"));
     await user.type(await screen.findByLabelText("PIN"), "4829");
     await user.type(screen.getByLabelText("Type it again"), "4829");
-    await user.click(screen.getByRole("button", { name: "Set up" }));
+    await user.click(screen.getByRole("button", { name: "Save my PIN" }));
     expect(await screen.findByText("Use 6 digits.")).toBeTruthy();
     await user.clear(screen.getByLabelText("PIN"));
     await user.clear(screen.getByLabelText("Type it again"));
     await user.type(screen.getByLabelText("PIN"), "482913");
     await user.type(screen.getByLabelText("Type it again"), "482914");
-    await user.click(screen.getByRole("button", { name: "Set up" }));
+    await user.click(screen.getByRole("button", { name: "Save my PIN" }));
     expect(await screen.findByText("The two PINs don't match.")).toBeTruthy();
     expect(sdk.device.setUp).not.toHaveBeenCalled();
   });
@@ -44,7 +44,7 @@ describe("the PIN gate", () => {
     await user.type(screen.getByLabelText("Type it again"), "12a34567");
     expect((screen.getByLabelText("PIN") as HTMLInputElement).value).toBe("123456");
     expect((screen.getByLabelText("Type it again") as HTMLInputElement).value).toBe("123456");
-    await user.click(screen.getByRole("button", { name: "Set up" }));
+    await user.click(screen.getByRole("button", { name: "Save my PIN" }));
     expect(sdk.device.setUp).toHaveBeenCalledWith({ pin: "123456" });
   });
 

@@ -36,6 +36,8 @@ export interface ProofReader {
 export function createProofReader(options: ProofReaderOptions): ProofReader {
   const http = options.fetch ?? globalThis.fetch.bind(globalThis);
   const { contract } = options;
+  // A confirmed or cancelled payment never changes again (contract payment.rs), so it is read once.
+  const finished = new Map<string, PaymentView>();
 
   async function view<T>(method: string, args: Record<string, unknown>): Promise<T> {
     const answer = (await getJson(http, "near", NEAR_RPC, {
@@ -80,9 +82,12 @@ export function createProofReader(options: ProofReaderOptions): ProofReader {
       ]);
       const payments = await Promise.all(
         paymentIds(history).map(async (id) => {
+          const known = finished.get(id);
+          if (known) return known;
           const payment = await view<PaymentView | null>("get_payment", { payment_id: id });
           // The history names it, so a missing payment means the answer is wrong, not that it is gone.
           if (payment === null) throw new ProofUnavailableError("near");
+          if (payment.status === "confirmed" || payment.status === "cancelled") finished.set(id, payment);
           return payment;
         }),
       );

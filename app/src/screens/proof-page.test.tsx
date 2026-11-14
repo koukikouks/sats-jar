@@ -33,6 +33,8 @@ function jar(overrides: Partial<JarProof> = {}): JarProof {
     nextAllowanceAt: null,
     clockStartedAt: null,
     handover: "none",
+    emergency: null,
+    transfer: null,
     nft: { title: "Sunny's jar", description: "", media: picture },
     coins: [],
     payments: [],
@@ -341,7 +343,7 @@ describe("trying to break the rule", () => {
     const section = await tryItSection();
     await user.click(within(section).getByRole("button", { name: EARLY }));
     expect(await within(section).findByText("To try, set up Sats Jar on this device first.")).toBeTruthy();
-    expect(within(section).getByRole("heading", { name: "Set up Sats Jar on this device" })).toBeTruthy();
+    expect(within(section).getByRole("heading", { name: "Choose a PIN for this device" })).toBeTruthy();
     expect(sdk.tryIt.earlySpend).not.toHaveBeenCalled();
     expect(sdk.jars.status).not.toHaveBeenCalled();
   });

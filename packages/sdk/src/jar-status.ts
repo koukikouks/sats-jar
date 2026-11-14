@@ -1,6 +1,6 @@
 // A jar as its screens show it: built from the proof view's reader (T20) over public APIs, plus
 // who this device's person is to the jar.
-import { JarNotFoundError, createProofReader, type JarProof } from "@sats-jar/proof";
+import { JarNotFoundError, ProofUnavailableError, createProofReader, type JarProof } from "@sats-jar/proof";
 import {
   SatsJarRefusal,
   type Allowance,
@@ -21,6 +21,17 @@ const PAGE = 50; // NEP-181 enumeration pages (findings-t09)
 const HANDOVER_DELAY = 3 * 86_400;
 const DEMO_HANDOVER_DELAY = 3 * 60;
 const EXPLORERS = ["https://mempool.space/testnet/api", "https://blockstream.info/testnet/api"];
+// A jar page's sections poll within a moment of each other; a read this fresh serves them all.
+const SHARED_MS = 5_000;
+// A read failing for network reasons shows the last good one while it is this young (spec #58).
+const KEEP_GOOD_MS = 60_000;
+
+/** One jar's reads: the one on its way, and the last good one with when it finished. */
+interface Reads {
+  generation: number;
+  inflight?: Promise<JarProof>;
+  good?: { proof: JarProof; at: number };
+}
 
 interface ViewJar {
   giver: string;
@@ -28,33 +39,60 @@ interface ViewJar {
   create_args: { guardians: string[]; nickname: string; unlock_at: string };
   proven_balance: string;
   demo_timing: boolean;
-  locktime: number;
   handover: unknown;
-  emergency: unknown;
-  transfer: unknown;
 }
 
 export function jarReader(deps: { http: typeof fetch; near: Near; contract: string; me: () => Promise<string | null> }) {
   const proof = createProofReader({ contract: deps.contract, fetch: deps.http });
 
-  async function read(jarId: string): Promise<JarProof> {
-    try {
-      return await proof.jar(jarId);
-    } catch (error) {
-      throw translate(error);
+  const reads = new Map<string, Reads>();
+  let generation = 0;
+
+  /** The jar, read once for every section asking within a moment (spec #58). */
+  function read(jarId: string): Promise<JarProof> {
+    const now = Date.now();
+    let entry = reads.get(jarId);
+    if (entry?.generation !== generation) {
+      entry = { generation };
+      reads.set(jarId, entry);
     }
+    if (entry.inflight) return entry.inflight;
+    if (entry.good && now - entry.good.at < SHARED_MS) return Promise.resolve(entry.good.proof);
+    const mine = entry;
+    const inflight = proof.jar(jarId).then(
+      (fresh) => {
+        // A read started before this device last wrote must not stand in for the jar after it.
+        if (mine.generation === generation) mine.good = { proof: fresh, at: Date.now() };
+        return fresh;
+      },
+      (error: unknown) => {
+        const good = mine.generation === generation ? mine.good : undefined;
+        if (error instanceof ProofUnavailableError && good && Date.now() - good.at < KEEP_GOOD_MS) return good.proof;
+        throw translate(error);
+      },
+    );
+    mine.inflight = inflight;
+    const done = () => {
+      if (mine.inflight === inflight) mine.inflight = undefined;
+    };
+    inflight.then(done, done);
+    return inflight;
+  }
+
+  /** Called after every write from this device: the next read of any jar goes to the chain. */
+  function forget(): void {
+    generation += 1;
+    reads.clear();
   }
 
   async function status(jarId: string): Promise<JarStatus> {
-    // The proof reader drops the part-2 fields (findings-t18), so the jar's own view is read alongside it.
-    const [jar, view, me] = await Promise.all([read(jarId), deps.near.view<ViewJar | null>("get_jar", { jar_id: jarId }), deps.me()]);
-    if (!view) throw refusal("UNKNOWN_JAR");
+    const [jar, me] = await Promise.all([read(jarId), deps.me()]);
     const now = Math.floor(Date.now() / 1000);
-    const handedOver = typeof view.handover === "object" && view.handover !== null && "done" in view.handover;
+    const handedOver = typeof jar.handover === "object" && jar.handover !== null && "done" in jar.handover;
     return {
       jarId: jar.jarId,
       nickname: jar.nickname,
-      roles: roles(me, { giver: jar.giver, holder: jar.holder, guardians: jar.guardians, handover: view.handover }),
+      roles: roles(me, { giver: jar.giver, holder: jar.holder, guardians: jar.guardians, handover: jar.handover }),
       balance: jar.provenBalance,
       picture: jar.nft.media,
       demoTiming: jar.demoTiming,
@@ -67,17 +105,17 @@ export function jarReader(deps: { http: typeof fetch; near: Near; contract: stri
       availableAllowance: jar.availableAllowance,
       nextAllowanceAt: jar.nextAllowanceAt,
       exit: {
-        opensAt: view.locktime,
+        opensAt: jar.locktime,
         childAddress: jar.childAddress,
         // Story 62: after handover the jar's Bitcoin sits at an address whose exit branch is the
         // holder's own recovery-phrase key, so the exit never returns to an adult.
         note: handedOver
-          ? `If NEAR's signing network ever stops, the Bitcoin-only exit opens on ${day(view.locktime)}, and only the holder's recovery phrase can use it.`
-          : `If no handover happens, the Bitcoin-only exit opens on ${day(view.locktime)} and pays the child's address, which a parent controls.`,
+          ? `If NEAR's signing network ever stops, the Bitcoin-only exit opens on ${day(jar.locktime)}, and only the holder's recovery phrase can use it.`
+          : `If no handover happens, the Bitcoin-only exit opens on ${day(jar.locktime)} and pays the child's address, which a parent controls.`,
       },
-      handover: handover(view.handover, me, now, jar.unlockAt, jar.demoTiming),
-      emergency: emergency(view.emergency, me),
-      transfer: transfer(view.transfer, me),
+      handover: handover(jar.handover, me, now, jar.unlockAt, jar.demoTiming),
+      emergency: emergency(jar.emergency, me),
+      transfer: transfer(jar.transfer, me),
     };
   }
 
@@ -180,7 +218,7 @@ export function jarReader(deps: { http: typeof fetch; near: Near; contract: stri
     throw unavailable();
   }
 
-  return { status, topUps, allowances, mine };
+  return { status, topUps, allowances, mine, forget };
 }
 
 function translate(error: unknown): Error {
