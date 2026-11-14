@@ -15,10 +15,10 @@
   display: grid;
   gap: var(--space-1);
   padding-bottom: var(--space-3);
-  border-bottom: var(--border-width) solid var(--color-border);
+  border-bottom: var(--border) dotted var(--ink);
 }
 
 .proof-meta {
-  color: var(--color-muted);
+  color: var(--muted);
   font-size: var(--text-small);
 }

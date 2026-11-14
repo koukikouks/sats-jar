@@ -14,6 +14,15 @@ const PROGRESS: Record<Allowance["status"], string> = {
   cancelled: "Cancelled",
 };
 
+/** How a payment's progress is coloured: paid is done, still moving is waiting. */
+const STATUS_CLASS: Record<Allowance["status"], string | undefined> = {
+  signing: "waiting",
+  signing_failed: "waiting",
+  signed: "waiting",
+  confirmed: "done",
+  cancelled: undefined,
+};
+
 /** The allowance: what it is, what is available, when the next one goes, each payment (stories 14, 22–31). */
 export function AllowanceSection(props: { jar: JarStatus }) {
   const { jar } = props;
@@ -38,7 +47,7 @@ export function AllowanceSection(props: { jar: JarStatus }) {
             <span>
               {sats(allowance.amount)} to the child, fee {sats(allowance.fee)} from the jar
             </span>{" "}
-            <span>{PROGRESS[allowance.status]}</span> <CheckIt url={allowance.explorerUrl} />
+            <span className={STATUS_CLASS[allowance.status]}>{PROGRESS[allowance.status]}</span> <CheckIt url={allowance.explorerUrl} />
           </li>
         ))}
       </ul>

@@ -22,7 +22,7 @@ export function Home() {
 
 function Welcome() {
   return (
-    <section className="panel">
+    <section className="panel welcome">
       <h1>Sats Jar</h1>
       <p>A jar of real Bitcoin for a child: a small allowance each period, nothing else until they're grown, then it's theirs alone.</p>
       <Link className="button" to="/new">
@@ -58,7 +58,7 @@ function YourJars() {
           <DraftCard key={draft.draftId} draft={draft} />
         ))}
       </ul>
-      {empty && <p>No jars on this device yet.</p>}
+      {empty && <p className="empty">No jars on this device yet.</p>}
       <Refusal error={jars.error ?? drafts.error} />
       <Link className="button" to="/new">
         Start a jar

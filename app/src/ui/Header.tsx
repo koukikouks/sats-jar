@@ -14,7 +14,7 @@ export function Header() {
       <Link to="/" className="brand">
         Sats Jar
       </Link>
-      <span className="badge">Test Bitcoin</span>
+      <span className="badge test">Test Bitcoin</span>
       {state === "unlocked" && (
         <button type="button" className="secondary" onClick={lock}>
           Lock

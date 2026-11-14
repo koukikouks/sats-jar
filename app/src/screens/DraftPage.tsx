@@ -59,7 +59,7 @@ function Invites(props: { draft: Draft }) {
             const link = `${window.location.origin}/join/${token}`;
             return (
               <li key={token} className="invite">
-                <strong>Guardian {n + 1}</strong> <span className="badge">{joined[n] ? "Joined" : "Waiting"}</span>
+                <strong>Guardian {n + 1}</strong> <span className={`badge ${joined[n] ? "done" : "waiting"}`}>{joined[n] ? "Joined" : "Waiting"}</span>
                 <p className="mono">{link}</p>
                 <Copy text={link} label="Copy link" />
               </li>
