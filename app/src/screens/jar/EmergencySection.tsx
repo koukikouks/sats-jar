@@ -5,15 +5,8 @@ import { useSdk } from "../../services.tsx";
 import { Field } from "../../ui/Field.tsx";
 import { sats, when } from "../../ui/format.ts";
 import { CheckIt, Refusal } from "../../ui/messages.tsx";
+import { nowSeconds, payoutsStopped } from "./moments.ts";
 
-const now = () => Math.floor(Date.now() / 1000);
-
-/** True once a handover's waiting time has ended: from then no emergency payment runs (story 53a). */
-function payoutsStopped(jar: JarStatus): boolean {
-  const { handover } = jar;
-  if (handover.state === "completing" || handover.state === "done") return true;
-  return handover.state === "confirmed" && now() >= handover.delayEndsAt;
-}
 
 /** Guardians propose and approve; the giver may cancel during the public waiting time (stories 33–39). */
 export function EmergencySection(props: { jar: JarStatus }) {
@@ -40,13 +33,18 @@ export function EmergencySection(props: { jar: JarStatus }) {
           <p>
             {sats(emergency.amount)} proposed. {emergency.approvals} of 2 guardians have approved.
           </p>
-          {emergency.delayEndsAt !== null && <p>It goes out after {when(emergency.delayEndsAt)}, unless the giver cancels it.</p>}
+          {emergency.delayEndsAt !== null &&
+            (nowSeconds() < emergency.delayEndsAt ? (
+              <p>It goes out after {when(emergency.delayEndsAt)}, unless the giver cancels it.</p>
+            ) : (
+              <p>The waiting time is over, so it goes out soon.</p>
+            ))}
           {guardian && !emergency.approvedByMe && emergency.approvals < 2 && (
             <button type="button" disabled={approve.isPending} onClick={() => approve.mutate(emergency.proposalId)}>
               Approve
             </button>
           )}
-          {giver && (emergency.delayEndsAt === null || now() < emergency.delayEndsAt) && (
+          {giver && (emergency.delayEndsAt === null || nowSeconds() < emergency.delayEndsAt) && (
             <button type="button" className="secondary" disabled={cancel.isPending} onClick={() => cancel.mutate()}>
               Cancel it
             </button>

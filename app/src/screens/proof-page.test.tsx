@@ -114,7 +114,7 @@ describe("the public record", () => {
 
   it("shows the jar's top-up address and QR code so the giver can share one link", async () => {
     renderApp("/proof/7", record(jar()));
-    const topUp = (await screen.findByRole("heading", { name: "Top up" })).closest("section")!;
+    const topUp = (await screen.findByRole("heading", { name: "Top it up" })).closest("section")!;
     expect(within(topUp).getByText("tb1qjar00000000000000000000000000000000000000000000000000")).toBeTruthy();
     expect(await within(topUp).findByAltText("QR code of the jar's Bitcoin address")).toBeTruthy();
   });

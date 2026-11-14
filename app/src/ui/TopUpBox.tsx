@@ -15,13 +15,13 @@ export function TopUpBox(props: { address: string; qrPayload: string }) {
   }, [props.qrPayload]);
   return (
     <section className="panel">
-      <h2>Top up</h2>
+      <h2>Top it up</h2>
       {qr && <img className="qr" src={qr} alt="QR code of the jar's Bitcoin address" />}
       <p className="mono">{props.address}</p>
       <Copy text={props.address} label="Copy address" />
       <p>
-        Send Bitcoin to this address from any Bitcoin wallet. It counts once Bitcoin has confirmed it 3 times and Sats Jar has
-        checked the proof, usually within two hours.
+        Anyone can send Bitcoin to this address from any Bitcoin wallet or exchange app. It counts once Bitcoin has confirmed it
+        3 times and Sats Jar has checked it, usually within two hours.
       </p>
     </section>
   );

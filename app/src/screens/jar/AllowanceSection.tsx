@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSdk } from "../../services.tsx";
 import { POLL } from "../../ui/poll.ts";
 import { period, sats, when } from "../../ui/format.ts";
+import { nowSeconds, payoutsStopped } from "./moments.ts";
 import { CheckIt, Refusal } from "../../ui/messages.tsx";
 
 
@@ -35,12 +36,18 @@ export function AllowanceSection(props: { jar: JarStatus }) {
   return (
     <section className="panel">
       <h2>Allowance</h2>
-      <p>
-        Up to {sats(jar.cap)} every {period(jar.period)}.
-      </p>
-      <p>Available now: {sats(jar.availableAllowance)}.</p>
-      <p>{jar.nextAllowanceAt === null ? "Starts with the first counted top-up." : `Next one: ${when(jar.nextAllowanceAt)}.`}</p>
-      <p className="hint">Sats Jar pays it automatically.</p>
+      {payoutsStopped(jar) ? (
+        <p>{stoppedLine(jar)}</p>
+      ) : (
+        <>
+          <p>
+            Up to {sats(jar.cap)} every {period(jar.period)}.
+          </p>
+          <p>Available now: {sats(jar.availableAllowance)}.</p>
+          <p>{nextLine(jar)}</p>
+          <p className="hint">Sats Jar sends it to the child's address on its own.</p>
+        </>
+      )}
       <ul className="plain rows">
         {(allowances.data ?? []).map((allowance) => (
           <li key={`${allowance.requestedAt}-${allowance.amount}`}>
@@ -54,4 +61,19 @@ export function AllowanceSection(props: { jar: JarStatus }) {
       <Refusal error={allowances.error} />
     </section>
   );
+}
+
+/** Why no allowance goes out once the handover's waiting time has ended (story 53a). */
+function stoppedLine(jar: JarStatus): string {
+  if (jar.handover.state === "done") return "Allowances have ended. The jar is the child's now.";
+  if (jar.handover.state === "completing") return "Allowances have ended. The jar's Bitcoin is moving to the child's own key.";
+  // Confirmed, waiting time over: the handover may still wait for the unlock date, and can be cancelled.
+  return "Allowances are paused while the handover waits to go ahead. If it's cancelled, they start again.";
+}
+
+/** When the next allowance goes. A passed time is promised only when the jar has sats: the keeper skips an empty jar. */
+function nextLine(jar: JarStatus): string {
+  if (jar.nextAllowanceAt === null) return "Starts with the first counted top-up.";
+  if (jar.nextAllowanceAt > nowSeconds()) return `Next allowance: ${when(jar.nextAllowanceAt)}.`;
+  return jar.balance > 0 ? "Next allowance: due now, Sats Jar sends it soon." : "Next allowance: once the jar has sats again.";
 }
