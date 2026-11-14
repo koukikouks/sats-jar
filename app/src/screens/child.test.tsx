@@ -55,6 +55,18 @@ describe("setting up the child's phone", () => {
     expect(sdk.child.claim).toHaveBeenCalledWith("7");
   });
 
+  it("shows the same words again from the check, without making a new phrase", async () => {
+    const { user, sdk } = renderApp("/jar/7/set-up", newPhone);
+    await user.click(await screen.findByRole("button", { name: "Show my recovery phrase" }));
+    await user.click(await screen.findByRole("button", { name: "I've written them down" }));
+    expect(screen.getByText("Type these words from your paper, so you know you've got them right.")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Show my words again" }));
+    for (const word of words) expect(screen.getByText(word)).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "I've written them down" }));
+    expect(screen.getByLabelText("Word 3")).toBeTruthy();
+    expect(sdk.child.startSetUp).toHaveBeenCalledTimes(1);
+  });
+
   it("refuses wrong words with the SDK's sentence", async () => {
     const { user } = renderApp("/jar/7/set-up", (sdk) => {
       newPhone(sdk);

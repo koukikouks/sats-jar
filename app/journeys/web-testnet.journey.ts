@@ -106,6 +106,20 @@ async function passGate(page: Page, ready: Locator): Promise<void> {
   await expect(ready).toBeVisible();
 }
 
+/** Joins from an open invite page: a new device sets its PIN in the same press, a locked one unlocks first. */
+async function joinAsGuardian(page: Page): Promise<void> {
+  const join = page.getByRole("button", { name: "Join as a guardian" });
+  const unlock = page.getByRole("heading", { name: "Unlock Sats Jar" });
+  await expect(join.or(unlock).first()).toBeVisible();
+  if (await page.getByLabel("Type it again").isVisible()) {
+    await page.getByLabel("PIN", { exact: true }).fill(PIN);
+    await page.getByLabel("Type it again").fill(PIN);
+  } else {
+    await passGate(page, join);
+  }
+  await join.click();
+}
+
 const checkIt = async (scope: Page | Locator): Promise<string> => {
   const link = scope.getByRole("link", { name: "Check it yourself ↗" }).last();
   await expect(link).toBeVisible();
@@ -265,8 +279,7 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
       const { page } = guardian;
       await page.goto(links[n] ?? "");
       await expect(page.getByRole("heading", { name: `Be a guardian of ${nickname}` })).toBeVisible();
-      await passGate(page, page.getByRole("button", { name: "Join as a guardian" }));
-      await page.getByRole("button", { name: "Join as a guardian" }).click();
+      await joinAsGuardian(page);
       await expect(page.getByText(`You're a guardian of ${nickname}.`, { exact: false })).toBeVisible();
       await saveKeys(guardian);
       record([6, 7], `guardian ${n + 1} previewed the link and joined`);
@@ -409,7 +422,7 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
 
   await step("[20, 21, 23] the child claims; a guardian checks the code, then cancels the claim", async () => {
     await open(child.page, `/jar/${jarId}/set-up`, (p) => p.getByRole("button", { name: "Claim my jar" }));
-    await pressUntil(child.page, "Claim my jar", child.page.getByText("Show this code to each guardian in person:"));
+    await pressUntil(child.page, "Claim my jar", child.page.getByText("Show this code to each guardian, in person:"));
     await expect(child.page.locator(".code")).toHaveText(childCode);
     record([20], "the child's phone claimed the jar");
     await open(guardian1.page, `/jar/${jarId}`, (p) => p.getByRole("button", { name: "Check the child's code" }));
@@ -423,7 +436,7 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
 
   await step("[20, 21, 22] the child claims again and both guardians confirm", async () => {
     await open(child.page, `/jar/${jarId}/set-up`, (p) => p.getByRole("button", { name: "Claim my jar" }));
-    await pressUntil(child.page, "Claim my jar", child.page.getByText("Show this code to each guardian in person:"));
+    await pressUntil(child.page, "Claim my jar", child.page.getByText("Show this code to each guardian, in person:"));
     record([20], "a fresh claim after the cancel");
     for (const [n, guardian] of [guardian1, guardian2].entries()) {
       await open(guardian.page, `/jar/${jarId}`, (p) => p.getByRole("button", { name: "Check the child's code" }));

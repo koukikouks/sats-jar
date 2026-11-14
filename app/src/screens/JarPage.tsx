@@ -31,14 +31,7 @@ function FamilyPage() {
   if (jar === undefined) return <Refusal error={status.error} />;
   const proofLink = `/proof/${jarId}`;
   // Privacy, not security: the chain data behind this page is public (story 60).
-  if (jar.roles.length === 0) {
-    return (
-      <section className="panel">
-        <p>This page is for the jar's family.</p>
-        <Link to={proofLink}>See the jar's public record</Link>
-      </section>
-    );
-  }
+  if (jar.roles.length === 0) return <NotFamily jarId={jarId} mayHaveClaimed={jar.handover.state === "none"} />;
   return (
     <>
       <section className="panel jar-head">
@@ -59,5 +52,34 @@ function FamilyPage() {
       <HolderSection jar={jar} />
       <ExitSection jar={jar} />
     </>
+  );
+}
+
+/**
+ * A device with no role in the jar. A phone set up with a recovery phrase (it has a handover code)
+ * looking at a jar with no claim may be a child whose claim lapsed or was cancelled; the app can't
+ * tell whether it claimed this jar, so the sentence holds either way (story 29, finding 1).
+ */
+function NotFamily(props: { jarId: string; mayHaveClaimed: boolean }) {
+  const sdk = useSdk();
+  const code = useQuery({ queryKey: ["guardianCode"], queryFn: () => sdk.child.guardianCode(), enabled: props.mayHaveClaimed });
+  const proofLink = `/proof/${props.jarId}`;
+  if (props.mayHaveClaimed && code.isPending) return null;
+  return (
+    <section className="panel">
+      {props.mayHaveClaimed && code.data !== undefined ? (
+        <>
+          <p>If you claimed this jar, your claim has lapsed or was cancelled. You can claim it again.</p>
+          <Link className="button" to={`/jar/${props.jarId}/set-up`}>
+            Claim it again
+          </Link>
+        </>
+      ) : (
+        <p>This page is for the jar's family. Anyone can see its public record.</p>
+      )}
+      <p>
+        <Link to={proofLink}>See the jar's public record</Link>
+      </p>
+    </section>
   );
 }

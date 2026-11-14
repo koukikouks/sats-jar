@@ -152,7 +152,7 @@ describe("the handover on the jar page", () => {
       sdk.child.guardianCode.mockResolvedValue("9765 9494 0429 5968 6952");
       sdk.handover.cancel.mockResolvedValue(sent("X2"));
     });
-    expect(await screen.findByText("Show this code to each guardian in person:")).toBeTruthy();
+    expect(await screen.findByText("Show this code to each guardian, in person:")).toBeTruthy();
     expect(await screen.findByText("9765 9494 0429 5968 6952")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Cancel my claim" }));
     expect(sdk.handover.cancel).toHaveBeenCalledWith("7");

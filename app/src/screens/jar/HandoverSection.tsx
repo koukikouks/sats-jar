@@ -134,7 +134,7 @@ function ChildCode(props: { onCancel: () => void; cancelling: boolean }) {
   const code = useQuery({ queryKey: ["guardianCode"], queryFn: () => sdk.child.guardianCode() });
   return (
     <>
-      <p>Show this code to each guardian in person:</p>
+      <p>Show this code to each guardian, in person:</p>
       {code.data && <p className="code">{code.data}</p>}
       <Refusal error={code.error} />
       <button type="button" className="secondary" disabled={props.cancelling} onClick={props.onCancel}>
