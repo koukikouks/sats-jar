@@ -25,3 +25,12 @@ export function CheckIt(props: { url: string | null | undefined }) {
     </a>
   );
 }
+
+/** Shown while a read of the chain is under way, so a slow answer never looks like an empty jar (finding 20). */
+export function Reading() {
+  return (
+    <p role="status" className="hint">
+      Reading the chain…
+    </p>
+  );
+}

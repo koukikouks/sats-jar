@@ -83,7 +83,7 @@ describe("the public record", () => {
     expect(await screen.findByRole("heading", { name: "Sunny's jar: public record" })).toBeTruthy();
     expect(screen.getByText("Demo timing")).toBeTruthy();
     expect(
-      screen.getByText("Everything here is read from the public NEAR and Bitcoin chains. Check any line on an explorer."),
+      screen.getByText("Everything here is read straight from the public NEAR and Bitcoin chains, not from Sats Jar. Check any line on an explorer."),
     ).toBeTruthy();
     const theJar = screen.getByRole("heading", { name: "The jar" }).closest("section")!;
     expect(within(theJar).getByRole("img").getAttribute("src")).toBe(picture);
@@ -369,5 +369,39 @@ describe("trying to break the rule", () => {
     const section = await tryItSection();
     await user.click(within(section).getByRole("button", { name: EARLY }));
     expect(await within(section).findByText("Sats Jar can't reach the network just now. Try again shortly.")).toBeTruthy();
+  });
+});
+
+describe("while the public record is still reading", () => {
+  const never = () => new Promise<never>(() => {});
+
+  it("says it is reading the chain instead of showing a blank page", async () => {
+    renderApp("/proof/7", (_sdk, proof) => proof.jar.mockReturnValue(never()));
+    expect((await screen.findByRole("status")).textContent).toBe("Reading the chain…");
+  });
+
+  it("says each list is reading the chain until its answer arrives", async () => {
+    renderApp("/proof/7", (_sdk, proof) => {
+      proof.jar.mockResolvedValue(jar());
+      proof.nearTransactions.mockReturnValue(never());
+      proof.bitcoinTransactions.mockReturnValue(never());
+    });
+    const requests = (await screen.findByRole("heading", { name: "Requests" })).closest("section")!;
+    expect(within(requests).getByRole("status").textContent).toBe("Reading the chain…");
+    const bitcoin = screen.getByRole("heading", { name: "Bitcoin transactions" }).closest("section")!;
+    expect(within(bitcoin).getByRole("status").textContent).toBe("Reading the chain…");
+  });
+
+  it("says so when a list comes back empty", async () => {
+    renderApp("/proof/7", record(jar(), [], []));
+    expect(await screen.findByText("No requests yet.")).toBeTruthy();
+    expect(await screen.findByText("No Bitcoin transactions yet.")).toBeTruthy();
+    expect(screen.queryByText("Reading the chain…")).toBeNull();
+  });
+
+  it("says what each list holds and in what order", async () => {
+    renderApp("/proof/7", record(jar(), [tx({})], []));
+    expect(await screen.findByText("Every request about this jar, oldest first, including the ones the rule refused.")).toBeTruthy();
+    expect(screen.getByText("Every Bitcoin transaction at every address the jar has used, newest first.")).toBeTruthy();
   });
 });

@@ -2,6 +2,7 @@ import type { JarProof } from "@sats-jar/proof";
 import { useQuery } from "@tanstack/react-query";
 import { useProof } from "../../services.tsx";
 import { when } from "../../ui/format.ts";
+import { Reading } from "../../ui/messages.tsx";
 import { Unreadable } from "./Unreadable.tsx";
 import { action, senderRole, withoutAccounts } from "./words.ts";
 
@@ -13,7 +14,10 @@ export function Requests(props: { jar: JarProof }) {
   return (
     <section className="panel">
       <h2>Requests</h2>
+      <p>Every request about this jar, oldest first, including the ones the rule refused.</p>
       {requests.error && <Unreadable error={requests.error} />}
+      {requests.isPending && <Reading />}
+      {requests.data?.length === 0 && <p>No requests yet.</p>}
       <ul className="proof-list">
         {(requests.data ?? []).map((request) => (
           <li key={request.hash}>

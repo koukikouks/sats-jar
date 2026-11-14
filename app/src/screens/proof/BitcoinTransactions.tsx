@@ -2,9 +2,10 @@ import type { BitcoinTransaction, JarProof } from "@sats-jar/proof";
 import { useQuery } from "@tanstack/react-query";
 import { useProof } from "../../services.tsx";
 import { sats, when } from "../../ui/format.ts";
+import { Reading } from "../../ui/messages.tsx";
 import { Unreadable } from "./Unreadable.tsx";
 
-/** The Bitcoin transactions at the jar's address, newest first (story 38). */
+/** The Bitcoin transactions at every address the jar has used, newest first (story 38). */
 export function BitcoinTransactions(props: { jar: JarProof }) {
   const proof = useProof();
   const { jar } = props;
@@ -12,7 +13,10 @@ export function BitcoinTransactions(props: { jar: JarProof }) {
   return (
     <section className="panel">
       <h2>Bitcoin transactions</h2>
+      <p>Every Bitcoin transaction at every address the jar has used, newest first.</p>
       {txs.error && <Unreadable error={txs.error} />}
+      {txs.isPending && <Reading />}
+      {txs.data?.length === 0 && <p>No Bitcoin transactions yet.</p>}
       <ul className="proof-list">
         {(txs.data ?? []).map((tx) => (
           <li key={tx.txid}>
