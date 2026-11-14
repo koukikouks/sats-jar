@@ -29,13 +29,15 @@ export interface ProofReader {
   jar(jarId: string): Promise<JarProof>;
   /** The contract's transactions for the jar, failed ones included, oldest first. */
   nearTransactions(jarId: string): Promise<NearTransaction[]>;
-  /** The Bitcoin transactions at the jar's address, newest first, from a public explorer. */
+  /** The Bitcoin transactions at every address the jar has used, newest first, from a public explorer. */
   bitcoinTransactions(jar: JarProof): Promise<BitcoinTransaction[]>;
 }
 
 export function createProofReader(options: ProofReaderOptions): ProofReader {
   const http = options.fetch ?? globalThis.fetch.bind(globalThis);
   const { contract } = options;
+  // A confirmed or cancelled payment never changes again (contract payment.rs), so it is read once.
+  const finished = new Map<string, PaymentView>();
 
   async function view<T>(method: string, args: Record<string, unknown>): Promise<T> {
     const answer = (await getJson(http, "near", NEAR_RPC, {
@@ -80,17 +82,20 @@ export function createProofReader(options: ProofReaderOptions): ProofReader {
       ]);
       const payments = await Promise.all(
         paymentIds(history).map(async (id) => {
+          const known = finished.get(id);
+          if (known) return known;
           const payment = await view<PaymentView | null>("get_payment", { payment_id: id });
           // The history names it, so a missing payment means the answer is wrong, not that it is gone.
           if (payment === null) throw new ProofUnavailableError("near");
+          if (payment.status === "confirmed" || payment.status === "cancelled") finished.set(id, payment);
           return payment;
         }),
       );
       return toJarProof(jar, coins, payments, history, token);
     },
 
-    // get_jar exposes the current address only; once re-homing keeps old addresses, they join here.
-    bitcoinTransactions: (jar) => bitcoinTransactions(http, [jar.address]),
+    // Newest address first, so a move sorts below a later spend in the same block.
+    bitcoinTransactions: (jar) => bitcoinTransactions(http, [jar.address, ...[...jar.oldAddresses].reverse()]),
 
     async nearTransactions(jarId) {
       const rows = await contractHistory(http, contract);

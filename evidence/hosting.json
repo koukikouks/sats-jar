@@ -1,0 +1,78 @@
+{
+  "about": "Hosting checks of spec #45 (koukikouks/sats-jar#45): the hosted keeper's keys on the locked contract, and the backend on Railway. Written by backend/src/verify-hosting.ts.",
+  "contract": "sats-jar.testnet",
+  "keeper": "keeper-locked.sats-jar-app.testnet",
+  "keeper_setup": {
+    "at": "2026-11-13T17:09:09.199Z",
+    "account": "keeper-locked.sats-jar-app.testnet",
+    "creation_tx": "CJBv5tGvpMEmnNFcrBepTcPLE9aLYEyU1J3z113P5VF2",
+    "explorer": "https://testnet.nearblocks.io/txns/CJBv5tGvpMEmnNFcrBepTcPLE9aLYEyU1J3z113P5VF2",
+    "keys": [
+      {
+        "access_key": {
+          "nonce": 277538677000000,
+          "permission": {
+            "FunctionCall": {
+              "allowance": null,
+              "method_names": [],
+              "receiver_id": "sats-jar.testnet"
+            }
+          }
+        },
+        "public_key": "ed25519:5ADCZKW2tvwmrPYgGxdRPTobj4SCAdJkudqtxL8VjDyB"
+      }
+    ]
+  },
+  "backend": {
+    "at": "2026-11-13T17:47:37.058Z",
+    "keeper_run": {
+      "status": 200,
+      "startedAt": 1794592056,
+      "steps": []
+    },
+    "draft_made": 201,
+    "unknown_path": {
+      "code": "NOT_FOUND",
+      "message": "no such endpoint"
+    }
+  },
+  "after_redeploy": {
+    "at": "2026-11-13T18:01:04.889Z",
+    "draft_kept": true,
+    "nickname": "Hosting check"
+  },
+  "c1": {
+    "desktop": {
+      "base_url": "https://sats-jar-git-t31-site-routing-sats-jar.vercel.app",
+      "deployed_commit": "12aba96",
+      "ran_at": "2026-11-13T18:22:04.504Z",
+      "passed": true,
+      "accounts": {
+        "guardian": "7748c824433383f36b3c.sats-jar-app.testnet"
+      },
+      "steps": [
+        "the giver's device was unlocked with a PIN and the backend made a draft with 2 invite links",
+        "the guardian's device was unlocked with a PIN, joined from the invite link and holds sponsored account 7748c824433383f36b3c.sats-jar-app.testnet",
+        "the giver's draft page shows guardian 1 joined (draft read not served from cache)",
+        "/proof/1 loads with no sign-in and shows \"There is no such jar.\" read from the chain",
+        "POST /api/keeper/run answered 200 with a report of 0 steps"
+      ]
+    },
+    "phone": {
+      "base_url": "https://sats-jar-git-t31-site-routing-sats-jar.vercel.app",
+      "deployed_commit": "12aba96",
+      "ran_at": "2026-11-13T18:22:20.478Z",
+      "passed": true,
+      "accounts": {
+        "guardian": "f4924037da7e65c7c799.sats-jar-app.testnet"
+      },
+      "steps": [
+        "the giver's device was unlocked with a PIN and the backend made a draft with 2 invite links",
+        "the guardian's device was unlocked with a PIN, joined from the invite link and holds sponsored account f4924037da7e65c7c799.sats-jar-app.testnet",
+        "the giver's draft page shows guardian 1 joined (draft read not served from cache)",
+        "/proof/1 loads with no sign-in and shows \"There is no such jar.\" read from the chain",
+        "POST /api/keeper/run answered 200 with a report of 0 steps"
+      ]
+    }
+  }
+}

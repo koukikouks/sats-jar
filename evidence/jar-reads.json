@@ -1,0 +1,111 @@
+{
+  "about": "T40 (#60, spec #58): jar 2 on the locked contract sats-jar.testnet, its family page open in three browser sessions on one machine (one IP), the giver's test device in each. NEAR view calls to rpc.testnet.fastnear.com counted per session from the browser's requests; failures are failed or 429 answers; unreachableSeen counts 5-second checks that found \"could not reach the network\" on the page. The page polls every 10 s.",
+  "measured_at": "2026-11-14T00:43:17+00:00",
+  "script": "Playwright, three contexts; scratch script jar-reads.mjs (not kept in the repo)",
+  "before": {
+    "deployed_commit": "9858688",
+    "note": "integration/web-app before T40, 2 minutes",
+    "origin": "https://sats-jar-git-integration-web-app-sats-jar.vercel.app",
+    "minutes": 2,
+    "report": [
+      {
+        "session": 1,
+        "seconds": 120,
+        "viewCalls": 174,
+        "perPoll10s": 14.48,
+        "byMethod": {
+          "get_jar": 44,
+          "get_coins": 33,
+          "get_history": 33,
+          "nft_token": 33,
+          "get_payment": 31
+        },
+        "failures": 11,
+        "unreachableSeen": 7
+      },
+      {
+        "session": 2,
+        "seconds": 120,
+        "viewCalls": 148,
+        "perPoll10s": 12.32,
+        "byMethod": {
+          "get_jar": 44,
+          "get_coins": 27,
+          "get_history": 27,
+          "nft_token": 27,
+          "get_payment": 23
+        },
+        "failures": 29,
+        "unreachableSeen": 13
+      },
+      {
+        "session": 3,
+        "seconds": 120,
+        "viewCalls": 142,
+        "perPoll10s": 11.82,
+        "byMethod": {
+          "get_coins": 25,
+          "get_history": 25,
+          "nft_token": 25,
+          "get_payment": 23,
+          "get_jar": 44
+        },
+        "failures": 30,
+        "unreachableSeen": 15
+      }
+    ]
+  },
+  "after": {
+    "deployed_commit": "aebb491",
+    "note": "t40-one-jar-read, 10 minutes. get_payment is read while jar 2's allowance payment was still moving, then no more once it was confirmed.",
+    "origin": "https://sats-jar-git-t40-one-jar-read-sats-jar.vercel.app",
+    "minutes": 10,
+    "report": [
+      {
+        "session": 1,
+        "seconds": 601,
+        "viewCalls": 248,
+        "perPoll10s": 4.13,
+        "byMethod": {
+          "get_jar": 57,
+          "get_coins": 57,
+          "get_history": 57,
+          "nft_token": 57,
+          "get_payment": 20
+        },
+        "failures": 0,
+        "unreachableSeen": 0
+      },
+      {
+        "session": 2,
+        "seconds": 601,
+        "viewCalls": 248,
+        "perPoll10s": 4.13,
+        "byMethod": {
+          "get_jar": 57,
+          "get_coins": 57,
+          "get_history": 57,
+          "nft_token": 57,
+          "get_payment": 20
+        },
+        "failures": 0,
+        "unreachableSeen": 0
+      },
+      {
+        "session": 3,
+        "seconds": 601,
+        "viewCalls": 244,
+        "perPoll10s": 4.06,
+        "byMethod": {
+          "get_jar": 56,
+          "get_coins": 56,
+          "get_history": 56,
+          "nft_token": 56,
+          "get_payment": 20
+        },
+        "failures": 0,
+        "unreachableSeen": 0
+      }
+    ]
+  }
+}

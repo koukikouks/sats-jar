@@ -16,12 +16,17 @@ export interface JarView {
     nickname: string;
   };
   address: string;
+  /** Oldest first. Builds before re-homing kept old addresses (the T06 dev contract) leave it out. */
+  old_addresses?: string[];
   witness_script: string;
   public_key: string;
   locktime: number;
   demo_timing: boolean;
   clock: { started_at: string | null };
   handover: unknown;
+  /** Builds before emergency payments and transfers (the T06 dev contract) leave these out. */
+  emergency?: unknown;
+  transfer?: unknown;
   proven_balance: string;
   available_allowance: string;
   fee_budget_left: string;
@@ -114,6 +119,8 @@ export interface JarProof {
   demoTiming: boolean;
   address: string;
   addressExplorerUrl: string;
+  /** The addresses the jar moved away from at each re-homing, oldest first. */
+  oldAddresses: string[];
   witnessScript: string;
   publicKey: string;
   locktime: number;
@@ -124,6 +131,10 @@ export interface JarProof {
   clockStartedAt: number | null;
   /** `"none"`, or the contract's handover record as it reads it. */
   handover: unknown;
+  /** The open emergency proposal, or null, as the contract reads it. */
+  emergency: unknown;
+  /** The holder's transfer in progress, or null, as the contract reads it. */
+  transfer: unknown;
   nft: { title: string; description: string; media: string };
   coins: Coin[];
   payments: Payment[];
@@ -152,6 +163,7 @@ export function toJarProof(
     demoTiming: view.demo_timing,
     address: view.address,
     addressExplorerUrl: bitcoinAddressUrl(view.address),
+    oldAddresses: view.old_addresses ?? [],
     witnessScript: view.witness_script,
     publicKey: view.public_key,
     locktime: view.locktime,
@@ -161,6 +173,8 @@ export function toJarProof(
     nextAllowanceAt: view.next_allowance_at === null ? null : Number(view.next_allowance_at),
     clockStartedAt: view.clock.started_at === null ? null : Number(view.clock.started_at),
     handover: view.handover,
+    emergency: view.emergency ?? null,
+    transfer: view.transfer ?? null,
     nft: { title: token.metadata.title, description: token.metadata.description, media: token.metadata.media },
     coins: coins.map((c) => ({
       txid: c.txid,

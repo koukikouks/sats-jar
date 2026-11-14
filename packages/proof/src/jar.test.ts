@@ -1,5 +1,7 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import { createProofReader, JarNotFoundError, ProofUnavailableError } from "./index.ts";
+import { toJarProof, type JarView } from "./jar.ts";
 import { evidence, fixture, replayFetch, type Fixture } from "./test-fetch.ts";
 
 const record = evidence();
@@ -82,6 +84,21 @@ describe("a jar's contract views", () => {
     expect(jar.nft.media.startsWith("data:image/svg+xml;base64,")).toBe(true);
   });
 
+  test("keeps the addresses the jar moved away from, oldest first", () => {
+    // jar 1 of sats-jar-dev-2.testnet once its handover completed (evidence/keeper-handover.json).
+    const handover = JSON.parse(readFileSync(new URL("../../../evidence/keeper-handover.json", import.meta.url), "utf8")) as {
+      steps: { step: string; jar?: JarView }[];
+    };
+    const done = handover.steps.find((s) => s.step === "get_jar recorded (done)")?.jar;
+    if (done === undefined) throw new Error("the recorded jar is missing");
+    const token = { metadata: { title: "", description: "", media: "" } };
+
+    const proof = toJarProof(done, [], [], [], token);
+
+    expect(proof.address).toBe("tb1qsl5kuaj5rtxl9uje7mp7t5jwgsu8zjw07svh8n43srnfm6ydxe7qslkptf");
+    expect(proof.oldAddresses).toEqual(["tb1qkw8a04c09xygyeru6zdjh28e3cwj58e8rnyr8rz99065qa0406gsx3m95q"]);
+  });
+
   test("refuses a jar that does not exist", async () => {
     await expect(reader.jar("99")).rejects.toThrow(JarNotFoundError);
   });
@@ -154,3 +171,71 @@ function answer(source: Fixture, method: string, replace: (result: unknown) => u
   }
   return copy;
 }
+
+/** Counts each NEAR view method the reader calls, over a replay. */
+function counting(replay: typeof fetch) {
+  const calls: string[] = [];
+  const http: typeof fetch = async (input, init) => {
+    if (typeof init?.body === "string") {
+      const body = JSON.parse(init.body) as { params?: { method_name?: string } };
+      if (body.params?.method_name) calls.push(body.params.method_name);
+    }
+    return replay(input, init);
+  };
+  return { http, calls };
+}
+
+describe("reading a jar again", () => {
+  test("a payment that has finished is not read again", async () => {
+    const { http, calls } = counting(replayFetch(fixture("near-views")));
+    const again = createProofReader({ contract: record.contract, fetch: http });
+
+    const first = await again.jar("1");
+    const second = await again.jar("1");
+
+    // jar 1's allowance payment is confirmed: final on chain, so one read serves every later one.
+    expect(first.payments[0]?.status).toBe("confirmed");
+    expect(second.payments).toEqual(first.payments);
+    expect(calls.filter((m) => m === "get_payment")).toHaveLength(1);
+    expect(calls.filter((m) => m === "get_jar")).toHaveLength(2);
+  });
+
+  test("returns the contract's emergency and transfer records with the jar", async () => {
+    const jar = await reader.jar("1");
+    // The T06 dev contract predates both records; a newer build returns null when there is none.
+    expect(jar.emergency).toBeNull();
+    expect(jar.transfer).toBeNull();
+  });
+});
+
+describe("a rate-limited NEAR answer", () => {
+  afterEach(() => void vi.useRealTimers());
+
+  function limited(times: number) {
+    const replay = replayFetch(fixture("near-views"));
+    let left = times;
+    const http: typeof fetch = async (input, init) => {
+      if (left > 0) {
+        left -= 1;
+        return new Response("Too Many Requests", { status: 429 });
+      }
+      return replay(input, init);
+    };
+    return createProofReader({ contract: record.contract, fetch: http });
+  }
+
+  test("is asked once more after a second", async () => {
+    vi.useFakeTimers();
+    const read = limited(1).jar("1");
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect((await read).jarId).toBe("1");
+  });
+
+  test("is unavailable when the second answer is rate-limited too", async () => {
+    vi.useFakeTimers();
+    const read = limited(2).jar("1");
+    const outcome = read.catch((error: unknown) => error);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(await outcome).toBeInstanceOf(ProofUnavailableError);
+  });
+});

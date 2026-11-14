@@ -1,4 +1,4 @@
-// The backend as one long-running Node process, with the keeper's hourly schedule.
+// The backend as one long-running Node process, with the keeper's schedule (`schedule.ts`).
 //   node --env-file=<path to .env> backend/src/server.ts
 import { createServer } from "node:http";
 import { esplora } from "./bitcoin.ts";
@@ -7,6 +7,7 @@ import { loadConfig } from "./config.ts";
 import { fileStore } from "./file-store.ts";
 import { createBackend } from "./http.ts";
 import { createKeeper } from "./keeper.ts";
+import { startKeeper } from "./schedule.ts";
 
 const config = loadConfig(process.env);
 const keeper = createKeeper({
@@ -21,16 +22,7 @@ const handle = createBackend({
   keeper,
 });
 
-// Hourly, so top-ups and payments are proven well inside the light client's window of a few
-// days of testnet3 blocks (findings T06). A host without a long-running process points a cron
-// at POST /keeper/run instead.
-const HOUR = 3_600_000;
-setInterval(() => {
-  keeper.run().then(
-    (report) => console.log(JSON.stringify(report)),
-    (error: unknown) => console.error("keeper run failed", error),
-  );
-}, HOUR);
+startKeeper(keeper, { log: console.log, error: console.error });
 
 createServer(async (req, res) => {
   const chunks: Buffer[] = [];

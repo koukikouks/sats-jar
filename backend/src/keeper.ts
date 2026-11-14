@@ -24,6 +24,13 @@ const PROOF_HOLD_SECONDS = 3_600;
 /** Refusals that only say the time named in `get_jar` has not yet come by the block's clock. */
 const TIME_REFUSALS = new Set(["BEFORE_UNLOCK", "HANDOVER_DELAY_RUNNING", "DELAY_NOT_PASSED"]);
 const PROOF_HOLD_TIPS = 6;
+/**
+ * After a retried signing fails again, wait this long before the next retry, doubling while the
+ * payment's status stays the same: frequent passes must not spend a retry's gas every 2 minutes
+ * on a payment stuck while testnet signing is down (spec #58).
+ */
+const SIGNING_BACKOFF_SECONDS = 600;
+const SIGNING_BACKOFF_MAX_SECONDS = 21_600;
 
 export type Step = {
   /** "check": reading NEAR or Bitcoin failed. */
@@ -57,6 +64,8 @@ type Hold = {
   block: number;
   code: string | null;
   message: string;
+  /** For a retried signing that failed again: the wait it set, which the next failure doubles. */
+  delay?: number;
 };
 
 export function createKeeper(deps: { chain: KeeperChain; bitcoin: Bitcoin; now: () => number }): Keeper {
@@ -160,6 +169,8 @@ export function createKeeper(deps: { chain: KeeperChain; bitcoin: Bitcoin; now: 
     const id = payment.payment_id;
     const about = { paymentId: id, target: payment.txid };
     if (payment.status === "signing" || payment.status === "signing_failed") {
+      // Read before `send`, which forgets a hold once its call goes through.
+      const earlier = holds.get(`retry_signing:${id}`);
       const { step, outcome } = await send(
         { key: `retry_signing:${id}`, fingerprint: payment.status, now },
         (refused) => {
@@ -175,16 +186,24 @@ export function createKeeper(deps: { chain: KeeperChain; bitcoin: Bitcoin; now: 
       if (step.code === "SIGNING_IN_PROGRESS") step.result = "waiting";
       if (!outcome?.ok) return [step];
       // The call succeeds even when the signing fails again (the callback records it), so the
-      // next retry waits for a later run: at most one retry per payment per run.
+      // next retry waits out the backoff below.
       const after = await chain.payment(id);
       if (after?.status === "signed") return [step, ...(await settle(after, now))];
+      // A FINAL answer still `signing` makes the fingerprint `signing`, so a later flip to
+      // `signing_failed` starts the backoff again at its first wait.
+      const status = after?.status ?? payment.status;
+      const delay =
+        earlier?.delay !== undefined && earlier.fingerprint === status
+          ? Math.min(earlier.delay * 2, SIGNING_BACKOFF_MAX_SECONDS)
+          : SIGNING_BACKOFF_SECONDS;
       holds.set(`retry_signing:${id}`, {
-        fingerprint: after?.status ?? payment.status,
+        fingerprint: status,
         tip: 0,
-        time: 0,
-        block: now.block + 1,
+        time: now.time + delay,
+        block: 0,
         code: null,
-        message: "the retried signing did not complete; retrying next run",
+        message: `the retried signing did not complete; retrying in ${delay / 60} minutes`,
+        delay,
       });
       return [step];
     }

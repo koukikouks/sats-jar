@@ -1,6 +1,6 @@
 # Backend
 
-The app's hosted functions (spec module 4). It gives each person their own NEAR account, holds pending guardian invites until the jar exists, and runs the keeper.
+The app's hosted backend (spec module 4), one long-running process on Railway (ADR 0011, `docs/hosting.md`). It gives each person their own NEAR account, holds pending guardian invites until the jar exists, and runs the keeper.
 
 ## What the sponsor key can do
 
@@ -10,11 +10,11 @@ The account id comes from the device key alone (the first 20 hex characters of S
 
 ## What the keeper key can do
 
-The keeper (`KEEPER_ACCOUNT_ID`, testnet: `keeper.sats-jar-app.testnet`) is a sub-account of the app account, made once by `src/keeper-setup.ts`: `CreateAccount + Transfer(1 NEAR) + AddKey(keeper key, FunctionCall on CONTRACT_ACCOUNT_ID, any method)`. It has no full-access key. A function-call key cannot attach a deposit, so it can make no 1-yocto holder or guardian call, no transfer and no key change, and the keeper has no role in any jar. It can only call what anyone may call. Its NEAR pays its gas; anyone can top it up with a plain transfer. Switching to the locked contract needs a new keeper account, since nobody can add a key to this one. `evidence/keeper-run.json` records its key list.
+The keeper (`KEEPER_ACCOUNT_ID`; hosted, for the locked contract: `keeper-locked.sats-jar-app.testnet`; for the dev contracts: `keeper.sats-jar-app.testnet` and `keeper-2.sats-jar-app.testnet`) is a sub-account of the app account, made once by `src/keeper-setup.ts`: `CreateAccount + Transfer(1 NEAR) + AddKey(keeper key, FunctionCall on CONTRACT_ACCOUNT_ID, any method)`. It has no full-access key. A function-call key cannot attach a deposit, so it can make no 1-yocto holder or guardian call, no transfer and no key change, and the keeper has no role in any jar. It can only call what anyone may call. Its NEAR pays its gas; anyone can top it up with a plain transfer. Each contract needs its own keeper account, since nobody can add a key to one. `evidence/keeper-run.json` records the dev keeper's key list and `evidence/hosting.json` the hosted keeper's.
 
 ## The keeper
 
-One pass (`src/keeper.ts`), run every hour by `src/server.ts` and on demand by `POST /keeper/run`:
+One pass (`src/keeper.ts`), run by `src/schedule.ts` as soon as the process starts and then every 2 minutes, and on demand by `POST /keeper/run`:
 
 1. Every unfinished payment, whatever its kind: a failed or stalled signing gets `retry_signing`; a signed payment is broadcast (again each run until it is in a block, which costs nothing); a payment 3 deep on the light client gets `confirm_payment`.
 2. Every jar: each output at its address or at one of its old addresses that is 3 deep on the light client, at least 1,000 sats, not yet a coin and not a payment's change gets `prove_topup`.
@@ -25,9 +25,9 @@ One pass (`src/keeper.ts`), run every hour by `src/server.ts` and on demand by `
    - `execute_emergency`: an open proposal's delay has ended (2 approvals) and payouts are not stopped by a handover.
    - `request_allowance`: an allowance is due, with a balance, and payouts are not stopped by a handover.
 
-Calls go one at a time, each waited for to its final outcome. A refused call is remembered and not sent again until what it depends on changes: for `request_allowance` the jar's period, balance, available allowance or the fee rate; for `complete_handover`, `accept_transfer`, `rehome_stray` and `execute_emergency` the handover, transfer, strays or proposal it acts on, the balance or the fee rate, except that a refusal for time not yet passed (`BEFORE_UNLOCK`, `HANDOVER_DELAY_RUNNING`, `DELAY_NOT_PASSED`: the host's clock ahead of block time) is tried again on a later pass; for `retry_signing` the block `SIGNING_IN_PROGRESS` names, or the payment's status; for `prove_topup` and `confirm_payment` the light client's next tip after `NOT_CONFIRMED`, and an hour plus 6 new tips after any other refusal (such as `NOT_IN_CHAIN`). So a pass with nothing new to do sends no transaction. The memory lives in the process; a restart costs at most one more refused call per item.
+Calls go one at a time, each waited for to its final outcome. A refused call is remembered and not sent again until what it depends on changes: for `request_allowance` the jar's period, balance, available allowance or the fee rate; for `complete_handover`, `accept_transfer`, `rehome_stray` and `execute_emergency` the handover, transfer, strays or proposal it acts on, the balance or the fee rate, except that a refusal for time not yet passed (`BEFORE_UNLOCK`, `HANDOVER_DELAY_RUNNING`, `DELAY_NOT_PASSED`: the host's clock ahead of block time) is tried again on a later pass; for `retry_signing` the block `SIGNING_IN_PROGRESS` names, or the payment's status, and after a retry whose signing fails again 10 minutes, doubling while the status stays the same, up to 6 hours; for `prove_topup` and `confirm_payment` the light client's next tip after `NOT_CONFIRMED`, and an hour plus 6 new tips after any other refusal (such as `NOT_IN_CHAIN`). So a pass with nothing new to do sends no transaction. The memory lives in the process; a restart costs at most one more refused call per item.
 
-**Run it at least every few hours.** The light client keeps only a few days of testnet3 headers. A payment whose block leaves that window before `confirm_payment` blocks its jar for good in the locked build, and a top-up proven that late cannot be proven at all. The hourly schedule covers this while the process runs; a host without a long-running process must point a cron at `POST /keeper/run`.
+**Run it at least every few hours.** The light client keeps only a few days of testnet3 headers. A payment whose block leaves that window before `confirm_payment` blocks its jar for good in the locked build, and a top-up proven that late cannot be proven at all. The 2-minute schedule covers this many times over while the process runs, and each start runs a pass at once. Every 2 minutes, not hourly, so a demo-timing jar (10-minute allowances, 3-minute handover delay) is acted on within minutes of the chain allowing it; a pass with nothing new to do costs only reads.
 
 ## Interface
 
@@ -58,7 +58,7 @@ Settings come from the environment only, read once at startup:
 | `CONTRACT_ACCOUNT_ID` | The jar contract; switch to the locked contract here |
 | `DRAFTS_FILE` | Where the file store keeps pending drafts (needs a persistent disk) |
 | `PORT` | HTTP port |
-| `KEEPER_ACCOUNT_ID` | The keeper account (testnet: `keeper.sats-jar-app.testnet`) |
+| `KEEPER_ACCOUNT_ID` | The keeper account (hosted: `keeper-locked.sats-jar-app.testnet`) |
 | `KEEPER_PRIVATE_KEY` | Its function-call key, `ed25519:...` |
 
 ```sh
@@ -67,7 +67,7 @@ node --env-file=<env file> backend/src/server.ts
 
 Make the keeper account once with `node --env-file=<env file> backend/src/keeper-setup.ts`.
 
-`src/http.ts` is a fetch-standard handler (`Request` in, `Response` out) with no server, file system or timers inside. A functions host can call it directly, given a `Store` adapter over a key-value store with compare-and-set in place of `src/file-store.ts`. Hosting is the maintainer's (H4).
+`src/http.ts` is a fetch-standard handler (`Request` in, `Response` out) with no server, file system or timers inside. `src/server.ts` runs it as one process with the file store; that is how it is hosted on Railway (ADR 0011, `docs/hosting.md`). A functions host would need a `Store` adapter over a key-value store with compare-and-set in place of `src/file-store.ts`, and a cron at `POST /keeper/run`.
 
 ## Checks
 
