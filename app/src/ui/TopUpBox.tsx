@@ -26,11 +26,10 @@ export function TopUpBox(props: { address: string; qrPayload: string; journeySte
       <h2>Top it up</h2>
       <ol className="top-up-steps">
         <li>
-          Have the amount ready in any Bitcoin wallet. For test Bitcoin, use a{" "}
+          Have the amount ready. No test Bitcoin?{" "}
           <a href={FAUCET} target="_blank" rel="noreferrer">
-            test Bitcoin faucet ↗
+            Get some free from a faucet ↗
           </a>
-          .
         </li>
         <li>
           Scan the QR code or copy the address.
@@ -39,7 +38,7 @@ export function TopUpBox(props: { address: string; qrPayload: string; journeySte
           <Copy text={props.address} label="Copy address" />
         </li>
         <li>Send a small amount first. Under 1,000 sats doesn't count.</li>
-        <li>Wait for it to say Counted, usually 10–30 minutes. The jar page updates by itself.</li>
+        <li>Wait for it to say Counted, usually 10–30 minutes. This page updates by itself.</li>
       </ol>
     </section>
   );

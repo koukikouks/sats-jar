@@ -37,13 +37,11 @@ export function HandoverSection(props: { jar: JarStatus }) {
           <p>The beneficiary's phone has claimed the jar. {handover.confirmations} of 2 guardians have confirmed.</p>
           {guardian && !handover.confirmedByMe ? (
             <p>
-              Check the beneficiary's code and confirm by {when(handover.lapsesAt)}, in {aboutHowLong(handover.lapsesAt - nowSeconds())},
-              or the claim lapses.
+              Check the beneficiary's code and confirm by {when(handover.lapsesAt)}{inTime(handover.lapsesAt)}, or the claim lapses.
             </p>
           ) : (
             <p>
-              Unless 2 guardians confirm by {when(handover.lapsesAt)}, in {aboutHowLong(handover.lapsesAt - nowSeconds())}, the claim
-              lapses.
+              Unless 2 guardians confirm by {when(handover.lapsesAt)}{inTime(handover.lapsesAt)}, the claim lapses.
             </p>
           )}
           {guardian && !handover.confirmedByMe && (
@@ -88,6 +86,9 @@ export function HandoverSection(props: { jar: JarStatus }) {
  * When a confirmed handover goes ahead: once the public waiting time has passed and the jar has unlocked
  * (stories 20, 53a). "About N minutes" is computed from now, so it holds for real timing too.
  */
+/** ", in about 5 minutes" until a time, or nothing once it has passed. */
+const inTime = (at: number): string => (at > nowSeconds() ? `, in ${aboutHowLong(at - nowSeconds())}` : "");
+
 function goesAhead(jar: JarStatus, delayEndsAt: number): string {
   const at = Math.max(delayEndsAt, jar.unlockAt);
   const left = at - nowSeconds();
