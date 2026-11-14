@@ -9,8 +9,6 @@
   --muted: #55524d;
   --orange: #f59a1f;
   --yellow: #f7c32a;
-  --red: #e8412f;
-  --pink: #f27aa8;
   --blue: #2f6fd8;
   --green: #3a9d4f;
   --lilac: #b79bdc;
@@ -32,6 +30,11 @@
   --text-h1: clamp(2.4rem, 6vw, 3.4rem);
   --text-brand: 1.9rem;
   --text-code: 1.6rem;
+  --text-button: 1.05rem;
+  --code-gap: 0.4em;
+  --code-tracking: 0.04em;
+  --highlight-height: 0.4em;
+  --underline-offset: 0.2em;
   --line-height: 1.55;
   --line-height-hand: 1;
   --weight-medium: 500;
@@ -44,6 +47,7 @@
   --radius-blob: 50% 40% 55% 45%;
   --radius-pill: 999px;
   --radius-focus: 6px;
+  --focus-width: 3px;
   --shadow-rest: 5px 5px 0;
   --shadow-hover: 8px 8px 0;
   --shadow-press: 1px 1px 0;
@@ -52,7 +56,6 @@
 
   --ease-quick: 0.12s ease;
   --ease-highlight: 0.2s;
-  --ease-pop: 0.55s cubic-bezier(0.3, 1.5, 0.5, 1);
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -68,7 +71,14 @@
   --logo-size: 44px;
   --qr-size: 13.75rem;
   --doodle-size: 56px;
-  --doodle-size-phone: 40px;
+  --control-size: 1.2rem;
   --dot-size: 0.8rem;
   --grain-size: 256px;
+}
+
+/* Phones: smaller doodles. */
+@media (max-width: 480px) {
+  :root {
+    --doodle-size: 40px;
+  }
 }

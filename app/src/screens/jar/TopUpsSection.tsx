@@ -20,6 +20,14 @@ function progress(topUp: TopUp): string {
   }
 }
 
+/** How a top-up's progress is coloured: counted is done, still on its way is waiting. */
+const STATUS_CLASS: Record<TopUp["status"], string | undefined> = {
+  on_the_way: "waiting",
+  confirming: "waiting",
+  counted: "done",
+  too_small: undefined,
+};
+
 export function TopUpsSection(props: { jarId: string }) {
   const sdk = useSdk();
   const topUps = useQuery({ queryKey: ["topUps", props.jarId], queryFn: () => sdk.jars.topUps(props.jarId), refetchInterval: POLL });
@@ -31,7 +39,7 @@ export function TopUpsSection(props: { jarId: string }) {
         {/* One Bitcoin transaction can pay the jar twice, so the txid alone is not unique. */}
         {(topUps.data ?? []).map((topUp, n) => (
           <li key={`${topUp.txid}-${n}`}>
-            <span>{sats(topUp.value)}</span> <span className={topUp.status === "counted" ? "done" : topUp.status === "too_small" ? undefined : "waiting"}>{progress(topUp)}</span> <CheckIt url={topUp.explorerUrl} />
+            <span>{sats(topUp.value)}</span> <span className={STATUS_CLASS[topUp.status]}>{progress(topUp)}</span> <CheckIt url={topUp.explorerUrl} />
           </li>
         ))}
       </ul>

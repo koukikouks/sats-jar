@@ -43,16 +43,16 @@ p {
 }
 a {
   color: var(--ink);
-  text-underline-offset: 0.2em;
-  background: linear-gradient(var(--yellow), var(--yellow)) 0 100% / 0 0.4em no-repeat;
+  text-underline-offset: var(--underline-offset);
+  background: linear-gradient(var(--yellow), var(--yellow)) 0 100% / 0 var(--highlight-height) no-repeat;
   transition: background-size var(--ease-highlight);
 }
 a:hover {
-  background-size: 100% 0.4em;
+  background-size: 100% var(--highlight-height);
 }
 :focus-visible {
-  outline: 3px solid var(--blue);
-  outline-offset: 3px;
+  outline: var(--focus-width) solid var(--blue);
+  outline-offset: var(--focus-width);
   border-radius: var(--radius-focus);
 }
 
@@ -103,7 +103,7 @@ a:hover {
 button,
 .button {
   display: inline-block;
-  font: var(--weight-strong) 1.05rem/1 var(--font-body);
+  font: var(--weight-strong) var(--text-button)/1 var(--font-body);
   cursor: pointer;
   border: var(--border-button) solid var(--ink);
   border-radius: var(--radius-wobble);
@@ -189,8 +189,8 @@ fieldset.field {
 }
 .choice input {
   accent-color: var(--ink);
-  width: 1.2rem;
-  height: 1.2rem;
+  width: var(--control-size);
+  height: var(--control-size);
   margin: 0;
 }
 .hint {
@@ -325,8 +325,8 @@ fieldset.field {
   font-weight: var(--weight-strong);
   font-size: var(--text-code);
   font-variant-numeric: tabular-nums;
-  word-spacing: 0.4em;
-  letter-spacing: 0.04em;
+  word-spacing: var(--code-gap);
+  letter-spacing: var(--code-tracking);
   line-height: 1.3;
 }
 .words {
@@ -402,17 +402,6 @@ fieldset.field {
   }
   .jar-head {
     padding: var(--space-6);
-  }
-  .welcome::after,
-  .empty::after {
-    width: var(--doodle-size-phone);
-    height: var(--doodle-size-phone);
-  }
-  .empty {
-    padding-right: calc(var(--doodle-size-phone) + var(--space-3));
-  }
-  .empty::after {
-    margin-top: calc(var(--doodle-size-phone) / -2);
   }
   .words {
     columns: 1;
