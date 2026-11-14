@@ -57,10 +57,10 @@ function SetUpPin() {
   };
   return (
     <form className="panel" onSubmit={submit}>
-      <h1>Set up Sats Jar on this device</h1>
+      <h1>Choose a PIN for this device</h1>
       <p>
-        Choose a 6-digit PIN. It unlocks Sats Jar on this device only. Your keys are made here and never leave it. We can't reset
-        the PIN, so pick one you'll remember.
+        Pick 6 digits. They unlock Sats Jar on this device only. Nobody, Sats Jar included, can reset your PIN, so choose one
+        you'll remember.
       </p>
       <NewPinFields pin={pin} again={again} onPin={setPin} onAgain={setAgain} />
       {problem && (
@@ -70,7 +70,7 @@ function SetUpPin() {
       )}
       <Refusal error={setUp.error} />
       <button type="submit" disabled={setUp.isPending}>
-        Set up
+        Save my PIN
       </button>
     </form>
   );
@@ -88,6 +88,7 @@ function Unlock() {
   return (
     <form className="panel" onSubmit={submit}>
       <h1>Unlock Sats Jar</h1>
+      <p>Type the 6-digit PIN you chose on this device.</p>
       <label className="field">
         <span>PIN</span>
         <input type="password" inputMode="numeric" autoComplete="current-password" value={pin} onChange={(e) => setPin(pinDigits(e.target.value))} />

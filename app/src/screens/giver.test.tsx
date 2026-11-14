@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { SatsJarRefusal, type JarStatus } from "@sats-jar/sdk";
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import live from "../test/fixtures/dev-jar-1.json";
 import { renderApp } from "../test/render.tsx";
@@ -13,7 +13,10 @@ function withDraft(sdk: StandInSdk, joined: boolean[]) {
   sdk.invites.progress.mockResolvedValue({ nickname: "Sunny's jar", joined });
 }
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  localStorage.clear();
+});
 
 describe("starting a jar", () => {
   it("asks for invite links with the nickname and the number of guardians, then opens the draft", async () => {
@@ -21,12 +24,19 @@ describe("starting a jar", () => {
       sdk.invites.start.mockResolvedValue(draft);
       withDraft(sdk, [false, false, false]);
     });
-    expect(await screen.findByText("Anyone can see this name, so use a nickname, not the child's full name.")).toBeTruthy();
+    expect(await screen.findByText("Everyone can see this name, so use a nickname like \"Sunny's jar\", not the child's full name.")).toBeTruthy();
     await user.type(screen.getByLabelText("Jar nickname"), "Sunny's jar");
-    await user.click(screen.getByLabelText("3"));
+    await user.click(screen.getByLabelText("3 guardians"));
     await user.click(screen.getByRole("button", { name: "Make invite links" }));
     expect(sdk.invites.start).toHaveBeenCalledWith({ nickname: "Sunny's jar", guardians: 3 });
     expect(await screen.findByRole("heading", { name: "Sunny's jar: invite the guardians" })).toBeTruthy();
+  });
+
+  it("names each guardian-count choice so a screen reader can pick it", async () => {
+    renderApp("/new");
+    expect(await screen.findByRole("radio", { name: "2 guardians" })).toBeTruthy();
+    expect(screen.getByRole("radio", { name: "3 guardians" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "How many guardians?" })).toBeTruthy();
   });
 });
 
@@ -37,8 +47,8 @@ describe("inviting the guardians", () => {
     expect(within(first).getByText(`${window.location.origin}/join/tok-a`)).toBeTruthy();
     expect(await within(first).findByText("Joined")).toBeTruthy();
     expect(within(screen.getByText("Guardian 2").closest("li")!).getByText("Waiting")).toBeTruthy();
-    expect(screen.getByText("You can create the jar once 2 guardians have joined.")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Create the jar" })).toBeNull();
+    expect(screen.getByText("Once 2 guardians have joined, you can set the jar's rule and make it.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Make the jar" })).toBeNull();
   });
 
   it("lets the giver use the first open link on this device", async () => {
@@ -50,9 +60,33 @@ describe("inviting the guardians", () => {
     expect(sdk.invites.join).toHaveBeenCalledWith("tok-b");
   });
 
+  it("stops offering a link to the giver once this device has joined, even after a reload", async () => {
+    const first = renderApp("/draft/d1", (sdk) => {
+      withDraft(sdk, [false, false, false]);
+      sdk.invites.join.mockResolvedValue(undefined);
+    });
+    await first.user.click(await screen.findByRole("button", { name: "Use a link myself" }));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Use a link myself" })).toBeNull());
+    first.unmount();
+    renderApp("/draft/d1", (sdk) => withDraft(sdk, [true, false, false]));
+    expect(await screen.findByText("Guardian 1")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Use a link myself" })).toBeNull();
+  });
+
+  it("says plainly that this device is already a guardian instead of showing a refusal", async () => {
+    const { user } = renderApp("/draft/d1", (sdk) => {
+      withDraft(sdk, [true, false, false]);
+      sdk.invites.join.mockRejectedValue(new SatsJarRefusal("ALREADY_GUARDIAN", "You are already a guardian of this jar."));
+    });
+    await user.click(await screen.findByRole("button", { name: "Use a link myself" }));
+    expect(await screen.findByText("You're already one of this jar's guardians on this device.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Use a link myself" })).toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
   it("says a draft made on another device is not here", async () => {
     renderApp("/draft/elsewhere", (sdk) => withDraft(sdk, [false, false, false]));
-    expect(await screen.findByText("This jar's invite links are no longer pending.")).toBeTruthy();
+    expect(await screen.findByText("This jar's invite links aren't on this device. Open them on the device that made them.")).toBeTruthy();
   });
 });
 
@@ -67,16 +101,16 @@ describe("creating the jar", () => {
     const address = await screen.findByLabelText("Where should the allowance go?");
     expect(
       screen.getByText(
-        "Paste the child's Bitcoin address. In a Bitcoin wallet a parent controls, tap Receive and copy the address it shows. Don't use an exchange's deposit address. Before handover the jar can only ever pay this address.",
+        "The child's Bitcoin address, from a wallet a parent controls: open it, tap Receive and copy the address. Not an exchange's deposit address. Until handover the jar can only ever pay this address.",
       ),
     ).toBeTruthy();
     await user.type(address, "tb1q6rz28mcfaxtmd6v789l9rrlrusdprr9pqcpvkl");
-    await user.type(screen.getByLabelText("Allowance per period (sats)"), "2500");
+    await user.type(screen.getByLabelText("Allowance cap (sats each period)"), "2500");
     await user.click(screen.getByLabelText("Demo timing: every 10 minutes"));
     expect(screen.getByText("Shortens every wait so a jar's whole life fits in an afternoon. The jar shows a Demo timing badge.")).toBeTruthy();
     await user.type(screen.getByLabelText("Unlocks in (minutes)"), "3");
-    expect(screen.getByText("Only the 2 guardians who have joined will be on the jar.")).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Create the jar" }));
+    expect(screen.getByText("Only the 2 guardians who have joined will be on the jar. Wait for the others if you want them on it too.")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Make the jar" }));
     expect(sdk.jars.create).toHaveBeenCalledWith({
       draftId: "d1",
       childAddress: "tb1q6rz28mcfaxtmd6v789l9rrlrusdprr9pqcpvkl",
@@ -95,11 +129,11 @@ describe("creating the jar", () => {
       sdk.jars.status.mockReturnValue(new Promise(() => {}));
     });
     await user.type(await screen.findByLabelText("Where should the allowance go?"), "tb1qchild");
-    await user.type(screen.getByLabelText("Allowance per period (sats)"), "20000");
+    await user.type(screen.getByLabelText("Allowance cap (sats each period)"), "20000");
     expect(screen.getByText("The earliest the jar can be handed over to the child. Most families choose the 18th birthday.")).toBeTruthy();
     await user.type(screen.getByLabelText("Unlock date"), "2040-05-01");
     expect(screen.queryByText(/guardians who have joined will be on the jar/)).toBeNull();
-    await user.click(screen.getByRole("button", { name: "Create the jar" }));
+    await user.click(screen.getByRole("button", { name: "Make the jar" }));
     expect(sdk.jars.create).toHaveBeenCalledWith({
       draftId: "d1",
       childAddress: "tb1qchild",
@@ -118,6 +152,21 @@ describe("creating the jar", () => {
     expect(await screen.findByText("The jar unlocks on 1 May 2040. From then on, the child can take it over.")).toBeTruthy();
   });
 
+  it("says what is still missing while the jar can't be made yet", async () => {
+    const { user } = renderApp("/draft/d1", (sdk) => withDraft(sdk, [true, true, false]));
+    const button = await screen.findByRole("button", { name: "Make the jar" });
+    const hint = () => document.getElementById(button.getAttribute("aria-describedby") ?? "")?.textContent;
+    expect(hint()).toBe("Still needed: the child's address, the allowance cap and the unlock date.");
+    await user.type(screen.getByLabelText("Where should the allowance go?"), "tb1qchild");
+    expect(hint()).toBe("Still needed: the allowance cap and the unlock date.");
+    await user.click(screen.getByLabelText("Demo timing: every 10 minutes"));
+    await user.type(screen.getByLabelText("Allowance cap (sats each period)"), "2500");
+    expect(hint()).toBe("Still needed: the minutes until it unlocks.");
+    await user.type(screen.getByLabelText("Unlocks in (minutes)"), "3");
+    expect(button.getAttribute("aria-describedby")).toBeNull();
+    expect(screen.queryByText(/Still needed/)).toBeNull();
+  });
+
   it("shows a create refusal next to the button", async () => {
     const { user } = renderApp("/draft/d1", (sdk) => {
       withDraft(sdk, [true, true]);
@@ -130,9 +179,9 @@ describe("creating the jar", () => {
       );
     });
     await user.type(await screen.findByLabelText("Where should the allowance go?"), "tb1qchild");
-    await user.type(screen.getByLabelText("Allowance per period (sats)"), "1000");
+    await user.type(screen.getByLabelText("Allowance cap (sats each period)"), "1000");
     await user.type(screen.getByLabelText("Unlock date"), "2040-05-01");
-    await user.click(screen.getByRole("button", { name: "Create the jar" }));
+    await user.click(screen.getByRole("button", { name: "Make the jar" }));
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toBe("The cap is too small to pay its own Bitcoin fees. Choose at least 1,630 sats. Check it yourself ↗");
     expect(within(alert).getByRole("link", { name: "Check it yourself ↗" }).getAttribute("href")).toBe("https://testnet.nearblocks.io/txns/R1");
@@ -158,7 +207,7 @@ describe("joining as a guardian", () => {
       sdk.device.state.mockResolvedValue("new");
       sdk.invites.preview.mockResolvedValue({ nickname: "Sunny's jar", joined: false });
     });
-    expect(await screen.findByRole("heading", { name: "Set up Sats Jar on this device" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Choose a PIN for this device" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Be a guardian of Sunny's jar" })).toBeTruthy();
   });
 

@@ -23,20 +23,23 @@ export function Home() {
 function Welcome() {
   return (
     <section className="panel welcome">
-      <h1>Sats Jar</h1>
-      <p>A jar of real Bitcoin for a child: a small allowance each period, nothing else until they're grown, then it's theirs alone.</p>
+      <h1>A jar of Bitcoin for someone you love</h1>
+      <p>
+        Anyone can top it up, the child gets a small allowance on a schedule, and from the day you choose the whole jar can
+        become theirs.
+      </p>
       <Link className="button" to="/new">
-        Start a jar
+        Make a jar
       </Link>
       <ul className="plain">
         <li>
-          <Link to="/restore">I have a recovery phrase: restore my jar</Link>
+          <Link to="/restore">Restore my jar from its recovery phrase</Link>
         </li>
         <li>
           <Link to="/receive">Someone is giving me a jar</Link>
         </li>
       </ul>
-      <p className="hint">Invited as a guardian, or setting up your own jar? Open the link you were sent.</p>
+      <p className="hint">Asked to be a guardian, or setting up your own jar? Open the link you were sent.</p>
     </section>
   );
 }
@@ -58,10 +61,10 @@ function YourJars() {
           <DraftCard key={draft.draftId} draft={draft} />
         ))}
       </ul>
-      {empty && <p className="empty">No jars on this device yet.</p>}
+      {empty && <p className="empty">No jars here yet. Make one, or open a link someone sent you.</p>}
       <Refusal error={jars.error ?? drafts.error} />
       <Link className="button" to="/new">
-        Start a jar
+        Make a jar
       </Link>
     </section>
   );
@@ -90,8 +93,8 @@ function DraftCard(props: { draft: Draft }) {
   return (
     <li className="card">
       <Link to={`/draft/${draft.draftId}`}>
-        Being set up: {draft.nickname}
-        {joined !== undefined && `, ${joined} of ${draft.inviteTokens.length} guardians joined`}
+        {draft.nickname}
+        {joined !== undefined && `: ${joined} of ${draft.inviteTokens.length} guardians joined so far`}
       </Link>
     </li>
   );
