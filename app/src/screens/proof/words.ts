@@ -1,18 +1,26 @@
 // How the public record words the chain: a request's sender by role, never by account (spec
 // #37), and the contract's methods in plain words.
 import type { JarProof } from "@sats-jar/proof";
+import { config } from "../../config.ts";
 
 /** The jar's handover has completed: its history records `handover_completed`. */
 export const handoverDone = (jar: JarProof): boolean => jar.history.some((event) => event.event === "handover_completed");
 
-/** Who sent a request, by their part in the jar. */
-export function senderRole(jar: JarProof, signer: string): string {
+/**
+ * Who sent a request, by the part they had in the jar when they sent it (`at`, unix seconds): the
+ * child claims before holding the jar, so a claim reads "the child" even once the child holds it.
+ */
+export function senderRole(jar: JarProof, signer: string, at?: number): string {
   if (signer === jar.giver) return "the giver";
   if (signer === jar.familyAccount) return "the family account";
   if (jar.guardians.includes(signer)) return "a guardian";
-  if (signer === jar.holder && jar.holder !== jar.familyAccount) return "the holder";
   const claimants = jar.history.flatMap((event) => (event.event === "handover_claimed" && event.childAccount ? [event.childAccount] : []));
+  const handedOverAt = jar.history.find((event) => event.event === "handover_completed")?.at;
+  const beforeHandover = at !== undefined && (handedOverAt === undefined || at < handedOverAt);
+  if (claimants.includes(signer) && beforeHandover) return "the child";
+  if (signer === jar.holder && jar.holder !== jar.familyAccount) return "the holder";
   if (claimants.includes(signer)) return "the child";
+  if (signer === config.keeperAccount) return "Sats Jar's keeper";
   return "someone else";
 }
 
@@ -24,7 +32,7 @@ export const withoutAccounts = (jar: JarProof, reason: string): string =>
   reason
     .replace(ACCOUNT, (account) => senderRole(jar, account))
     // "only the giver, <account>, can cancel" would read "only the giver, the giver, can cancel".
-    .replace(/\b(the giver|a guardian|the holder|the child|someone else), \1,/g, "$1");
+    .replace(/\b(the giver|a guardian|the holder|the child|Sats Jar's keeper|someone else), \1,/g, "$1");
 
 // The contract's change methods (contract/src: lib, spend, emergency, handover, transfer,
 // rehoming, nft). Anything else (the dev-only escape, a method a later contract adds) reads

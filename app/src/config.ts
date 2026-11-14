@@ -3,6 +3,11 @@
 export const config = {
   /** The jar contract the SDK and the public record read. */
   contract: import.meta.env.VITE_SATS_JAR_CONTRACT ?? "sats-jar-dev-2.testnet",
+  /**
+   * The keeper's account, which proves top-ups and sends due payments; the public record names it
+   * as Sats Jar's keeper. Any other contract's keeper reads as someone else.
+   */
+  keeperAccount: import.meta.env.VITE_SATS_JAR_KEEPER ?? "keeper-locked.sats-jar-app.testnet",
   /** The app backend, on the app's own origin (vite.config.ts proxies it). */
   backendUrl: "/api",
 } as const;

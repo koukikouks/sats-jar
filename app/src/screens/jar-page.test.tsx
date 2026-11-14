@@ -35,7 +35,7 @@ describe("the jar page", () => {
     expect(await screen.findByRole("heading", { name: jar1.nickname })).toBeTruthy();
     expect(sdk.jars.status).toHaveBeenCalledWith("1");
     expect(screen.getByText("1,260 sats in the jar")).toBeTruthy();
-    expect(screen.getByText("You gave this jar · You hold this jar")).toBeTruthy();
+    expect(screen.getByText("You gave this jar")).toBeTruthy();
     expect(screen.getByText(jar1.address)).toBeTruthy();
     expect(screen.getByText(/It counts once Bitcoin has confirmed it 3 times/)).toBeTruthy();
     const topUps = screen.getByRole("heading", { name: "Top-ups" }).closest("section")!;

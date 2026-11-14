@@ -35,8 +35,15 @@ const ROLE_LINES: Record<Role, string> = {
   child: "You've claimed this jar",
 };
 
-/** How this device's person relates to a jar, as one line. */
-export const roleLine = (roles: Role[]): string => roles.map((role) => ROLE_LINES[role]).join(" · ");
+/**
+ * How this device's person relates to a jar, as one line. A giver who also holds the jar is the
+ * family account holding it until handover, which the giver needn't read as "You hold this jar".
+ */
+export const roleLine = (roles: Role[]): string =>
+  roles
+    .filter((role) => !(role === "holder" && roles.includes("giver")))
+    .map((role) => ROLE_LINES[role])
+    .join(" · ");
 
 /**
  * A re-homing's progress: "2 coins still to go". The status gives only the coins not yet moved

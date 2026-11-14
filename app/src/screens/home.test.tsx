@@ -28,7 +28,9 @@ describe("home", () => {
     expect(within(sunny).getByRole("link").getAttribute("href")).toBe("/jar/7");
     expect(within(sunny).getByText("Demo timing")).toBeTruthy();
     expect(within(sunny).getByText("20,000 sats")).toBeTruthy();
-    expect(within(sunny).getByText("You gave this jar · You hold this jar")).toBeTruthy();
+    // The giver's own account is the family account that holds the jar until handover.
+    expect(within(sunny).getByText("You gave this jar")).toBeTruthy();
+    expect(within(sunny).queryByText(/You hold this jar/)).toBeNull();
     const kit = screen.getByText("Kit's jar").closest("li")!;
     expect(within(kit).queryByText("Demo timing")).toBeNull();
     expect(within(kit).getByText("You're a guardian")).toBeTruthy();
