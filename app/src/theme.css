@@ -1,43 +1,74 @@
 /*
- * Every colour, font, size, radius and spacing value the app uses. Components read only these
- * properties, so the landing page's look replaces this one file.
+ * Every colour, font, size, radius, shadow, motion and spacing value the app uses, taken from the
+ * landing page (docs/design.md). Components read only these properties.
  */
 :root {
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --text-small: 0.875rem;
-  --text-body: 1rem;
-  --text-h2: 1.25rem;
-  --text-h1: 1.625rem;
-  --line-height: 1.5;
+  /* The landing's crayon box. */
+  --ink: #141414;
+  --paper: #ffffff;
+  --muted: #55524d;
+  --orange: #f59a1f;
+  --yellow: #f7c32a;
+  --red: #e8412f;
+  --pink: #f27aa8;
+  --blue: #2f6fd8;
+  --green: #3a9d4f;
+  --lilac: #b79bdc;
 
-  --color-page: #f6f5f2;
-  --color-surface: #ffffff;
-  --color-text: #1d1d1b;
-  --color-muted: #63625d;
-  --color-border: #dddbd4;
-  --color-accent: #c26a00;
-  --color-accent-text: #ffffff;
-  --color-badge: #fbeedd;
-  --color-badge-text: #7a4300;
-  --color-refusal: #a32020;
-  --color-refusal-surface: #fdeeee;
-  --color-done: #1d6b3a;
+  /* Status text, drawn from the palette and darkened to read at 4.5:1 or better. */
+  --done-text: #2a7a3d;
+  --waiting-tint: #fdf3d3;
+  --refusal-text: #b4301f;
+  --refusal-tint: #fdecea;
+  --disabled-fill: #6b6863;
+
+  --font-hand: "Caveat Brush", "Segoe Print", "Bradley Hand", "Chalkboard SE", cursive;
+  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --text-small: 0.95rem;
+  --text-body: 1.0625rem;
+  --text-h3: 1.35rem;
+  --text-h2: clamp(1.7rem, 4vw, 2.2rem);
+  --text-h1: clamp(2.4rem, 6vw, 3.4rem);
+  --text-brand: 1.9rem;
+  --text-code: 1.6rem;
+  --line-height: 1.55;
+  --line-height-hand: 1;
+  --weight-medium: 500;
+  --weight-strong: 700;
+
+  --border: 2px;
+  --border-button: 3px;
+  --radius-wobble: 16px 20px 14px 22px / 20px 14px 22px 16px;
+  --radius-panel: 22px 18px 24px 16px / 16px 24px 18px 22px;
+  --radius-blob: 50% 40% 55% 45%;
+  --radius-pill: 999px;
+  --radius-focus: 6px;
+  --shadow-rest: 5px 5px 0;
+  --shadow-hover: 8px 8px 0;
+  --shadow-press: 1px 1px 0;
+  --lift: translate(-2px, -2px);
+  --press: translate(3px, 3px);
+
+  --ease-quick: 0.12s ease;
+  --ease-highlight: 0.2s;
+  --ease-pop: 0.55s cubic-bezier(0.3, 1.5, 0.5, 1);
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
+  --space-5: 1.25rem;
   --space-6: 1.5rem;
   --space-8: 2rem;
-  --page-width: 40rem;
-  --page-gutter: 1rem;
-  --radius: 0.5rem;
-  --radius-pill: 999px;
-  --border-width: 1px;
-  --picture-size: 4rem;
+  --space-10: 2.5rem;
+  --page-width: 44rem;
+  --page-gutter: 1.25rem;
+  --picture-size: 5rem;
+  --logo-size: 44px;
   --qr-size: 13.75rem;
-  --weight-strong: 600;
-  --weight-brand: 700;
-  --opacity-disabled: 0.6;
+  --doodle-size: 56px;
+  --doodle-size-phone: 40px;
+  --dot-size: 0.8rem;
+  --grain-size: 256px;
 }
