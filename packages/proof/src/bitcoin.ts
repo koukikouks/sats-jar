@@ -33,7 +33,9 @@ export async function bitcoinTransactions(http: typeof fetch, addresses: string[
   for (const address of addresses) {
     for (const tx of await addressHistory(http, address)) seen.set(tx.txid, tx);
   }
-  return [...seen.values()].map((tx) => toBitcoinTransaction(tx, new Set(addresses)));
+  // Not yet in a block first, then highest block first; a stable sort keeps the explorer's order within a block.
+  const height = (tx: EsploraTx) => (tx.status.confirmed ? (tx.status.block_height ?? 0) : Number.MAX_SAFE_INTEGER);
+  return [...seen.values()].sort((a, b) => height(b) - height(a)).map((tx) => toBitcoinTransaction(tx, new Set(addresses)));
 }
 
 async function addressHistory(http: typeof fetch, address: string): Promise<EsploraTx[]> {

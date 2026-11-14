@@ -16,6 +16,8 @@ export interface JarView {
     nickname: string;
   };
   address: string;
+  /** Oldest first. Builds before re-homing kept old addresses (the T06 dev contract) leave it out. */
+  old_addresses?: string[];
   witness_script: string;
   public_key: string;
   locktime: number;
@@ -114,6 +116,8 @@ export interface JarProof {
   demoTiming: boolean;
   address: string;
   addressExplorerUrl: string;
+  /** The addresses the jar moved away from at each re-homing, oldest first. */
+  oldAddresses: string[];
   witnessScript: string;
   publicKey: string;
   locktime: number;
@@ -152,6 +156,7 @@ export function toJarProof(
     demoTiming: view.demo_timing,
     address: view.address,
     addressExplorerUrl: bitcoinAddressUrl(view.address),
+    oldAddresses: view.old_addresses ?? [],
     witnessScript: view.witness_script,
     publicKey: view.public_key,
     locktime: view.locktime,
