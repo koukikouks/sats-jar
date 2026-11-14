@@ -48,7 +48,7 @@ Not proven yet: the "Counted" top-up and "Paid" allowance states on testnet (row
 
 | Action | Who | Contract method | Why there is no screen |
 |---|---|---|---|
-| Prove a top-up | keeper | `prove_topup` | The keeper proves every top-up within the hour (backend README); no person has a proof to submit. |
+| Prove a top-up | keeper | `prove_topup` | The keeper proves every top-up within about 2 minutes of its 3rd confirmation on the light client (backend README); no person has a proof to submit. |
 | Pay the period's allowance | keeper, anyone | `request_allowance` | The keeper pays it each period. Story 29's "anyone can trigger it" holds on chain: the method takes no account check, so anyone can call it from the command line. The SDK has no screen method for it. |
 | Retry signing, rebuild a witness, confirm a payment | keeper | `retry_signing`, `rebuild_witness`, `confirm_payment` | Plumbing behind every payment; the jar page shows each payment's status instead. |
 | Send an emergency payment after its delay | keeper | `execute_emergency` | Anyone may call it once the delay ends; the keeper does. |
