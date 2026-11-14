@@ -49,6 +49,10 @@ a { color: inherit; }
 .nav .nav-links { display: flex; gap: 1.4rem; font-weight: 500; font-size: .98rem; }
 .nav .nav-links a { text-decoration: none; padding: .25rem 0; background: linear-gradient(var(--yellow), var(--yellow)) 0 100% / 0 .4em no-repeat; transition: background-size .2s; }
 .nav .nav-links a:hover { background-size: 100% .4em; }
+.nav .nav-links { align-items: center; }
+.nav .nav-links a.nav-cta { padding: .55rem 1.05rem; font-weight: 800; color: var(--ink); background: var(--yellow); border: 2.5px solid var(--ink); border-radius: 12px 15px 11px 16px / 15px 11px 16px 12px; box-shadow: 4px 4px 0 var(--orange); transition: transform .12s ease, box-shadow .12s ease; }
+.nav .nav-links a.nav-cta:hover { background: var(--yellow); transform: translate(-1px, -1px); box-shadow: 6px 6px 0 var(--orange); }
+.nav .nav-links a.nav-cta:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--orange); }
 
 /* ───────── hero ───────── */
 .hero { position: relative; max-width: var(--wrap); margin: 0 auto; padding: 1.5rem 1.25rem 3.5rem; display: grid; grid-template-columns: 1.05fr .95fr; gap: 1rem 2rem; align-items: center; }
@@ -247,7 +251,7 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  h1 .role-word, .btn, .pin, .menu summary::after { transition: none; }
+  h1 .role-word, .btn, .pin, .menu summary::after, .nav .nav-links a.nav-cta { transition: none; }
   .wordmark .j img { animation: none; }
   .card.is-popping { animation: none; }
 }
