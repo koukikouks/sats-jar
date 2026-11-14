@@ -158,6 +158,22 @@ describe("accepting a transfer", () => {
     expect(screen.getByRole("link", { name: "Open your jar" }).getAttribute("href")).toBe("/jar/7");
   });
 
+  it("shows the accepted jar under Your jars without a reload", async () => {
+    const { user, sdk } = renderApp("/jar/7/accept", (sdk) => {
+      jarAs(sdk, { roles: [], transfer: { state: "offered", toMe: true } });
+      sdk.holder.acceptTransfer.mockImplementation(async () => {
+        sdk.jars.status.mockResolvedValue({ ...handedOver, roles: ["holder"], transfer: { state: "none" } });
+        sdk.jars.mine.mockResolvedValue([{ jarId: "7", nickname: "Sunny's jar", roles: ["holder"], balance: 0, picture: "", demoTiming: true }]);
+        return sent("A2");
+      });
+    });
+    await user.click(await screen.findByRole("button", { name: "Accept the jar" }));
+    await user.click(await screen.findByRole("link", { name: "Sats Jar" }));
+    const card = (await screen.findByText("Sunny's jar")).closest("li")!;
+    expect(within(card).getByText("You hold this jar")).toBeTruthy();
+    expect(sdk.jars.mine).toHaveBeenCalled();
+  });
+
   it("tells a phone the transfer isn't for it instead of offering Accept", async () => {
     renderApp("/jar/7/accept", (sdk) => jarAs(sdk, { roles: [], transfer: { state: "offered", toMe: false } }));
     expect(await screen.findByText("This transfer is for a different phone. Open the link on the phone that made your receive code.")).toBeTruthy();
