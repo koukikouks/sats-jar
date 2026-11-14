@@ -24,7 +24,7 @@ describe("try it: the rule says no on chain", () => {
 
     expect(tried).toEqual({
       code: "SPEND_BEFORE_HANDOVER",
-      message: "Before handover, only the allowance and an emergency payment can pay out, and only to the child's address.",
+      message: "Before handover, only the allowance and an emergency payment can pay out, and only to the beneficiary's address.",
       explorerUrl: LINK,
     });
     const [account] = [...net.accounts.keys()];
