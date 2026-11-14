@@ -1,5 +1,5 @@
 import { SatsJarRefusal } from "@sats-jar/sdk";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type UseMutationResult } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { useParams } from "react-router";
 import { useSdk } from "../services.tsx";
@@ -29,21 +29,24 @@ export function JoinPage() {
         Guardians are grown-ups the family trusts. Two of you must agree to any emergency payment to the child, and before the child
         takes the jar over you'll check a code on their phone, in person. No guardian can send the jar's Bitcoin anywhere else.
       </p>
-      {joined ? (
+      {join.isSuccess ? (
+        // Checked first: once this device joins, the link itself reads as used.
+        <p className="done">You're a guardian of {nickname}. You'll find the jar under Your jars once it's made.</p>
+      ) : joined ? (
         // The SDK's INVITE_USED sentence, shown before anyone tries the link.
         <p className="refusal">Someone has already joined with this invite link. Ask for a new link.</p>
       ) : state === "new" ? (
         <JoinWithNewPin onJoin={() => join.mutateAsync()} />
       ) : (
         <PinGate>
-          <Join join={join} nickname={nickname} />
+          <Join join={join} />
         </PinGate>
       )}
     </section>
   );
 }
 
-type JoinMutation = ReturnType<typeof useMutation<void, Error, void>>;
+type JoinMutation = UseMutationResult<void, Error, void>;
 
 /** A new device: the PIN and the join in one press. The PIN is set first, then the join is sent. */
 function JoinWithNewPin(props: { onJoin: () => Promise<void> }) {
@@ -83,7 +86,7 @@ function JoinWithNewPin(props: { onJoin: () => Promise<void> }) {
   );
 }
 
-function Join(props: { join: JoinMutation; nickname: string }) {
+function Join(props: { join: JoinMutation }) {
   const { join } = props;
   // One person fills one guardian spot (story 40b): this device has joined through another link.
   if (join.error instanceof SatsJarRefusal && join.error.code === "ALREADY_GUARDIAN") {
@@ -92,9 +95,6 @@ function Join(props: { join: JoinMutation; nickname: string }) {
         This device has already joined this jar as a guardian. Send this link to the other guardian to open on their own phone.
       </p>
     );
-  }
-  if (join.isSuccess) {
-    return <p className="done">You're a guardian of {props.nickname}. You'll find the jar under Your jars once it's made.</p>;
   }
   return (
     <>

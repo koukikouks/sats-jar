@@ -207,7 +207,8 @@ describe("joining as a guardian", () => {
       sdk.device.state.mockResolvedValue("new");
       sdk.device.setUp.mockImplementation(async () => void sdk.device.state.mockResolvedValue("unlocked"));
       sdk.invites.preview.mockResolvedValue({ nickname: "Sunny's jar", joined: false });
-      sdk.invites.join.mockResolvedValue(undefined);
+      // Once joined, the backend reports the link as used; the page must still say this device joined.
+      sdk.invites.join.mockImplementation(async () => void sdk.invites.preview.mockResolvedValue({ nickname: "Sunny's jar", joined: true }));
     });
     expect(await screen.findByRole("heading", { name: "Be a guardian of Sunny's jar" })).toBeTruthy();
     expect(screen.getByText("Choose a 6-digit PIN for this device. Nobody, Sats Jar included, can reset it.")).toBeTruthy();
@@ -218,6 +219,9 @@ describe("joining as a guardian", () => {
     expect(sdk.device.setUp).toHaveBeenCalledWith({ pin: "482913" });
     expect(sdk.invites.join).toHaveBeenCalledWith("tok-a");
     expect(sdk.device.setUp.mock.invocationCallOrder[0]).toBeLessThan(sdk.invites.join.mock.invocationCallOrder[0]!);
+    await waitFor(() => expect(sdk.invites.preview).toHaveBeenCalledTimes(2));
+    expect(screen.getByText(/^You're a guardian of Sunny's jar\./)).toBeTruthy();
+    expect(screen.queryByText("Someone has already joined with this invite link. Ask for a new link.")).toBeNull();
   });
 
   it("refuses a short PIN on the join page without calling the SDK", async () => {

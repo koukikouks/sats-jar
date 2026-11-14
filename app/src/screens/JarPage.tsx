@@ -62,7 +62,7 @@ function FamilyPage() {
  */
 function NotFamily(props: { jarId: string; mayHaveClaimed: boolean }) {
   const sdk = useSdk();
-  const code = useQuery({ queryKey: ["guardianCode"], queryFn: () => sdk.child.guardianCode(), enabled: props.mayHaveClaimed, retry: false });
+  const code = useQuery({ queryKey: ["guardianCode"], queryFn: () => sdk.child.guardianCode(), enabled: props.mayHaveClaimed });
   const proofLink = `/proof/${props.jarId}`;
   if (props.mayHaveClaimed && code.isPending) return null;
   return (
