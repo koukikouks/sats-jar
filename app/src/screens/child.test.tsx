@@ -85,6 +85,24 @@ describe("setting up the beneficiary's phone", () => {
     expect(await screen.findByText("Those words do not match your recovery phrase. Look at it again.")).toBeTruthy();
   });
 
+  it("warns before claiming an empty jar, and not before claiming one with sats", async () => {
+    const empty = renderApp("/jar/7/set-up", (sdk) => {
+      sdk.child.guardianCode.mockResolvedValue("4821 0937 5512 8846 1203");
+      sdk.jars.status.mockResolvedValue({ ...jar, balance: 0 });
+    });
+    expect(
+      await screen.findByText("The jar has 0 sats, so you would get an empty jar. Wait for a top-up to say Counted before you claim."),
+    ).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Claim my jar" })).toBeTruthy();
+    empty.unmount();
+    renderApp("/jar/7/set-up", (sdk) => {
+      sdk.child.guardianCode.mockResolvedValue("4821 0937 5512 8846 1203");
+      sdk.jars.status.mockResolvedValue(jar);
+    });
+    await screen.findByRole("button", { name: "Claim my jar" });
+    expect(screen.queryByText(/empty jar/)).toBeNull();
+  });
+
   it("tells an adult's device to open the link on the beneficiary's own phone", async () => {
     renderApp("/jar/7/set-up", (sdk) => {
       sdk.child.guardianCode.mockRejectedValue(new SatsJarRefusal("NO_RECOVERY_PHRASE", "Only a phone set up with a recovery phrase can do that."));

@@ -35,6 +35,10 @@ const STATUS_CLASS: Record<TopUp["status"], string | undefined> = {
   too_small: undefined,
 };
 
+/** What the jar has received so far: counted top-ups only, not ones still on their way (story 14). */
+const countedTotal = (topUps: TopUp[]): number =>
+  topUps.filter((topUp) => topUp.status === "counted").reduce((total, topUp) => total + topUp.value, 0);
+
 export function TopUpsSection(props: { jarId: string }) {
   const sdk = useSdk();
   const topUps = useQuery({ queryKey: ["topUps", props.jarId], queryFn: () => sdk.jars.topUps(props.jarId), refetchInterval: POLL });
@@ -42,6 +46,7 @@ export function TopUpsSection(props: { jarId: string }) {
     <section className="panel">
       <h2>Top-ups</h2>
       {topUps.data?.length === 0 && <p>No top-ups yet. The first counted one starts the allowance.</p>}
+      {topUps.data !== undefined && topUps.data.length > 0 && <p>Total topped up so far: {sats(countedTotal(topUps.data))}</p>}
       <ul className="plain rows">
         {/* One Bitcoin transaction can pay the jar twice, so the txid alone is not unique. */}
         {(topUps.data ?? []).map((topUp, n) => (

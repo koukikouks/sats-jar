@@ -75,5 +75,5 @@ function stoppedLine(jar: JarStatus): string {
 function nextLine(jar: JarStatus): string {
   if (jar.nextAllowanceAt === null) return "Starts with the first counted top-up.";
   if (jar.nextAllowanceAt > nowSeconds()) return `Next allowance: ${when(jar.nextAllowanceAt)}.`;
-  return jar.balance > 0 ? "Next allowance: due now, Sats Jar sends it soon." : "Next allowance: once the jar has sats again.";
+  return jar.balance > 0 ? "Next allowance: due now. Sats Jar sends it within about 2 minutes." : "Next allowance: once the jar has sats again.";
 }
