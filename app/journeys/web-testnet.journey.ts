@@ -230,7 +230,7 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
     await page.goto("/");
     const welcome = page.getByRole("link", { name: "Make a jar" });
     await expect(welcome.or(page.getByRole("heading", { name: "Unlock Sats Jar" })).first()).toBeVisible();
-    if (await page.getByRole("heading", { name: "Sats Jar", exact: true }).isVisible()) {
+    if (await page.getByRole("heading", { name: "A jar of Bitcoin for someone you love", exact: true }).isVisible()) {
       await welcome.click();
       await passGate(page, page.getByRole("heading", { name: "Make a jar" }));
       record([1], "a new device is set up with a PIN");

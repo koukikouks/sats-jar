@@ -31,6 +31,8 @@ function rememberJoinedHere(draftId: string): void {
   }
 }
 
+const isAlreadyGuardian = (error: unknown): boolean => error instanceof SatsJarRefusal && error.code === "ALREADY_GUARDIAN";
+
 /** What the rule form still needs, in words: "the child's address, the allowance cap and the unlock date". */
 export function stillNeeded(missing: string[]): string | null {
   if (missing.length === 0) return null;
@@ -83,10 +85,10 @@ function Invites(props: { draft: Draft }) {
       return client.invalidateQueries({ queryKey: ["draft", draft.draftId] });
     },
     onError: (error) => {
-      if (error instanceof SatsJarRefusal && error.code === "ALREADY_GUARDIAN") markJoinedHere();
+      if (isAlreadyGuardian(error)) markJoinedHere();
     },
   });
-  const alreadyGuardian = joinMyself.error instanceof SatsJarRefusal && joinMyself.error.code === "ALREADY_GUARDIAN";
+  const alreadyGuardian = isAlreadyGuardian(joinMyself.error);
   return (
     <>
       <section className="panel">

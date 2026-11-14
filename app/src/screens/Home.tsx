@@ -25,8 +25,8 @@ function Welcome() {
     <section className="panel welcome">
       <h1>A jar of Bitcoin for someone you love</h1>
       <p>
-        Anyone can top it up, the child gets a small allowance on a schedule, and on the day you choose the whole jar becomes
-        theirs.
+        Anyone can top it up, the child gets a small allowance on a schedule, and from the day you choose the whole jar can
+        become theirs.
       </p>
       <Link className="button" to="/new">
         Make a jar
