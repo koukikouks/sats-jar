@@ -186,7 +186,7 @@ export function createKeeper(deps: { chain: KeeperChain; bitcoin: Bitcoin; now: 
       if (step.code === "SIGNING_IN_PROGRESS") step.result = "waiting";
       if (!outcome?.ok) return [step];
       // The call succeeds even when the signing fails again (the callback records it), so the
-      // next retry waits for a later run: at most one retry per payment per run.
+      // next retry waits out the backoff below.
       const after = await chain.payment(id);
       if (after?.status === "signed") return [step, ...(await settle(after, now))];
       // A FINAL answer still `signing` makes the fingerprint `signing`, so a later flip to

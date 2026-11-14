@@ -22,7 +22,7 @@ const handle = createBackend({
   keeper,
 });
 
-startKeeper(keeper, { log: console.log });
+startKeeper(keeper, { log: console.log, error: console.error });
 
 createServer(async (req, res) => {
   const chunks: Buffer[] = [];

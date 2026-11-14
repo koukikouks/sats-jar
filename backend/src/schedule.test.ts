@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Keeper, KeeperReport } from "./keeper.ts";
-import { KEEPER_INTERVAL, startKeeper } from "./schedule.ts";
+import { KEEPER_INTERVAL_MS, startKeeper } from "./schedule.ts";
 
 function countingKeeper() {
   const runs: number[] = [];
@@ -19,21 +19,21 @@ describe("the keeper's schedule", () => {
 
   it("runs a pass as soon as it starts, so a deploy needs no manual press", () => {
     const { keeper, runs } = countingKeeper();
-    const stop = startKeeper(keeper, { log: () => {} });
+    const stop = startKeeper(keeper, { log: () => {}, error: () => {} });
     expect(runs).toHaveLength(1);
     stop();
   });
 
   it("then runs one pass every 2 minutes", async () => {
     const { keeper, runs } = countingKeeper();
-    const stop = startKeeper(keeper, { log: () => {} });
+    const stop = startKeeper(keeper, { log: () => {}, error: () => {} });
     await vi.advanceTimersByTimeAsync(2 * 60_000 - 1);
     expect(runs).toHaveLength(1);
     await vi.advanceTimersByTimeAsync(1);
     expect(runs).toHaveLength(2);
     await vi.advanceTimersByTimeAsync(10 * 60_000);
     expect(runs).toHaveLength(7);
-    expect(KEEPER_INTERVAL).toBe(120_000);
+    expect(KEEPER_INTERVAL_MS).toBe(120_000);
     stop();
   });
 
@@ -46,12 +46,12 @@ describe("the keeper's schedule", () => {
       },
     };
     const lines: unknown[][] = [];
-    const stop = startKeeper(keeper, { log: (...line) => void lines.push(line) });
+    const stop = startKeeper(keeper, { log: (line) => void lines.push([line]), error: (...line) => void lines.push(line) });
     await vi.advanceTimersByTimeAsync(0);
     fail = true;
-    await vi.advanceTimersByTimeAsync(KEEPER_INTERVAL);
+    await vi.advanceTimersByTimeAsync(KEEPER_INTERVAL_MS);
     fail = false;
-    await vi.advanceTimersByTimeAsync(KEEPER_INTERVAL);
+    await vi.advanceTimersByTimeAsync(KEEPER_INTERVAL_MS);
     expect(lines[0]).toEqual([JSON.stringify({ startedAt: 1, steps: [] })]);
     expect(lines[1]?.[0]).toBe("keeper run failed");
     expect(lines[2]).toEqual([JSON.stringify({ startedAt: 1, steps: [] })]);
