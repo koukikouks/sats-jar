@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Testnet and demo timing | Sats Jar</title>
+  <meta name="description" content="Sats Jar runs on NEAR testnet and Bitcoin testnet3. What that means, and how time is shortened.">
+  <link rel="icon" href="favicon.ico" sizes="48x48">
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="landing.css">
+</head>
+<body>
+  <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+    <filter id="wax-edge" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.4"/>
+    </filter>
+  </svg>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav">
+    <a class="logo" href="index.html#top" aria-label="Sats Jar, home">
+      <img src="assets/coin-2.png" alt="" width="40" height="40">
+      <span class="grainy">Sats Jar</span>
+    </a>
+    <nav aria-label="Main">
+      <a class="nav-how" href="index.html#how">How it works</a>
+      <details class="menu">
+        <summary>Under the hood</summary>
+        <ul class="menu-panel">
+          <li><a href="transactions.html">The rule, on record<small>Real testnet transactions</small></a></li>
+          <li><a href="trust.html">What you are trusting<small>Everyone the design relies on</small></a></li>
+          <li><a href="testnet.html" aria-current="page">Testnet and demo timing<small>What is real and what is shortened</small></a></li>
+          <li><a href="code.html">Code and evidence<small>Open, so you can check</small></a></li>
+        </ul>
+      </details>
+    </nav>
+  </header>
+
+  <main id="main" class="page">
+    <!-- Testnet notice and links -->
+    <section class="section notice" id="testnet">
+      <h1 class="grainy page-title">Testnet and demo timing</h1>
+      <p>It runs on NEAR testnet and Bitcoin testnet3. The coins are test coins with no value, so please don't send real Bitcoin to a jar.</p>
+      <p>Time is shortened for the demo. A period and the unlock date are minutes or hours, not months and years, and wherever a jar's timing shows it is labelled <span class="badge">Demo timing</span>.</p>
+
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Testnet demo. Test coins have no value. <a href="testnet.html">What that means</a></p>
+  </footer>
+
+  <script src="nav.js" defer></script>
+</body>
+</html>

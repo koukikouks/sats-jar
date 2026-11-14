@@ -1,0 +1,48 @@
+<!doctype html>
+<!-- Share card (assets/og-image.png, 1200x630). Re-render with headless Chrome:
+     chrome --headless=new --hide-scrollbars --window-size=1200,630 \
+       --screenshot=app/assets/og-image.png file://$PWD/app/art-src/og-card.html -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../landing.css">
+  <style>
+    html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: var(--paper, #fff); }
+    .og { display: grid; grid-template-columns: 1fr 470px; align-items: center; gap: 2rem; height: 630px; padding: 0 70px 0 80px; box-sizing: border-box; }
+    .og .brand { display: flex; align-items: center; gap: .6rem; font: 800 1.6rem/1 var(--display); margin-bottom: 2.2rem; }
+    .og .brand img { width: 48px; height: 48px; }
+    .og h1 { font-size: 5rem; margin: 0 0 1.6rem; }
+    .og p { font-size: 1.5rem; color: var(--muted); margin: 0; max-width: 30rem; }
+    .og .stage { max-width: 470px; }
+  </style>
+</head>
+<body>
+  <div class="og">
+    <div>
+      <div class="brand"><img src="../assets/coin-2.png" alt="">Sats Jar</div>
+      <h1><span class="line">Set your</span>
+        <span class="role"><span class="role-word">loved one</span><img class="role-underline" src="../assets/underline-orange.png" alt=""></span>
+        <span class="line">up for life.</span></h1>
+      <p>A jar of real Bitcoin that pays a small allowance, then becomes theirs alone.</p>
+    </div>
+    <div class="stage">
+      <div class="card"><img class="card-figure" src="../assets/figure-loved-one.png" alt=""><img class="card-frame" src="../assets/frame-1.png" alt=""></div>
+      <div class="jar-wrap">
+        <div class="pile">
+          <img class="coin" src="../assets/coin-1.png" alt="" style="--x:57.76%;--y:85.64%;--r:-33.1deg">
+          <img class="coin" src="../assets/coin-2.png" alt="" style="--x:33.26%;--y:85.64%;--r:-11.4deg">
+          <img class="coin" src="../assets/coin-3.png" alt="" style="--x:76.29%;--y:76.91%;--r:25.3deg">
+          <img class="coin" src="../assets/coin-4.png" alt="" style="--x:42.79%;--y:71.19%;--r:-20.3deg">
+          <img class="coin" src="../assets/coin-1.png" alt="" style="--x:62.74%;--y:64.28%;--r:24.0deg">
+          <img class="coin" src="../assets/coin-2.png" alt="" style="--x:24.00%;--y:62.77%;--r:-2.9deg">
+          <img class="coin" src="../assets/coin-3.png" alt="" style="--x:44.41%;--y:55.23%;--r:-27.3deg">
+          <img class="coin" src="../assets/coin-4.png" alt="" style="--x:77.59%;--y:52.43%;--r:2.6deg">
+          <img class="coin" src="../assets/coin-1.png" alt="" style="--x:28.41%;--y:44.19%;--r:-14.1deg">
+        </div>
+        <img class="jar" src="../assets/jar.png" alt="">
+      </div>
+    </div>
+  </div>
+</body>
+</html>

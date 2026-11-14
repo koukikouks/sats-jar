@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Code and evidence | Sats Jar</title>
+  <meta name="description" content="Links to the Sats Jar source and the testnet evidence.">
+  <link rel="icon" href="favicon.ico" sizes="48x48">
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="landing.css">
+</head>
+<body>
+  <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+    <filter id="wax-edge" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.4"/>
+    </filter>
+  </svg>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav">
+    <a class="logo" href="index.html#top" aria-label="Sats Jar, home">
+      <img src="assets/coin-2.png" alt="" width="40" height="40">
+      <span class="grainy">Sats Jar</span>
+    </a>
+    <nav aria-label="Main">
+      <a class="nav-how" href="index.html#how">How it works</a>
+      <details class="menu">
+        <summary>Under the hood</summary>
+        <ul class="menu-panel">
+          <li><a href="transactions.html">The rule, on record<small>Real testnet transactions</small></a></li>
+          <li><a href="trust.html">What you are trusting<small>Everyone the design relies on</small></a></li>
+          <li><a href="testnet.html">Testnet and demo timing<small>What is real and what is shortened</small></a></li>
+          <li><a href="code.html" aria-current="page">Code and evidence<small>Open, so you can check</small></a></li>
+        </ul>
+      </details>
+    </nav>
+  </header>
+
+  <main id="main" class="page">
+    <section class="section" id="code">
+      <h1 class="grainy page-title">Code and evidence</h1>
+      <p class="section-lede">Everything here is open, so you can check the claims without trusting us.</p>
+      <ul class="links links-stack">
+        <!-- TODO: repoint to main once integration/spec-1 is merged -->
+        <li><a href="https://github.com/koukikouks/sats-jar/tree/integration/spec-1/evidence">Testnet evidence in the repo</a><span>Every transaction, with what each one shows.</span></li>
+        <li><a href="https://github.com/koukikouks/sats-jar">Source on GitHub</a><span>The contract, the keeper and this site.</span></li>
+        <!-- TODO(H3): add the demo jar's proof view and "Make a jar" (the app) once they exist -->
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Testnet demo. Test coins have no value. <a href="testnet.html">What that means</a></p>
+  </footer>
+
+  <script src="nav.js" defer></script>
+</body>
+</html>

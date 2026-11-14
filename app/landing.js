@@ -23,14 +23,12 @@
 
   var wordEl = document.querySelector("[data-role-word]");
   var underlineEl = document.querySelector("[data-role-underline]");
+  var eraserEl = document.querySelector("[data-eraser]");
   var cardEl = document.querySelector("[data-card]");
   var figureEl = document.querySelector("[data-card-figure]");
   var frameEl = document.querySelector("[data-card-frame]");
-  var patchEl = document.querySelector("[data-card-patch]");
-  var tagEl = document.querySelector("[data-card-tag]");
   var jarEl = document.querySelector("[data-jar]");
   var pileEl = document.querySelector("[data-pile]");
-  var rolesEl = document.querySelector("[data-roles]");
   if (!wordEl || !figureEl || !pileEl || !jarEl) return;
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -39,25 +37,12 @@
 
   var index = -1;
   var timer = null;
-  var buttons = [];
   var pending = [];
 
   // preload art so the first pop is not blank
   ROLES.forEach(function (r) { new Image().src = "assets/figure-" + r.slug + ".png"; });
-  [1, 2, 3, 4].forEach(function (n) { new Image().src = "assets/frame-" + n + ".png"; new Image().src = "assets/patch-" + n + ".png"; });
+  [1, 2, 3, 4].forEach(function (n) { new Image().src = "assets/frame-" + n + ".png"; });
   UNDERLINES.forEach(function (c) { new Image().src = "assets/underline-" + c + ".png"; });
-
-  // ── role picker ──
-  ROLES.forEach(function (role, i) {
-    var li = document.createElement("li");
-    var b = document.createElement("button");
-    b.type = "button";
-    b.textContent = role.word;
-    b.setAttribute("aria-pressed", "false");
-    li.appendChild(b);
-    rolesEl.appendChild(li);
-    buttons.push(b);
-  });
 
   function setLater(fn, ms) {
     var t = setTimeout(fn, ms);
@@ -74,32 +59,69 @@
     var role = ROLES[i];
     var c = i % 4;
     index = i;
-    buttons.forEach(function (b, k) { b.setAttribute("aria-pressed", String(k === i)); });
 
     function apply() {
       wordEl.textContent = role.word;
       underlineEl.src = "assets/underline-" + UNDERLINES[c] + ".png";
       figureEl.src = "assets/figure-" + role.slug + ".png";
       frameEl.src = "assets/frame-" + FRAME_FOR[c] + ".png";
-      patchEl.src = "assets/patch-" + (c + 1) + ".png";
-      tagEl.textContent = "your " + role.word;
     }
 
-    if (!animate || reduceMotion) {
+    if (!animate || reduceMotion || !wordEl.animate || !eraserEl) {
       apply();
       return;
     }
-    wordEl.classList.add("is-out");
-    setLater(function () {
+    eraseAndWrite(apply);
+  }
+
+  // The eraser rubs the old word (and its underline) out from left to right, the new word is written
+  // in the same direction, and the figure card pops as the swap happens.
+  function eraseAndWrite(apply) {
+    var roleEl = wordEl.parentNode;
+    var w = roleEl.getBoundingClientRect().width;
+    var ew = eraserEl.offsetWidth;
+    var ERASE_MS = 560, WRITE_MS = 340;
+    var LINEAR = "linear";
+
+    // the eraser's centre follows the leading edge of the erased area, with a little scrub
+    var steps = 9, frames = [];
+    for (var k = 0; k <= steps; k++) {
+      var p = k / steps;
+      var x = p * w - ew / 2;
+      var wob = k % 2 === 0 ? -1 : 1;
+      frames.push({
+        offset: p,
+        opacity: 1,
+        transform: "translate(" + x + "px, " + (wob * 3) + "px) rotate(" + (wob * 5) + "deg)",
+      });
+    }
+    frames[0].opacity = 0.0;
+    frames[0].transform = "translate(" + (-ew / 2) + "px, -14px) rotate(-12deg)";
+    eraserEl.getAnimations().forEach(function (a) { a.cancel(); });
+    eraserEl.animate(frames, { duration: ERASE_MS, easing: LINEAR, fill: "forwards" });
+
+    var wipe = [{ clipPath: "inset(0 0 0 0)" }, { clipPath: "inset(0 0 0 100%)" }];
+    var opts = { duration: ERASE_MS, easing: LINEAR, fill: "forwards" };
+    wordEl.animate(wipe, opts);
+    underlineEl.animate(wipe, opts).onfinish = function () {
       apply();
-      wordEl.classList.remove("is-out");
-      wordEl.classList.add("is-in");
-      void wordEl.offsetWidth; // let the "in" start state paint
-      wordEl.classList.remove("is-in");
+      wordEl.getAnimations().concat(underlineEl.getAnimations()).forEach(function (a) { a.cancel(); });
+      var write = [{ clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0 0 0)" }];
+      var wopts = { duration: WRITE_MS, easing: "cubic-bezier(0.23, 1, 0.32, 1)", fill: "backwards" };
+      wordEl.animate(write, wopts);
+      underlineEl.animate(write, wopts);
+      var wEnd = roleEl.getBoundingClientRect().width;
+      eraserEl.animate(
+        [
+          { opacity: 1, transform: "translate(" + (w - ew / 2) + "px, 3px) rotate(5deg)" },
+          { opacity: 0, transform: "translate(" + (Math.max(w, wEnd) + ew * 0.25) + "px, -18px) rotate(14deg)" },
+        ],
+        { duration: 240, easing: "cubic-bezier(0.23, 1, 0.32, 1)", fill: "forwards" }
+      );
       cardEl.classList.remove("is-popping");
       void cardEl.offsetWidth;
       cardEl.classList.add("is-popping");
-    }, 200);
+    };
   }
 
   // ── one coin falls into the jar ──
@@ -184,7 +206,7 @@
 
   function start() {
     if (reduceMotion) {
-      // No autoplay: the whole pile stays in the jar, and the buttons pick the role.
+      // No autoplay: the whole pile stays in the jar.
       showRole(ROLES.length - 1, false);
       return;
     }
@@ -195,21 +217,29 @@
     setLater(step, STEP_MS + 700);
   }
 
-  // a manual pick pauses the rotation for a moment, then it carries on from there
-  buttons.forEach(function (b, i) {
-    b.addEventListener("click", function () {
-      clearPending();
-      showRole(i, true);
-      resumeAfter(STEP_MS * 1.6);
-    });
-  });
-
   // do not stack up drops while the tab is in the background
   document.addEventListener("visibilitychange", function () {
     if (reduceMotion || !running) return;
     if (document.hidden) clearPending();
     else resumeAfter(600);
   });
+
+  // phones: keep "Make a jar" in reach once the hero button has scrolled away, until the final one shows
+  var sticky = document.querySelector("[data-sticky]");
+  var heroCta = document.querySelector(".hero .cta");
+  var finalCta = document.querySelector("[data-final-cta]");
+  if (sticky && heroCta && finalCta && "IntersectionObserver" in window) {
+    var seen = { hero: true, final: false };
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.target === heroCta) seen.hero = e.isIntersecting;
+        else seen.final = e.isIntersecting;
+      });
+      sticky.classList.toggle("is-visible", !seen.hero && !seen.final);
+    });
+    io.observe(heroCta);
+    io.observe(finalCta);
+  }
 
   start();
 })();

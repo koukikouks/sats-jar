@@ -323,27 +323,161 @@ for i, (nm, cols, ang) in enumerate([("lilac", LILAC, 30), ("yellow", YELLOW, -2
     seeded(340 + i)
     add(f"swatch-{nm}", 300, 120, hatch_poly([(8, 12), (292, 8), (294, 110), (6, 114)], rad(ang), 13, cols, 15), 90 + i)
 
-# ------------------------------------------------------------------ step doodles
+# ------------------------------------------------------------------ step art: one story across three panels
+# 1 an empty jar, 2 the family tops it up (it starts to fill), 3 the beneficiary holds it full.
+SW, SH = 320, 220
+PILE = [(57.76, 85.64), (33.26, 85.64), (76.29, 76.91), (42.79, 71.19), (62.74, 64.28), (24.00, 62.77),
+        (44.41, 55.23), (77.59, 52.43), (28.41, 44.19)]       # coin centres, % of the 340x470 jar picture
+GREY = ["#cfcfcf", "#bdbdbd", "#d8d8d8"]
+WHITE_HAIR = ["#e4e4e4", "#d2d2d2"]
+BROWN = ["#8a5a2b", "#7a4d22"]
+
+
+def jar_scene(s, dx, dy, ncoins, seed):
+    """A jar at scale s (its top-left corner offset by dx, dy) with its first ncoins coins inside."""
+    out = ""
+    k = 47 * s / 90                                            # coin picture is 200 wide for a radius of 90
+    for i in range(ncoins):
+        cx = PILE[i][0] / 100 * 340 * s + dx
+        cy = PILE[i][1] / 100 * 470 * s + dy
+        out += f'<g transform="translate({cx - 100 * k:.1f} {cy - 100 * k:.1f}) scale({k:.3f})">{coin_body(100 + i)}</g>'
+    out += brk_line(jar_pts(s, dx, dy), INK, 7, 2, amp=1.1, dense=5, seg=(8, 16))
+    return out
+
+
+def tuft(cx, cy, r=9):
+    return hatch_poly([(cx + r * math.cos(t), cy + r * math.sin(t)) for t in [i * math.pi / 6 for i in range(12)]], rad(40), 5, WHITE_HAIR, 6) \
+        + ring((cx, cy), r, INK, 4, 1, .5)
+
+
+def fig_grandpa(give=None):
+    s = limbs(arms=((98, 210), give or (206, 228))) + shirt(GREEN) + head() + face()
+    s += tuft(113, 78) + tuft(109, 98) + tuft(187, 78) + tuft(191, 98) + tuft(150, 52, 11) + tuft(128, 56, 8) + tuft(172, 56, 8)
+    s += ring((136, 88), 11, INK, 5, 1, .6) + ring((164, 88), 11, INK, 5, 1, .6)                         # glasses
+    s += brk_line([(147, 88), (153, 88)], INK, 4, 1, amp=.3, dense=2, seg=(2, 3))
+    s += brk_line(quad((138, 106), (150, 100), (162, 106), 8), GREY, 7, 1, amp=.5, dense=3, seg=(4, 6))  # moustache
+    if not give:
+        s += brk_line([(206, 228), (214, 356)], BROWN, 8, 2, amp=1.0)                                   # cane
+        s += brk_line(quad((196, 232), (206, 218), (216, 228), 8), BROWN, 8, 1, amp=.6, dense=3, seg=(4, 6))
+    return s
+
+
+def fig_man(give=None):
+    s = limbs(arms=(give or (98, 210), (205, 215))) + shirt(BLUE) + head() + face()
+    s += brk_line(quad((116, 80), (150, 40), (184, 80), 14), INK, 9, 2, amp=1.4)
+    return s
+
+
+def fig_woman(give=None):
+    s = limbs(skirt=True, arms=(give or (95, 215), (200, 210))) + dress(PINK, half=40) + head() + face()
+    s += brk_line(quad((114, 92), (150, 36), (186, 92), 16), INK, 9, 2, amp=1.4)
+    s += brk_line([(116, 88), (108, 128)], INK, 9, 2, amp=1.2) + brk_line([(184, 88), (192, 128)], INK, 9, 2, amp=1.2)
+    return s
+
+
+def fig_auntie(give=None):
+    s = limbs(skirt=True, arms=((100, 205), give or (200, 205))) + dress(YELLOW, half=44) + head() + face()
+    for cx, cy in [(120, 62), (136, 46), (154, 42), (172, 48), (184, 64), (116, 82), (188, 84)]:
+        s += ring((cx, cy), 10, INK, 6, 1, .6)                                                          # curls
+    s += ring((113, 112), 4, YELLOW, 5, 1, .3) + ring((187, 112), 4, YELLOW, 5, 1, .3)                  # earrings
+    s += heart(150, 168, 9, RED, 5)                                                                     # brooch
+    return s
+
+
+def girl(arms, hair_len=150, grown=False):
+    """The same girl in steps 1 and 3: red bow, black hair, pink dress. Grown up: longer hair and earrings."""
+    s = limbs(skirt=True, arms=arms) + dress(PINK) + head() + face()
+    s += brk_line(quad((116, 92), (150, 36), (184, 92), 16), INK, 9, 2, amp=1.6)
+    s += brk_line([(118, 84), (106, hair_len)], INK, 9, 2, amp=1.6) + brk_line([(182, 84), (194, hair_len)], INK, 9, 2, amp=1.6)
+    s += bow(172, 56, RED)
+    if grown:
+        s += ring((113, 116), 4, YELLOW, 5, 1, .3) + ring((187, 116), 4, YELLOW, 5, 1, .3)
+    return s
+
+
+def fig_girl_child():
+    """Small, reaching up to the empty jar."""
+    return girl(((100, 206), (222, 190)), hair_len=140)
+
+
+def fig_girl_grown():
+    """Grown up, holding the full jar out in front of her."""
+    return girl(((226, 206), (236, 216)), hair_len=190, grown=True)
+
+
+def place(fig_svg, cx, foot, k, flip=False, squeeze=1.0):
+    """Put a 300x380 stick figure on the canvas: centre x, feet y, scale."""
+    sx = -k if flip else k
+    return (f'<g transform="translate({cx:.1f} {foot - 346 * k * squeeze:.1f}) scale({sx:.3f} {k * squeeze:.3f}) translate({-150} 0)">'
+            f'{fig_svg}</g>')
+
+
+def flight(p0, p1, p2, coin_at, coin_seed, scale=.17):
+    """A token flying toward the jar: a dotted arc and a small coin at its start."""
+    pts = quad(p0, p1, p2, 18)
+    arc = (f'<path d="{path(pts)}" stroke="{BLUE[0]}" stroke-width="3" stroke-dasharray="1 7" '
+           f'stroke-linecap="round" opacity=".85"/>')
+    cx, cy = coin_at
+    return arc + f'<g transform="translate({cx - 100 * scale:.1f} {cy - 100 * scale:.1f}) scale({scale})">{coin_body(coin_seed)}</g>'
+
+
+# 1: the little girl beside the empty jar
 seeded(350)
-jar_small = brk_line(jar_pts(.42, 60, 6), INK, 7, 2, amp=1.2, dense=5, seg=(8, 16))
-jar_small += heart(130, 120, 30, PINK, 8)
-add("step-1", 260, 220, jar_small, 100)
+s1 = jar_scene(.40, 112, 18, 0, 0) + heart(180, 118, 30, PINK, 8) + place(fig_girl_child(), 92, 206, .35)
+add("step-1", SW, SH, s1, 100)
+
+# 2: the family drops tokens into the jar from both sides; the jar starts to fill.
+# Each person holds a coin up in a raised hand; a dotted arc with an arrowhead runs from the hand down into the jar's mouth.
+def hand(cx, foot, k, sq, ax, ay):
+    return (cx + (ax - 150) * k, foot - 346 * k * sq + ay * k * sq)
+
+
+def give_flight(h, mouth, lift, seed):
+    """Coin in the giver's hand, an arc up and over, an arrowhead pointing down into the jar."""
+    hx, hy = h
+    mx, my = mouth
+    ctrl = ((hx + mx) / 2, min(hy, my) - lift)
+    pts = quad((hx + (4 if hx < mx else -4), hy - 20), ctrl, (mx, my - 12), 18)
+    arc = (f'<path d="{path(pts)}" stroke="{BLUE[0]}" stroke-width="3" stroke-dasharray="1 7" '
+           f'stroke-linecap="round" opacity=".9"/>')
+    arc += brk_line([(mx - 7, my - 22), (mx, my - 11), (mx + 7, my - 22)], BLUE, 4, 1, amp=.3, dense=2, seg=(3, 4))
+    return arc + f'<g transform="translate({hx - 15 + (4 if hx < mx else -4):.1f} {hy - 32:.1f}) scale(.15)">{coin_body(seed)}</g>'
+
 
 seeded(351)
-ph = rrect(30, 20, 120, 196, 14)
-s2 = brk_line(ph + [ph[0]], INK, 8, 2, amp=1.2, dense=5, seg=(8, 18))
-for (qx, qy) in [(48, 60), (78, 60), (48, 92), (96, 92), (66, 124), (92, 128)]:
-    s2 += hatch_poly([(qx, qy), (qx + 22, qy), (qx + 22, qy + 22), (qx, qy + 22)], rad(45), 5, INK, 6)
-s2 += brk_line(quad((130, 40), (190, 10), (214, 86), 16), BLUE, 6, 1, amp=.8, dense=4, seg=(8, 14))
-s2 += brk_line([(206, 74), (214, 88), (196, 86)], BLUE, 6, 1, amp=.4, dense=3, seg=(4, 8))
-add("step-2", 260, 220, s2 + f'<g transform="translate(150 98) scale(.62)">{coin_body(110)}</g>', 101)
+JS, JDX, JDY = .37, 97, 34
+s2 = jar_scene(JS, JDX, JDY, 3, 0)
+cfg = [  # figure, cx, k, squeeze, raised hand (figure coords), mouth x
+    (fig_grandpa, 26, .34, .93, (214, 28), 132),
+    (fig_auntie, 70, .34, .95, (226, 62), 150),
+    (fig_man, 250, .34, 1.0, (74, 62), 172),
+    (fig_woman, 294, .34, .97, (86, 28), 190),
+]
+figs, flights = "", ""
+for i, (fn, cx, k, sq, g, mx) in enumerate(cfg):
+    figs += place(fn(give=g), cx, 206, k, squeeze=sq)
+    flights += give_flight(hand(cx, 206, k, sq, *g), (mx, JDY + 6), 18 if i % 2 else 34, 120 + i)
+s2 += figs + flights
+# one coin already dropping into the mouth
+s2 += f'<g transform="translate({160 - 17:.1f} {JDY + 14:.1f}) rotate(-14) scale(.17)">{coin_body(130)}</g>'
+add("step-2", SW, SH, s2, 101)
 
+# 3: the same girl, grown up, holding the full jar
 seeded(352)
-kid = fig_daughter()
-s3 = f'<g transform="translate(-6 20) scale(.55)">{kid}</g>'
-s3 += f'<g transform="translate(110 96) scale(.62)">{coin_body(111)}</g>'
-s3 += star(214, 46, 20, YELLOW, 7)
-add("step-3", 260, 220, s3, 102)
+s3 = jar_scene(.38, 134, 33.5, 9, 0) + place(fig_girl_grown(), 92, 212, .58, squeeze=1.1)
+s3 += star(282, 44, 15, YELLOW, 6) + star(300, 100, 9, ORANGE, 5) + star(40, 34, 10, YELLOW, 5)
+add("step-3", SW, SH, s3, 102)
+
+# ------------------------------------------------------------------ eraser (for the headline word swap)
+seeded(360)
+body = rrect(34, 34, 186, 98, 16)
+sleeve = rrect(104, 34, 186, 98, 14)
+er = hatch_poly(body, rad(52), 9, PINK, 11)
+er += hatch_poly(sleeve, rad(52), 9, BLUE, 11)
+er += brk_line([(104, 36), (104, 96)], INK, 6, 1, amp=.8)
+er += brk_line(body + [body[0]], INK, 7, 2, amp=1.4, dense=5, seg=(8, 18))
+er += brk_line([(120, 52), (170, 52)], ["#ffffff"], 5, 1, amp=.6) + brk_line([(120, 80), (170, 80)], ["#ffffff"], 5, 1, amp=.6)
+add("eraser", 220, 130, f'<g transform="rotate(-10 110 66)">{er}</g>', 110)
 
 # ------------------------------------------------------------------ pile layout for the jar (png px units)
 random.seed(42)
@@ -369,6 +503,17 @@ GRAIN_SVG = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" wid
 <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  4 0 0 0 -0.75"/></filter>
 <rect width="256" height="256" filter="url(#g)"/></svg>'''
 JOBS.append(("grain", 256, 256, GRAIN_SVG))
+
+# Lettering texture: horizontal streaks plus pinholes, so filled letters look scribbled in with wax.
+GRAIN_TEXT_SVG = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<filter id="g" x="0" y="0" width="100%" height="100%">
+<feTurbulence type="fractalNoise" baseFrequency="0.035 0.42" numOctaves="3" seed="4" stitchTiles="stitch" result="streak"/>
+<feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="12" stitchTiles="stitch" result="pin"/>
+<feColorMatrix in="streak" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  3.6 0 0 0 -0.62" result="a"/>
+<feColorMatrix in="pin" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  3.2 0 0 0 -0.55" result="b"/>
+<feComposite in="a" in2="b" operator="in"/></filter>
+<rect width="256" height="256" filter="url(#g)"/></svg>'''
+JOBS.append(("grain-text", 256, 256, GRAIN_TEXT_SVG))
 
 
 # ------------------------------------------------------------------ render
