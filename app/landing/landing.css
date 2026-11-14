@@ -159,6 +159,22 @@ h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); tra
   .pin-flag:hover { transform: translateX(-50%) scale(1.08) rotate(-6deg); }
 }
 
+/* roadmap suggestion form */
+.suggest { max-width: 36rem; margin: 3rem auto 0; padding: 1.8rem; background: #fff; border: 3px solid var(--ink); border-radius: 16px 20px 14px 22px / 20px 14px 22px 16px; box-shadow: 6px 6px 0 var(--lilac); scroll-margin-top: 1.5rem; }
+.suggest h3 { font-family: var(--display); font-weight: 900; letter-spacing: -.025em; font-size: 1.45rem; margin: 0 0 1rem; }
+.suggest label { display: block; font-weight: 700; margin: 0 0 .4rem; }
+.suggest label span { font-weight: 400; color: var(--muted); }
+.suggest textarea, .suggest input[type=email] { display: block; width: 100%; margin: 0 0 1.1rem; padding: .8rem .9rem; font: 400 1rem/1.5 var(--body); color: var(--ink); background: #fff; border: 2px solid var(--ink); border-radius: 10px; }
+.suggest textarea { resize: vertical; min-height: 6.5rem; }
+.suggest textarea:focus-visible, .suggest input:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.suggest-trap { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.suggest-row { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; }
+.suggest button[disabled] { opacity: .6; cursor: progress; }
+.suggest-status { margin: 0; font-weight: 700; }
+.suggest-status.is-sent { color: var(--green); }
+.suggest-status.is-error { color: var(--red); }
+.suggest-note { margin: 1rem 0 0; font-size: .85rem; color: var(--muted); }
+
 /* ───────── story page and the link to it ───────── */
 .story-link { margin: 2rem 0 0; text-align: center; }
 .story-link a { display: inline-flex; align-items: center; gap: .6rem; font-weight: 700; text-decoration: none; padding: .25rem 0; background: linear-gradient(var(--yellow), var(--yellow)) 0 100% / 100% .4em no-repeat; }
