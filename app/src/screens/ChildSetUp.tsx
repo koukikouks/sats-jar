@@ -5,6 +5,7 @@ import { useSdk } from "../services.tsx";
 import { useDevice } from "../ui/device.ts";
 import { EmptyJarWarning, Refusal } from "../ui/messages.tsx";
 import { PinGate } from "../ui/PinGate.tsx";
+import { POLL } from "../ui/poll.ts";
 import { RecoveryPhraseSetUp } from "../ui/RecoveryPhraseSetUp.tsx";
 
 /** The beneficiary's plain statement (story 54, #25). */
@@ -43,7 +44,8 @@ function Claim() {
   const { jarId = "" } = useParams();
   // Only a phone set up with a recovery phrase has a guardian code; an adult's device refuses.
   const code = useQuery({ queryKey: ["guardianCode"], queryFn: () => sdk.child.guardianCode() });
-  const jar = useQuery({ queryKey: ["jar", jarId], queryFn: () => sdk.jars.status(jarId) });
+  // Re-read so the empty-jar warning goes once the top-up counts.
+  const jar = useQuery({ queryKey: ["jar", jarId], queryFn: () => sdk.jars.status(jarId), refetchInterval: POLL });
   const claim = useMutation({
     mutationFn: () => sdk.child.claim(jarId),
     onSuccess: async () => {
