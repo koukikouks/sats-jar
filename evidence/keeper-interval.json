@@ -1,0 +1,172 @@
+{
+  "about": "T39 (#59, spec #58): the keeper at 2-minute passes, run from this branch on this machine (keeper account keeper-locked.sats-jar-app.testnet) against the locked contract sats-jar.testnet while the hosted hourly keeper also ran. Jar 2 (demo timing: a 10-minute period) was made for the check and topped up with testnet sats. Nobody pressed run. The chain can't show which keeper process sent a call; the local keeper's own pass reports below carry the transaction hashes it sent. Times are UTC.",
+  "deployed_commit": "0ed5770 (keeper and schedule as reviewed; later commits only rename and log)",
+  "jar": {
+    "jar_id": "2",
+    "nickname": "Keeper check 00:21",
+    "period_seconds": 600,
+    "address": "tb1qp8u3vryqzu90c6vw0fp55j8ux0y6jfgu0k0e0m4r3ctg5m98yjgq774usg"
+  },
+  "topup": {
+    "txid": "3fde3953f988d354ed7fbb749c7150dca19925820a409a52bd58a4a296c4157c",
+    "sats": 12000,
+    "sent_at": "2026-11-14T00:22:16Z",
+    "bitcoin_block": 5347152,
+    "light_client": "not yet 3 deep at the 00:24:16 pass (nothing to prove); 3 deep by the 00:26:16 pass",
+    "counted": {
+      "pass": "2026-11-14T00:26:16Z",
+      "near_tx": "H6VxtjzUriRyMMKUQd5hMCPSBefs8ea2b8XjLsj6Lkxh",
+      "chain_time": "2026-11-14T00:26:22Z"
+    },
+    "result": "counted in the first pass after it became provable: within one 2-minute interval"
+  },
+  "allowances": [
+    {
+      "payment_id": "6",
+      "due": "2026-11-14T00:26:22Z (the first, due as the clock starts with the first counted top-up)",
+      "requested_pass": "2026-11-14T00:26:16Z",
+      "near_tx": "DbXq6KVygJ7DJSW6RVigUQivPT2B4VaTgUrScQKFHLQh",
+      "chain_time": "2026-11-14T00:26:26Z",
+      "confirmed": "2026-11-14T00:34:19Z"
+    },
+    {
+      "payment_id": "7",
+      "due": "2026-11-14T00:36:22Z (clock start + 600 s)",
+      "requested_pass": "2026-11-14T00:38:16Z",
+      "chain_time": "2026-11-14T00:38:19Z",
+      "late_by_seconds": 117,
+      "confirmed": "2026-11-14T00:40:19Z"
+    }
+  ],
+  "idle_passes": "Passes with nothing due (00:22:16, 00:24:16, 00:36:16, 00:42:16 on) sent no transaction.",
+  "reports": [
+    {
+      "startedAt": 1794615736,
+      "steps": [],
+      "startedAtUtc": "2026-11-14T00:22:16+00:00"
+    },
+    {
+      "startedAt": 1794615856,
+      "steps": [],
+      "startedAtUtc": "2026-11-14T00:24:16+00:00"
+    },
+    {
+      "startedAt": 1794615976,
+      "steps": [
+        {
+          "action": "prove_topup",
+          "jarId": "2",
+          "target": "3fde3953f988d354ed7fbb749c7150dca19925820a409a52bd58a4a296c4157c:0",
+          "result": "done",
+          "nearTx": "H6VxtjzUriRyMMKUQd5hMCPSBefs8ea2b8XjLsj6Lkxh"
+        },
+        {
+          "action": "request_allowance",
+          "jarId": "2",
+          "result": "done",
+          "nearTx": "DbXq6KVygJ7DJSW6RVigUQivPT2B4VaTgUrScQKFHLQh"
+        },
+        {
+          "action": "broadcast",
+          "paymentId": "6",
+          "target": "cccb1ff0837a507924f7d682843df8a3929149e2cf20c0b744632d627927ccf9",
+          "result": "done"
+        }
+      ],
+      "startedAtUtc": "2026-11-14T00:26:16+00:00"
+    },
+    {
+      "startedAt": 1794616096,
+      "steps": [
+        {
+          "action": "confirm_payment",
+          "paymentId": "6",
+          "target": "cccb1ff0837a507924f7d682843df8a3929149e2cf20c0b744632d627927ccf9",
+          "result": "waiting",
+          "message": "1 of 3 confirmations on the light client"
+        }
+      ],
+      "startedAtUtc": "2026-11-14T00:28:16+00:00"
+    },
+    {
+      "startedAt": 1794616216,
+      "steps": [
+        {
+          "action": "confirm_payment",
+          "paymentId": "6",
+          "target": "cccb1ff0837a507924f7d682843df8a3929149e2cf20c0b744632d627927ccf9",
+          "result": "waiting",
+          "message": "1 of 3 confirmations on the light client"
+        }
+      ],
+      "startedAtUtc": "2026-11-14T00:30:16+00:00"
+    },
+    {
+      "startedAt": 1794616336,
+      "steps": [
+        {
+          "action": "confirm_payment",
+          "paymentId": "6",
+          "target": "cccb1ff0837a507924f7d682843df8a3929149e2cf20c0b744632d627927ccf9",
+          "result": "waiting",
+          "message": "2 of 3 confirmations on the light client"
+        }
+      ],
+      "startedAtUtc": "2026-11-14T00:32:16+00:00"
+    },
+    {
+      "startedAt": 1794616456,
+      "steps": [
+        {
+          "action": "confirm_payment",
+          "paymentId": "6",
+          "target": "cccb1ff0837a507924f7d682843df8a3929149e2cf20c0b744632d627927ccf9",
+          "result": "done",
+          "nearTx": "J7qJA1jkCM6zBxDx53mGrmtTR7ErnWuy7rgTKW34qfDy"
+        }
+      ],
+      "startedAtUtc": "2026-11-14T00:34:16+00:00"
+    },
+    {
+      "startedAt": 1794616576,
+      "steps": [],
+      "startedAtUtc": "2026-11-14T00:36:16+00:00"
+    },
+    {
+      "startedAt": 1794616696,
+      "steps": [
+        {
+          "action": "request_allowance",
+          "jarId": "2",
+          "result": "done",
+          "nearTx": "HfpnEnCv8p9NX3BT238b9yAH1ebTHPCkXhBK1tkK96Qo"
+        },
+        {
+          "action": "broadcast",
+          "paymentId": "7",
+          "target": "1ead78214c51d0424985cbf56691c8dab9ffbfd96ed8d5c05966bf1362e87cd3",
+          "result": "done"
+        }
+      ],
+      "startedAtUtc": "2026-11-14T00:38:16+00:00"
+    },
+    {
+      "startedAt": 1794616816,
+      "steps": [
+        {
+          "action": "confirm_payment",
+          "paymentId": "7",
+          "target": "1ead78214c51d0424985cbf56691c8dab9ffbfd96ed8d5c05966bf1362e87cd3",
+          "result": "done",
+          "nearTx": "CewZCzu81WR6kwU9onf2x1AjMeauaXzRbh3deH5mFEZY"
+        }
+      ],
+      "startedAtUtc": "2026-11-14T00:40:16+00:00"
+    },
+    {
+      "startedAt": 1794616936,
+      "steps": [],
+      "startedAtUtc": "2026-11-14T00:42:16+00:00"
+    }
+  ]
+}
