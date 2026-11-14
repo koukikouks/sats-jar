@@ -18,7 +18,7 @@ A jar is an NFT on NEAR that holds real Bitcoin for someone you love, the benefi
 </p>
 
 <p align="center">
-  <!-- PENDING: demo video URL --><a href="#">Demo video</a> ·
+  <a href="https://x.com/SatsJar/status/2121744655842750824">Launch video</a> ·
   <a href="https://satsjar.app">Live site</a> ·
   <a href="#try-it-in-30-minutes">Try it in 30 minutes</a> ·
   <a href="#testnet-proof">Testnet proof</a> ·
