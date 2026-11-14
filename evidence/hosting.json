@@ -43,35 +43,61 @@
   },
   "c1": {
     "desktop": {
-      "base_url": "https://sats-jar-git-t31-site-routing-sats-jar.vercel.app",
-      "deployed_commit": "12aba96",
-      "ran_at": "2026-11-13T18:22:04.504Z",
+      "base_url": "https://app.satsjar.app",
+      "deployed_commit": "dc8e841",
+      "ran_at": "2026-11-14T01:34:41.999Z",
       "passed": true,
       "accounts": {
-        "guardian": "7748c824433383f36b3c.sats-jar-app.testnet"
+        "guardian": "6cc06bcdbf93bb6b92ef.sats-jar-app.testnet"
       },
       "steps": [
-        "the giver's device was unlocked with a PIN and the backend made a draft with 2 invite links",
-        "the guardian's device was unlocked with a PIN, joined from the invite link and holds sponsored account 7748c824433383f36b3c.sats-jar-app.testnet",
+        "the giver's device was set up with a PIN and the backend made a draft with 2 invite links",
+        "the guardian's device was set up with a PIN, joined from the invite link and holds sponsored account 6cc06bcdbf93bb6b92ef.sats-jar-app.testnet",
         "the giver's draft page shows guardian 1 joined (draft read not served from cache)",
-        "/proof/1 loads with no sign-in and shows \"There is no such jar.\" read from the chain",
+        "/proof/1 loads with no sign-in and shows the jar's public record",
         "POST /api/keeper/run answered 200 with a report of 0 steps"
       ]
     },
     "phone": {
-      "base_url": "https://sats-jar-git-t31-site-routing-sats-jar.vercel.app",
-      "deployed_commit": "12aba96",
-      "ran_at": "2026-11-13T18:22:20.478Z",
+      "base_url": "https://app.satsjar.app",
+      "deployed_commit": "dc8e841",
+      "ran_at": "2026-11-14T01:35:10.921Z",
       "passed": true,
       "accounts": {
-        "guardian": "f4924037da7e65c7c799.sats-jar-app.testnet"
+        "guardian": "840679a621174e5ed294.sats-jar-app.testnet"
       },
       "steps": [
-        "the giver's device was unlocked with a PIN and the backend made a draft with 2 invite links",
-        "the guardian's device was unlocked with a PIN, joined from the invite link and holds sponsored account f4924037da7e65c7c799.sats-jar-app.testnet",
+        "the giver's device was set up with a PIN and the backend made a draft with 2 invite links",
+        "the guardian's device was set up with a PIN, joined from the invite link and holds sponsored account 840679a621174e5ed294.sats-jar-app.testnet",
         "the giver's draft page shows guardian 1 joined (draft read not served from cache)",
-        "/proof/1 loads with no sign-in and shows \"There is no such jar.\" read from the chain",
+        "/proof/1 loads with no sign-in and shows the jar's public record",
         "POST /api/keeper/run answered 200 with a report of 0 steps"
+      ]
+    }
+  },
+  "c2": {
+    "desktop": {
+      "base_url": "https://app.satsjar.app",
+      "deployed_commit": "dc8e841",
+      "ran_at": "2026-11-14T01:34:54.880Z",
+      "passed": true,
+      "steps": [
+        "satsjar.app shows the landing without JavaScript; Make a jar and Open the proof view point at app.satsjar.app",
+        "Make a jar on satsjar.app lands on app.satsjar.app/new at the PIN screen",
+        "an invite opened as satsjar.app/join/ykvMzomeBEkf4Kc17ulOdg landed on app.satsjar.app and joined",
+        "satsjar.app/proof/1 and satsjar.app/app.html answer 308 to the same path on app.satsjar.app"
+      ]
+    },
+    "phone": {
+      "base_url": "https://app.satsjar.app",
+      "deployed_commit": "dc8e841",
+      "ran_at": "2026-11-14T01:35:16.579Z",
+      "passed": true,
+      "steps": [
+        "satsjar.app shows the landing without JavaScript; Make a jar and Open the proof view point at app.satsjar.app",
+        "Make a jar on satsjar.app lands on app.satsjar.app/new at the PIN screen",
+        "an invite opened as satsjar.app/join/DefR_9Gr9xaZV4cDBa6RKQ landed on app.satsjar.app and joined",
+        "satsjar.app/proof/1 and satsjar.app/app.html answer 308 to the same path on app.satsjar.app"
       ]
     }
   }

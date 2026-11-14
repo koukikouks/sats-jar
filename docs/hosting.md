@@ -22,7 +22,7 @@ Project `sats-jar` in team Sats Jar (Hobby). Settings live in Vercel's dashboard
 | Preview protection | off (maintainer said yes on 2026-11-13) | test phones and the hosted journey reach a preview with no sign-in; previews hold nothing secret |
 | Variables (production and preview) | `VITE_SATS_JAR_CONTRACT` = `sats-jar.testnet`, `ENABLE_EXPERIMENTAL_COREPACK` = `1` | the public contract name built into the app; Corepack makes Vercel use the pnpm pinned by the root `packageManager`. Nothing secret is in Vercel |
 
-Domains: `satsjar.app` (production). `www.satsjar.app` and `sats-jar-two.vercel.app` redirect to it. `app.satsjar.app` is added when #44 merges (T32), not before: added earlier it would serve production's early build with no `/api`.
+Domains: `satsjar.app` (production). `www.satsjar.app` and `sats-jar-two.vercel.app` redirect to it. `app.satsjar.app` serves the app; it was added after #44 merged (T32), since added earlier it would have served production's early build with no `/api`. Hosted journey C2 (`app/journeys/hosted-site.journey.ts`) checks the apex and app host on production.
 
 ### Routing (`app/vercel.json`)
 
