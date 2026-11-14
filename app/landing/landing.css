@@ -57,10 +57,15 @@ a { color: inherit; }
 
 h1 { margin: 0 0 1.2rem; font-family: var(--display); font-weight: 900; line-height: 1; letter-spacing: -.04em; font-size: clamp(3rem, 7.4vw, 6rem); }
 h1 .line { display: block; }
-h1 .role { display: inline-block; position: relative; padding: .04em .02em .22em; margin: .02em 0; min-width: 2ch; }
+h1 .role { display: inline-grid; position: relative; padding: .04em .02em .22em; margin: .02em 0; min-width: 2ch; }
+/* during a swap the outgoing word sits on top of the incoming one, in the same spot */
+h1 .role .role-word { grid-area: 1 / 1; justify-self: start; }
+h1 .role .is-leaving { z-index: 1; }
 h1 .role-word { display: inline-block; transition: opacity .2s ease, transform .2s ease; will-change: transform, opacity; }
 h1 .role-word.is-out { opacity: 0; transform: translateY(-.18em) rotate(-3deg); }
 h1 .role-word.is-in { opacity: 0; transform: translateY(.22em) rotate(2deg); transition: none; }
+/* word swap: landing.js drives an eraser across the word, then writes the new one in */
+.eraser { position: absolute; left: 0; top: -.1em; height: 1.1em; width: auto; opacity: 0; pointer-events: none; z-index: 3; will-change: transform; }
 .role-underline { position: absolute; left: -2%; bottom: .02em; width: 104%; height: .26em; pointer-events: none; object-fit: fill; }
 
 .lede { font-size: 1.2rem; max-width: 33rem; margin: 0 0 1.5rem; }
