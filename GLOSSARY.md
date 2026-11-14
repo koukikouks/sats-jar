@@ -50,6 +50,14 @@ _Avoid_: Seed, mnemonic, backup code
 The moment from the unlock date on when, after the guardians confirm the child's account and a public delay passes, the jar moves from the family account to the child's account and its Bitcoin moves to an address that only the child's recovery phrase can recover. Every adult's access ends there.
 _Avoid_: Coming of age, graduation, release
 
+**Handover code**:
+The digits a child's phone shows after claiming a jar, which each guardian compares in person with the same code read from the chain before confirming the handover.
+_Avoid_: Guardian code, PIN, verification code
+
+**Receive code**:
+What a new holder's phone gives the person handing them a jar, so the transfer can only go to keys made on that phone.
+_Avoid_: Address, invite code
+
 **Child**:
 The person the jar is for.
 _Avoid_: Beneficiary, recipient, kid
