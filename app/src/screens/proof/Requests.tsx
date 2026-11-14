@@ -22,7 +22,7 @@ export function Requests(props: { jar: JarProof }) {
         {(requests.data ?? []).map((request) => (
           <li key={request.hash}>
             <strong>
-              {action(request.method)} by {senderRole(jar, request.signer)}
+              {action(request.method)} by {senderRole(jar, request.signer, request.time)}
             </strong>
             {request.ok ? <span className="done">Done</span> : <span className="refusal">Refused: {withoutAccounts(jar, request.refusal?.reason ?? "")}</span>}
             <span className="proof-meta">{when(request.time)}</span>

@@ -1,7 +1,7 @@
 import { SatsJarRefusal } from "@sats-jar/sdk";
 import { useMutation, useQuery, useQueryClient, type UseMutationResult } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { useSdk } from "../services.tsx";
 import { useDevice } from "../ui/device.ts";
 import { Refusal } from "../ui/messages.tsx";
@@ -31,7 +31,10 @@ export function JoinPage() {
       </p>
       {join.isSuccess ? (
         // Checked first: once this device joins, the link itself reads as used.
-        <p className="done">You're a guardian of {nickname}. You'll find the jar under Your jars once it's made.</p>
+        <>
+          <p className="done">You're a guardian of {nickname}. You'll find the jar under Your jars once it's made.</p>
+          <Link to="/">Your jars</Link>
+        </>
       ) : joined ? (
         // The SDK's INVITE_USED sentence, shown before anyone tries the link.
         <p className="refusal">Someone has already joined with this invite link. Ask for a new link.</p>

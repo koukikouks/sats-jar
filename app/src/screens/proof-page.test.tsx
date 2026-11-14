@@ -194,8 +194,30 @@ describe("the public record", () => {
     expect(container.textContent).not.toMatch(/testnet|aaaaaaaa/);
   });
 
+  it("names the child's claim by the child, though the child holds the jar now", async () => {
+    const requests = [
+      tx({ hash: "A", method: "claim_handover", signer: child, time: 1_760_001_000 }),
+      tx({ hash: "B", method: "start_transfer", signer: child, time: 1_760_010_000 }),
+    ];
+    renderApp("/proof/7", record(jar({ holder: child, history: handedOver }), requests));
+    expect(await screen.findByText("Claim the jar by the child")).toBeTruthy();
+    expect(screen.getByText("Start a transfer by the holder")).toBeTruthy();
+  });
+
+  it("names Sats Jar's keeper, and still calls any other stranger someone else", async () => {
+    const requests = [
+      tx({ hash: "A", method: "complete_handover", signer: "keeper-locked.sats-jar-app.testnet" }),
+      tx({ hash: "B", method: "request_spend", signer: "kai-3.sats-jar-dev-2.testnet" }),
+    ];
+    const { container } = renderApp("/proof/7", record(jar(), requests));
+    expect(await screen.findByText("Complete the handover by Sats Jar's keeper")).toBeTruthy();
+    expect(screen.getByText("Spend from the jar by someone else")).toBeTruthy();
+    expect(container.textContent).not.toMatch(/testnet/);
+  });
+
   it("names the holder after handover by role", async () => {
-    const requests = [tx({ hash: "A", method: "start_transfer", signer: child })];
+    // A transfer starts only after handover (the history's handover_completed is at 1_760_009_000).
+    const requests = [tx({ hash: "A", method: "start_transfer", signer: child, time: 1_760_010_000 })];
     renderApp("/proof/7", record(jar({ holder: child, history: handedOver }), requests));
     expect(await screen.findByText("Start a transfer by the holder")).toBeTruthy();
   });

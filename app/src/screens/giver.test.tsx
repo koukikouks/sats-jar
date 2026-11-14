@@ -58,6 +58,7 @@ describe("inviting the guardians", () => {
     });
     await user.click(await screen.findByRole("button", { name: "Use a link myself" }));
     expect(sdk.invites.join).toHaveBeenCalledWith("tok-b");
+    expect(await screen.findByText("You're one of this jar's guardians now.")).toBeTruthy();
   });
 
   it("stops offering a link to the giver once this device has joined, even after a reload", async () => {
@@ -120,6 +121,11 @@ describe("creating the jar", () => {
     });
     expect(await screen.findByText("We could not reach the network just now. Try again shortly.")).toBeTruthy();
     expect(sdk.jars.status).toHaveBeenCalledWith("7");
+    // The backend closes the draft once its jar exists; reading it again only answers "not found".
+    const readsBefore = sdk.invites.progress.mock.calls.length;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(sdk.invites.progress.mock.calls.length).toBe(readsBefore);
+    expect(sdk.invites.progress.mock.invocationCallOrder.every((n) => n < sdk.jars.create.mock.invocationCallOrder[0]!)).toBe(true);
   });
 
   it("sends a full-timing jar unlocking at midnight UTC of the chosen day", async () => {
@@ -200,6 +206,7 @@ describe("joining as a guardian", () => {
     expect(sdk.invites.preview).toHaveBeenCalledWith("tok-a");
     expect(sdk.invites.join).toHaveBeenCalledWith("tok-a");
     expect(await screen.findByText("You're a guardian of Sunny's jar. You'll find the jar under Your jars once it's made.")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Your jars" }).getAttribute("href")).toBe("/");
   });
 
   it("joins a new device with its PIN and one press", async () => {

@@ -107,6 +107,7 @@ function Invites(props: { draft: Draft }) {
           })}
         </ul>
         {alreadyGuardian && <p className="done">You're already one of this jar's guardians on this device.</p>}
+        {joinMyself.isSuccess && <p className="done">You're one of this jar's guardians now.</p>}
         {firstOpen !== undefined && !isGuardianHere && (
           <>
             <button type="button" className="secondary" disabled={joinMyself.isPending} onClick={() => joinMyself.mutate(firstOpen)}>
@@ -147,7 +148,8 @@ function RuleForm(props: { draft: Draft; joinedCount: number }) {
         unlockAt: demo ? Math.floor(Date.now() / 1000) + Number(unlockMinutes) * 60 : Date.parse(`${unlockDate}T00:00:00Z`) / 1000,
       }),
     onSuccess: async ({ jarId }) => {
-      await client.invalidateQueries();
+      // The backend closes the draft once its jar exists, so its invite progress is not read again.
+      await client.invalidateQueries({ predicate: (query) => query.queryKey[0] !== "draft" });
       navigate(`/jar/${jarId}`);
     },
   });
