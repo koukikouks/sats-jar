@@ -20,7 +20,7 @@ A jar is an NFT on NEAR that holds a child's real Bitcoin. Anyone tops it up fro
 <p align="center">
   <!-- PENDING: demo video URL --><a href="#">Demo video</a> ·
   <a href="https://satsjar.app">Live site</a> ·
-  <!-- PENDING: app.satsjar.app goes live with T32 (#48) --><a href="https://app.satsjar.app/new">Make a jar</a> ·
+  <a href="https://app.satsjar.app/new">Make a jar</a> ·
   <a href="#testnet-proof">Testnet proof</a> ·
   <a href="#check-every-claim-yourself">Check every claim yourself</a> ·
   <a href="#hackathon-tracks">Tracks: nfts, open</a>
@@ -173,33 +173,32 @@ Every row in [Testnet proof](#testnet-proof) opens on NearBlocks or mempool.spac
 - Fee replacement (RBF) is designed but not built. A payment sent at too low a fee could stay unconfirmed and hold the jar; at testnet3's 1 sat/vB this does not happen, but mainnet needs RBF first.
 - The Bitcoin-only exit is proven on regtest in the tests, not used on the locked contract.
 - After handover, nobody, Sats Jar included, can recover the child's jar without their phone or their recovery phrase.
-- The public record lists Bitcoin transactions at the jar's current address only, so after the Bitcoin moves at handover the list starts at the move.
 - Anyone can make accounts on the hosted app (0.25 testnet NEAR each from the sponsor) or run a keeper pass; there is no rate limit.
 - Sign-in is a 6-digit PIN; Face ID is not built.
 
 ## Use it
 
-The app is at [app.satsjar.app](https://app.satsjar.app/new). <!-- PENDING: live with T32 (#48) --> It costs nothing: the app funds each new account with the NEAR it needs. Topping up needs testnet3 Bitcoin from a faucet in an ordinary testnet wallet.
+The app is at [app.satsjar.app](https://app.satsjar.app/new). It costs nothing: the app funds each new account with the NEAR it needs. Topping up needs testnet3 Bitcoin from a faucet in an ordinary testnet wallet.
 
 ### Make a jar for a child
 
-1. Open [app.satsjar.app/new](https://app.satsjar.app/new). Type a 6-digit PIN twice and press **Set up**. Nobody can reset it, so keep it. You see "Start a jar". Coming back later, the same PIN unlocks the app at "Unlock Sats Jar", and a jar still being set up is listed on the home page.
+1. Open [app.satsjar.app/new](https://app.satsjar.app/new). Under "Choose a PIN for this device", type a 6-digit PIN twice and press **Save my PIN**. Nobody can reset it, so keep it. You see "Make a jar". Coming back later, the same PIN unlocks the app at "Unlock Sats Jar", and a jar still being set up is listed on the home page.
 2. Type a jar nickname, choose 2 or 3 guardians and press **Make invite links**. You see one link per guardian.
 3. To be a guardian yourself, press **Use a link myself**. Send each other link to a guardian.
-4. The guardian opens their link, types a PIN twice, presses **Set up**, then presses **Join as a guardian**. Each link works once. On your page their link shows "Joined" within 10 seconds. To try this alone, open the link in a second browser or browser profile: each one is a separate device.
-5. Once 2 guardians have joined, fill in "The jar's rule". Under "Where should the allowance go?", paste the child's `tb1q…` address from a testnet3 wallet you control. Set "Allowance per period (sats)", choose **Demo timing: every 10 minutes**, and the unlock date becomes "Unlocks in (minutes)". Press **Create the jar**.
-6. You see the jar's QR code and address. Send at least 1,000 testnet3 sats to it from your wallet. It counts after 3 confirmations and the keeper's next hourly pass, usually within two hours.
+4. The guardian opens their link, types a PIN twice and presses **Join as a guardian**. Each link works once. On your page their link shows "Joined" within 10 seconds. To try this alone, open the link in a second browser or browser profile: each one is a separate device.
+5. Once 2 guardians have joined, fill in "The jar's rule". Under "Where should the allowance go?", paste the child's `tb1q…` address from a testnet3 wallet you control. Set "Allowance cap (sats each period)", choose **Demo timing: every 10 minutes**, and the unlock date becomes "Unlocks in (minutes)". Press **Make the jar**.
+6. You see the jar's QR code and address. Send at least 1,000 testnet3 sats to it from your wallet. It counts after 3 confirmations and the keeper's next pass, which runs every 2 minutes; the app says usually within two hours.
 7. Once a top-up counts, the allowance goes to the child's address every period without anyone pressing anything.
 
 ### Try to break a jar's rule, without coins
 
-1. Open jar 1's public record at [app.satsjar.app/proof/1](https://app.satsjar.app/proof/1). <!-- PENDING: live with T32 (#48) --> No sign-in is needed to read it.
-2. Under "Try to break the rule", set up a PIN on this device when asked.
-3. Press a button there, such as **Send its Bitcoin somewhere else before handover** or **Approve its emergency payment as an outsider**. You see "Refused:" with the contract's reason, and **Check it yourself ↗** opens the failed transaction on NearBlocks.
+1. Open jar 1's public record at [app.satsjar.app/proof/1](https://app.satsjar.app/proof/1). No sign-in is needed to read it.
+2. Under "Try to break the rule", press **Spend it without holding it** or **Approve its emergency payment as an outsider**. The first time, choose a PIN when asked, press **Save my PIN**, then press the button again.
+3. You see "Refused:" with the contract's reason, and **Check it yourself ↗** opens the failed transaction on NearBlocks.
 
 ### Hand the jar to the child
 
-From the jar page, a guardian or the giver copies the "Set up my jar" link and sends it to the child. On their own phone the child presses **Show my recovery phrase**, writes down the 12 words, types 3 of them back, chooses a PIN and presses **Claim my jar**. Each guardian presses **Check the child's code**, compares it with the child's phone in person and presses **It matches: confirm**. After a public delay and the unlock date, the keeper moves the jar's Bitcoin and then the jar to the child.
+From the jar page, a guardian or the giver presses **Copy link** under "Handover" and sends the link to the child. On their own phone the child presses **Show my recovery phrase**, writes down the 12 words, presses **I've written them down**, types 3 of them back with a PIN, presses **Finish**, then **Claim my jar**. Each guardian presses **Check the child's code**, compares it with the child's phone in person and presses **It matches: confirm**. After a public delay and the unlock date, the keeper moves the jar's Bitcoin and then the jar to the child.
 
 ## Architecture
 
@@ -236,7 +235,7 @@ flowchart LR
 | [`packages/sdk/`](packages/sdk) | The App SDK | Every action a person takes, as one call each, with refusals in plain words |
 | [`packages/proof/`](packages/proof) | The public record's reader | Reads a jar, its NEAR requests and its Bitcoin transactions from public explorers |
 | [`app/`](app) | The web app (Vite, React) | The screens over the SDK, the public record, and the landing page |
-| [`backend/`](backend) | The app's server | Makes each person's account, holds guardian invites until the jar exists, and runs the hourly keeper |
+| [`backend/`](backend) | The app's server | Makes each person's account, holds guardian invites until the jar exists, and runs the keeper every 2 minutes |
 | [`scripts/`](scripts) | Testnet scripts | The locked deploy and the earlier testnet runs |
 | [`evidence/`](evidence) | Testnet records | Hashes, key lists and code hashes from every testnet run |
 | [`docs/adr/`](docs/adr) | Decisions | Why each design choice was made |
@@ -294,7 +293,6 @@ NEAR makes it possible for a keyless contract to hold the rule, check Bitcoin de
 ### Phase 2: reach
 
 - Top up with any coin, through NEAR Intents, so a relative without Bitcoin can still add to a jar. Measure: a top-up paid in another coin arrives in a jar as Bitcoin.
-- A public record that follows the jar's Bitcoin across every address it has had. Measure: a handed-over jar shows its whole Bitcoin history.
 
 ### Sustainability
 
