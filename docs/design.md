@@ -17,7 +17,7 @@ The landing page (`app/landing/`) sets Sats Jar's look and voice. The web app we
 | Section heading (h2) | Satoshi 900 | `clamp(2.2rem, 4.4vw, 3.2rem)`, line-height 1.05 | grain mask |
 | Card heading (h3) | Satoshi 900 | 1.45–1.55rem, line-height 1.15 | grain mask |
 | Kicker | Satoshi 700 | 1.15rem, blue | one short line above a heading |
-| Logo | Satoshi 900 | 1.6rem, coin icon 44px rotated −8° | |
+| Logo | Satoshi 900 | the README logo: crayon jar mark 44px, then "sats jar" at 1.75rem with a coin dotting the j | |
 | Body | DM Sans 400 | 1.0625rem, line-height 1.55 | antialiased |
 | Lede | DM Sans | 1.15–1.2rem, max 33–40rem wide | |
 | Small / note | DM Sans | .95rem, muted | |
