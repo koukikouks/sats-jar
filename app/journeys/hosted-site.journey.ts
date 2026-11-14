@@ -56,7 +56,7 @@ test("C2: the apex serves the landing and sends every app path to the app host",
     await giver.getByRole("button", { name: "Save my PIN" }).click();
     const nickname = `C2 ${new Date().toISOString().slice(0, 16)}`;
     await giver.getByLabel("Jar nickname").fill(nickname);
-    await giver.getByRole("button", { name: "Make invite links" }).click();
+    await giver.getByRole("button", { name: "Next: invite guardians" }).click();
     const link = (await giver.locator(".invite .mono").first().textContent()) ?? "";
     const token = new URL(link).pathname;
     const guardian = await (await browser.newContext()).newPage();

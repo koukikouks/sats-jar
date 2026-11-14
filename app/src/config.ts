@@ -10,6 +10,8 @@ export const config = {
   keeperAccount: import.meta.env.VITE_SATS_JAR_KEEPER ?? "keeper-locked.sats-jar-app.testnet",
   /** The app backend, on the app's own origin (vite.config.ts proxies it). */
   backendUrl: "/api",
+  /** The repo's demo wallet (testnet3), offered to a giver with no test wallet of their own. */
+  demoAddress: "tb1q66wdw474ycjhqt078gkup2ltvy3dxz87ulc3yj",
 } as const;
 
 /** The jar contract on a public explorer, for the public record's "The jar contract ↗". */

@@ -28,6 +28,7 @@ function Welcome() {
         Anyone can top it up, the beneficiary gets a small allowance on a schedule, and from the day you choose the whole jar can
         become theirs.
       </p>
+      <p>1 Name your jar · 2 Invite 2 guardians · 3 Set the rules · 4 Top it up · 5 Hand it over. About 30 minutes on test Bitcoin.</p>
       <Link className="button" to="/new">
         Make a jar
       </Link>

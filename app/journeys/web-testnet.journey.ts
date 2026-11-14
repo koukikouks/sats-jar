@@ -267,7 +267,7 @@ test("everything the SDK's testnet checks do, through the web app", async ({ bro
     const { page } = giver;
     await open(page, "/new", (p) => p.getByLabel("Jar nickname"));
     await page.getByLabel("Jar nickname").fill(nickname);
-    await page.getByRole("button", { name: "Make invite links" }).click();
+    await page.getByRole("button", { name: "Next: invite guardians" }).click();
     await expect(page.getByRole("heading", { name: `${nickname}: invite the guardians` })).toBeVisible();
     links = await page.locator(".invite .mono").allTextContents();
     expect(links).toHaveLength(2);
