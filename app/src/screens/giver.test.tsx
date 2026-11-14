@@ -24,7 +24,7 @@ describe("starting a jar", () => {
       sdk.invites.start.mockResolvedValue(draft);
       withDraft(sdk, [false, false, false]);
     });
-    expect(await screen.findByText("Everyone can see this name, so use a nickname like \"Sunny's jar\", not the child's full name.")).toBeTruthy();
+    expect(await screen.findByText("Everyone can see this name, so use a nickname like \"Sunny's jar\", not the beneficiary's full name.")).toBeTruthy();
     await user.type(screen.getByLabelText("Jar nickname"), "Sunny's jar");
     await user.click(screen.getByLabelText("3 guardians"));
     await user.click(screen.getByRole("button", { name: "Make invite links" }));
@@ -102,7 +102,7 @@ describe("creating the jar", () => {
     const address = await screen.findByLabelText("Where should the allowance go?");
     expect(
       screen.getByText(
-        "The child's Bitcoin address, from a wallet a parent controls: open it, tap Receive and copy the address. Not an exchange's deposit address. Until handover the jar can only ever pay this address.",
+        "The beneficiary's Bitcoin address, from a wallet a parent controls: open it, tap Receive and copy the address. Not an exchange's deposit address. Until handover the jar can only ever pay this address.",
       ),
     ).toBeTruthy();
     await user.type(address, "tb1q6rz28mcfaxtmd6v789l9rrlrusdprr9pqcpvkl");
@@ -136,7 +136,7 @@ describe("creating the jar", () => {
     });
     await user.type(await screen.findByLabelText("Where should the allowance go?"), "tb1qchild");
     await user.type(screen.getByLabelText("Allowance cap (sats each period)"), "20000");
-    expect(screen.getByText("The earliest the jar can be handed over to the child. Most families choose the 18th birthday.")).toBeTruthy();
+    expect(screen.getByText("The earliest the jar can be handed over to the beneficiary. Most families choose the 18th birthday.")).toBeTruthy();
     await user.type(screen.getByLabelText("Unlock date"), "2040-05-01");
     expect(screen.queryByText(/guardians who have joined will be on the jar/)).toBeNull();
     await user.click(screen.getByRole("button", { name: "Make the jar" }));
@@ -155,14 +155,14 @@ describe("creating the jar", () => {
       sdk.jars.topUps.mockResolvedValue([]);
       sdk.jars.allowances.mockResolvedValue([]);
     });
-    expect(await screen.findByText("The jar unlocks on 1 May 2040. From then on, the child can take it over.")).toBeTruthy();
+    expect(await screen.findByText("The jar unlocks on 1 May 2040. From then on, the beneficiary can take it over.")).toBeTruthy();
   });
 
   it("says what is still missing while the jar can't be made yet", async () => {
     const { user } = renderApp("/draft/d1", (sdk) => withDraft(sdk, [true, true, false]));
     const button = await screen.findByRole("button", { name: "Make the jar" });
     const hint = () => document.getElementById(button.getAttribute("aria-describedby") ?? "")?.textContent;
-    expect(hint()).toBe("Still needed: the child's address, the allowance cap and the unlock date.");
+    expect(hint()).toBe("Still needed: the beneficiary's address, the allowance cap and the unlock date.");
     await user.type(screen.getByLabelText("Where should the allowance go?"), "tb1qchild");
     expect(hint()).toBe("Still needed: the allowance cap and the unlock date.");
     await user.click(screen.getByLabelText("Demo timing: every 10 minutes"));

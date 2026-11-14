@@ -31,7 +31,7 @@ function StartJar() {
   return (
     <form className="panel" onSubmit={submit}>
       <h1>Make a jar</h1>
-      <Field label="Jar nickname" hint={`Everyone can see this name, so use a nickname like "Sunny's jar", not the child's full name.`}>
+      <Field label="Jar nickname" hint={`Everyone can see this name, so use a nickname like "Sunny's jar", not the beneficiary's full name.`}>
         <input value={nickname} onChange={(e) => setNickname(e.target.value)} />
       </Field>
       <fieldset className="field">
@@ -44,7 +44,7 @@ function StartJar() {
         ))}
         <span className="hint">
           Guardians are grown-ups you trust. Two of them must agree to any emergency payment, and they check it's really the
-          child before the jar is handed over. You can be one of them.
+          beneficiary before the jar is handed over. You can be one of them.
         </span>
       </fieldset>
       <Refusal error={start.error} />

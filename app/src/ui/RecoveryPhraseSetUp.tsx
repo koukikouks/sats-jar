@@ -8,7 +8,7 @@ import { pinDigits, pinProblem } from "./PinGate.tsx";
 type Step = { name: "intro" } | { name: "words"; words: string[]; check: number[] } | { name: "check"; words: string[]; check: number[] };
 
 /**
- * Sets up a phone whose keys come from a recovery phrase: the child's (stories 41–44) or a new
+ * Sets up a phone whose keys come from a recovery phrase: the beneficiary's (stories 41–44) or a new
  * holder's (story 58a). The words live only in this screen's memory, so they can be shown again until the check passes.
  */
 export function RecoveryPhraseSetUp(props: { heading: string; intro: ReactNode; onDone: () => void }) {

@@ -7,7 +7,7 @@ import { Field } from "../ui/Field.tsx";
 import { Refusal } from "../ui/messages.tsx";
 import { NewPinFields, pinProblem } from "../ui/PinGate.tsx";
 
-/** "/restore": the child's jar comes back on a new phone from the recovery phrase (stories 29, 43). */
+/** "/restore": the beneficiary's jar comes back on a new phone from the recovery phrase (stories 29, 43). */
 export function Restore() {
   const { state } = useDevice();
   if (state === undefined) return null;

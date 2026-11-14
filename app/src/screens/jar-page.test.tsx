@@ -43,11 +43,11 @@ describe("the jar page", () => {
     expect(within(topUps).getAllByRole("link", { name: "Check it yourself ↗" })[0]?.getAttribute("href")).toBe(live.topUps[0]?.explorerUrl);
     const allowance = screen.getByRole("heading", { name: "Allowance" }).closest("section")!;
     expect(await within(allowance).findByText("Paid")).toBeTruthy();
-    expect(within(allowance).getByText(`2,500 sats to the child, fee ${live.allowances[0]?.fee.toLocaleString("en-US")} sats from the jar`)).toBeTruthy();
-    expect(within(allowance).getByText("Sats Jar sends it to the child's address on its own.")).toBeTruthy();
+    expect(within(allowance).getByText(`2,500 sats to the beneficiary, fee ${live.allowances[0]?.fee.toLocaleString("en-US")} sats from the jar`)).toBeTruthy();
+    expect(within(allowance).getByText("Sats Jar sends it to the beneficiary's address on its own.")).toBeTruthy();
     expect(within(allowance).getByText(/^Next allowance: .+\.$/)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Copy address" })).toBeTruthy();
-    expect(screen.getByText(/^If Sats Jar's signing ever stops before the handover is done, the Bitcoin-only exit opens on .+ and pays the child's address, which a parent controls\.$/)).toBeTruthy();
+    expect(screen.getByText(/^If Sats Jar's signing ever stops before the handover is done, the Bitcoin-only exit opens on .+ and pays the beneficiary's address, which a parent controls\.$/)).toBeTruthy();
     expect(screen.getByRole("link", { name: "See the public record" }).getAttribute("href")).toBe("/proof/1");
   });
 
@@ -84,7 +84,7 @@ describe("the jar page", () => {
     expect(screen.getByText("Cancelled")).toBeTruthy();
   });
 
-  it("shows a new demo-timing jar: badge, empty lists, no allowance clock, and the set-up link for the child", async () => {
+  it("shows a new demo-timing jar: badge, empty lists, no allowance clock, and the set-up link for the beneficiary", async () => {
     const fresh: JarStatus = {
       ...jar1,
       jarId: "7",
@@ -101,8 +101,8 @@ describe("the jar page", () => {
     expect(await screen.findByText("No top-ups yet. The first counted one starts the allowance.")).toBeTruthy();
     expect(screen.getByText("Up to 2,500 sats every 10 minutes.")).toBeTruthy();
     expect(screen.getByText("Starts with the first counted top-up.")).toBeTruthy();
-    expect(screen.getByText(/From then on, the child can take it over\./)).toBeTruthy();
-    expect(screen.getByText("When it's time, send the child this link to open on their own phone:")).toBeTruthy();
+    expect(screen.getByText(/From then on, the beneficiary can take it over\./)).toBeTruthy();
+    expect(screen.getByText("When it's time, send the beneficiary this link to open on their own phone:")).toBeTruthy();
     expect(screen.getByText(`${window.location.origin}/jar/7/set-up`)).toBeTruthy();
   });
 
@@ -189,13 +189,13 @@ describe("the jar page tells the truth at this moment", () => {
     expect(allowanceText()).not.toMatch(/Available now|on its own|Next allowance/);
   });
 
-  it("ends the allowance while the jar's Bitcoin moves to the child, and after handover", async () => {
+  it("ends the allowance while the jar's Bitcoin moves to the beneficiary, and after handover", async () => {
     const moving = renderApp("/jar/1", at({ availableAllowance: 7_500, handover: { state: "completing", coinsToMove: 2, coinsLeft: 1 } }));
-    expect(await screen.findByText("Allowances have ended. The jar's Bitcoin is moving to the child's own key.")).toBeTruthy();
+    expect(await screen.findByText("Allowances have ended. The jar's Bitcoin is moving to the beneficiary's own key.")).toBeTruthy();
     expect(allowanceText()).not.toMatch(/Available now|on its own/);
     moving.unmount();
     renderApp("/jar/1", at({ availableAllowance: 7_500, handover: { state: "done", completedAt: NOW - 60 } }));
-    expect(await screen.findByText("Allowances have ended. The jar is the child's now.")).toBeTruthy();
+    expect(await screen.findByText("Allowances have ended. The jar is the beneficiary's now.")).toBeTruthy();
     expect(allowanceText()).not.toMatch(/Available now|on its own/);
   });
 
@@ -216,7 +216,7 @@ describe("the jar page tells the truth at this moment", () => {
     claimed.unmount();
     renderApp("/jar/1", at({ handover: { state: "completing", coinsToMove: 2, coinsLeft: 1 } }));
     expect(
-      await screen.findByText(/^The jar's Bitcoin is moving to the child's own key\. Once it's there, if Sats Jar's signing ever stops, the Bitcoin-only exit opens on .+, and only the child's recovery phrase can use it\.$/),
+      await screen.findByText(/^The jar's Bitcoin is moving to the beneficiary's own key\. Once it's there, if Sats Jar's signing ever stops, the Bitcoin-only exit opens on .+, and only the beneficiary's recovery phrase can use it\.$/),
     ).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/If no handover happens/);
   });

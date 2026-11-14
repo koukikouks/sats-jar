@@ -33,7 +33,7 @@ function rememberJoinedHere(draftId: string): void {
 
 const isAlreadyGuardian = (error: unknown): boolean => error instanceof SatsJarRefusal && error.code === "ALREADY_GUARDIAN";
 
-/** What the rule form still needs, in words: "the child's address, the allowance cap and the unlock date". */
+/** What the rule form still needs, in words: "the beneficiary's address, the allowance cap and the unlock date". */
 export function stillNeeded(missing: string[]): string | null {
   if (missing.length === 0) return null;
   const list = missing.length === 1 ? missing[0] : `${missing.slice(0, -1).join(", ")} and ${missing[missing.length - 1]}`;
@@ -154,7 +154,7 @@ function RuleForm(props: { draft: Draft; joinedCount: number }) {
     },
   });
   const missing = [
-    ...(childAddress.trim() === "" ? ["the child's address"] : []),
+    ...(childAddress.trim() === "" ? ["the beneficiary's address"] : []),
     ...(cap === "" ? ["the allowance cap"] : []),
     ...(demo ? (unlockMinutes === "" ? ["the minutes until it unlocks"] : []) : unlockDate === "" ? ["the unlock date"] : []),
   ];
@@ -169,11 +169,11 @@ function RuleForm(props: { draft: Draft; joinedCount: number }) {
       <h2>The jar's rule</h2>
       <Field
         label="Where should the allowance go?"
-        hint="The child's Bitcoin address, from a wallet a parent controls: open it, tap Receive and copy the address. Not an exchange's deposit address. Until handover the jar can only ever pay this address."
+        hint="The beneficiary's Bitcoin address, from a wallet a parent controls: open it, tap Receive and copy the address. Not an exchange's deposit address. Until handover the jar can only ever pay this address."
       >
         <input placeholder="tb1q…" value={childAddress} onChange={(e) => setChildAddress(e.target.value)} />
       </Field>
-      <Field label="Allowance cap (sats each period)" hint="The most the child receives each period. Bitcoin fees come out of the jar, never out of the allowance.">
+      <Field label="Allowance cap (sats each period)" hint="The most the beneficiary receives each period. Bitcoin fees come out of the jar, never out of the allowance.">
         <input inputMode="numeric" value={cap} onChange={(e) => setCap(e.target.value.replace(/\D/g, ""))} />
       </Field>
       <fieldset className="field">
@@ -193,11 +193,11 @@ function RuleForm(props: { draft: Draft; joinedCount: number }) {
         )}
       </fieldset>
       {demo ? (
-        <Field label="Unlocks in (minutes)" hint="The earliest the jar can be handed over to the child.">
+        <Field label="Unlocks in (minutes)" hint="The earliest the jar can be handed over to the beneficiary.">
           <input inputMode="numeric" value={unlockMinutes} onChange={(e) => setUnlockMinutes(e.target.value.replace(/\D/g, ""))} />
         </Field>
       ) : (
-        <Field label="Unlock date" hint="The earliest the jar can be handed over to the child. Most families choose the 18th birthday.">
+        <Field label="Unlock date" hint="The earliest the jar can be handed over to the beneficiary. Most families choose the 18th birthday.">
           <input type="date" value={unlockDate} onChange={(e) => setUnlockDate(e.target.value)} />
         </Field>
       )}

@@ -16,7 +16,7 @@ export function TheJar(props: { jar: JarProof }) {
             Bitcoin address: {jar.address} ↗
           </a>
         </li>
-        <li className="proof-line">Child's address: {jar.childAddress}</li>
+        <li className="proof-line">Beneficiary's address: {jar.childAddress}</li>
         <li>
           Allowance: up to {sats(jar.cap)} every {period(jar.period)}
         </li>

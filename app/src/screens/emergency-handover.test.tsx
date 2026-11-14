@@ -132,10 +132,10 @@ describe("the handover on the jar page", () => {
       sdk.handover.check.mockResolvedValue(check);
       sdk.handover.confirm.mockResolvedValue(sent("H1"));
     });
-    expect(await screen.findByText(/^The child's phone has claimed the jar\. 0 of 2 guardians have confirmed\. Unless 2 guardians confirm by .*, the claim lapses\.$/)).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Check the child's code" }));
+    expect(await screen.findByText(/^The beneficiary's phone has claimed the jar\. 0 of 2 guardians have confirmed\. Unless 2 guardians confirm by .*, the claim lapses\.$/)).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Check the beneficiary's code" }));
     expect(sdk.handover.check).toHaveBeenCalledWith("7");
-    expect(await screen.findByText("Ask the child to show you the code on their phone. Confirm only if every digit matches.")).toBeTruthy();
+    expect(await screen.findByText("Ask the beneficiary to show you the code on their phone. Confirm only if every digit matches.")).toBeTruthy();
     expect(screen.getByText("9765 9494 0429 5968 6952")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "It matches: confirm" }));
     expect(sdk.handover.confirm).toHaveBeenCalledWith("7", check);
@@ -147,7 +147,7 @@ describe("the handover on the jar page", () => {
       sdk.handover.check.mockResolvedValue({ code: "1234", claimedAt: NOW } as HandoverCheck);
       sdk.handover.cancel.mockResolvedValue(sent("X1"));
     });
-    await user.click(await screen.findByRole("button", { name: "Check the child's code" }));
+    await user.click(await screen.findByRole("button", { name: "Check the beneficiary's code" }));
     expect(await screen.findByText(/^Confirming now ends allowances early/)).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Cancel the claim" }));
     expect(sdk.handover.cancel).toHaveBeenCalledWith("7");
@@ -156,10 +156,10 @@ describe("the handover on the jar page", () => {
   it("offers nothing more to a guardian who has confirmed", async () => {
     renderApp("/jar/7", (sdk) => jarAs(sdk, { roles: ["guardian"], ...claimed(1, true) }));
     await screen.findByText(/1 of 2 guardians have confirmed/);
-    expect(screen.queryByRole("button", { name: "Check the child's code" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Check the beneficiary's code" })).toBeNull();
   });
 
-  it("shows the child's phone its code and lets it cancel its own claim", async () => {
+  it("shows the beneficiary's phone its code and lets it cancel its own claim", async () => {
     const { user, sdk } = renderApp("/jar/7", (sdk) => {
       jarAs(sdk, { roles: ["child"], ...claimed(0) });
       sdk.child.guardianCode.mockResolvedValue("9765 9494 0429 5968 6952");
@@ -178,14 +178,14 @@ describe("the handover on the jar page", () => {
         handover: { state: "confirmed", claimedAt: NOW, delayEndsAt: NOW + 180, confirmedByMe: true, pausesAllowancesEarly: false },
       }),
     );
-    expect(await screen.findByText(/Until the Bitcoin starts moving, any guardian or the child can cancel\./)).toBeTruthy();
+    expect(await screen.findByText(/Until the Bitcoin starts moving, any guardian or the beneficiary can cancel\./)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Cancel the handover" })).toBeTruthy();
     unmount();
     const second = renderApp("/jar/7", (sdk) => jarAs(sdk, { roles: ["giver"], handover: { state: "completing", coinsToMove: 0, coinsLeft: 1 } }));
-    expect(await screen.findByText("The jar's Bitcoin is moving to the child's own key: 1 coin still to go.")).toBeTruthy();
+    expect(await screen.findByText("The jar's Bitcoin is moving to the beneficiary's own key: 1 coin still to go.")).toBeTruthy();
     second.unmount();
     renderApp("/jar/7", (sdk) => jarAs(sdk, { roles: ["holder"], handover: { state: "done", completedAt: NOW } }));
-    expect(await screen.findByText(/^Handed over on .*\. The jar is the child's alone, and every adult's access has ended\.$/)).toBeTruthy();
+    expect(await screen.findByText(/^Handed over on .*\. The jar is the beneficiary's alone, and every adult's access has ended\.$/)).toBeTruthy();
     expect(
       screen.getByText("Nobody, Sats Jar included, can recover this jar without your phone or your recovery phrase. Keep your recovery phrase safe."),
     ).toBeTruthy();

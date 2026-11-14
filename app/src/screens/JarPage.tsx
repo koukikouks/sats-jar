@@ -57,7 +57,7 @@ function FamilyPage() {
 
 /**
  * A device with no role in the jar. A phone set up with a recovery phrase (it has a handover code)
- * looking at a jar with no claim may be a child whose claim lapsed or was cancelled; the app can't
+ * looking at a jar with no claim may be a beneficiary whose claim lapsed or was cancelled; the app can't
  * tell whether it claimed this jar, so the sentence holds either way (story 29, finding 1).
  */
 function NotFamily(props: { jarId: string; mayHaveClaimed: boolean }) {

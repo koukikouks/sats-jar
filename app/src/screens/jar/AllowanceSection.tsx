@@ -45,14 +45,14 @@ export function AllowanceSection(props: { jar: JarStatus }) {
           </p>
           <p>Available now: {sats(jar.availableAllowance)}.</p>
           <p>{nextLine(jar)}</p>
-          <p className="hint">Sats Jar sends it to the child's address on its own.</p>
+          <p className="hint">Sats Jar sends it to the beneficiary's address on its own.</p>
         </>
       )}
       <ul className="plain rows">
         {(allowances.data ?? []).map((allowance) => (
           <li key={`${allowance.requestedAt}-${allowance.amount}`}>
             <span>
-              {sats(allowance.amount)} to the child, fee {sats(allowance.fee)} from the jar
+              {sats(allowance.amount)} to the beneficiary, fee {sats(allowance.fee)} from the jar
             </span>{" "}
             <span className={STATUS_CLASS[allowance.status]}>{PROGRESS[allowance.status]}</span> <CheckIt url={allowance.explorerUrl} />
           </li>
@@ -65,8 +65,8 @@ export function AllowanceSection(props: { jar: JarStatus }) {
 
 /** Why no allowance goes out once the handover's waiting time has ended (story 53a). */
 function stoppedLine(jar: JarStatus): string {
-  if (jar.handover.state === "done") return "Allowances have ended. The jar is the child's now.";
-  if (jar.handover.state === "completing") return "Allowances have ended. The jar's Bitcoin is moving to the child's own key.";
+  if (jar.handover.state === "done") return "Allowances have ended. The jar is the beneficiary's now.";
+  if (jar.handover.state === "completing") return "Allowances have ended. The jar's Bitcoin is moving to the beneficiary's own key.";
   // Confirmed, waiting time over: the handover may still wait for the unlock date, and can be cancelled.
   return "Allowances are paused while the handover waits to go ahead. If it's cancelled, they start again.";
 }

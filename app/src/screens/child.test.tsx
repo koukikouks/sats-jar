@@ -18,7 +18,7 @@ function newPhone(sdk: StandInSdk) {
   sdk.jars.status.mockResolvedValue(jar);
 }
 
-describe("setting up the child's phone", () => {
+describe("setting up the beneficiary's phone", () => {
   it("shows the phrase once, checks 3 words with a PIN, then shows the code and the plain statement, and claims", async () => {
     const { user, sdk } = renderApp("/jar/7/set-up", (sdk) => {
       newPhone(sdk);
@@ -85,17 +85,17 @@ describe("setting up the child's phone", () => {
     expect(await screen.findByText("Those words do not match your recovery phrase. Look at it again.")).toBeTruthy();
   });
 
-  it("tells an adult's device to open the link on the child's own phone", async () => {
+  it("tells an adult's device to open the link on the beneficiary's own phone", async () => {
     renderApp("/jar/7/set-up", (sdk) => {
       sdk.child.guardianCode.mockRejectedValue(new SatsJarRefusal("NO_RECOVERY_PHRASE", "Only a phone set up with a recovery phrase can do that."));
       sdk.jars.status.mockResolvedValue(jar);
     });
-    expect(await screen.findByText("This device is set up for an adult. Open this link on the child's own phone.")).toBeTruthy();
+    expect(await screen.findByText("This device is set up for an adult. Open this link on the beneficiary's own phone.")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Claim my jar" })).toBeNull();
   });
 });
 
-describe("restoring the child's phone", () => {
+describe("restoring the beneficiary's phone", () => {
   it("sends the typed phrase as words with the new PIN, then goes home", async () => {
     const { user, sdk } = renderApp("/restore", (sdk) => {
       sdk.device.state.mockResolvedValue("new");

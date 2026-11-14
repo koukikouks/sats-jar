@@ -32,7 +32,7 @@ export function HandoverSection(props: { jar: JarStatus }) {
       {handover.state === "claimed" && (
         <>
           <p>
-            The child's phone has claimed the jar. {handover.confirmations} of 2 guardians have confirmed. Unless 2 guardians
+            The beneficiary's phone has claimed the jar. {handover.confirmations} of 2 guardians have confirmed. Unless 2 guardians
             confirm by {when(handover.lapsesAt)}, the claim lapses.
           </p>
           {guardian && !handover.confirmedByMe && (
@@ -45,7 +45,7 @@ export function HandoverSection(props: { jar: JarStatus }) {
         <>
           <p>
             Two guardians have confirmed. There's a public waiting time until {when(handover.delayEndsAt)}, and the handover happens
-            once that has passed and the jar has unlocked. Until the Bitcoin starts moving, any guardian or the child can cancel.
+            once that has passed and the jar has unlocked. Until the Bitcoin starts moving, any guardian or the beneficiary can cancel.
           </p>
           {guardian && (
             <button type="button" className="secondary" disabled={cancel.isPending} onClick={() => cancel.mutate()}>
@@ -56,11 +56,11 @@ export function HandoverSection(props: { jar: JarStatus }) {
         </>
       )}
       {handover.state === "completing" && (
-        <p>The jar's Bitcoin is moving to the child's own key: {coinsStillToGo(handover.coinsLeft)}.</p>
+        <p>The jar's Bitcoin is moving to the beneficiary's own key: {coinsStillToGo(handover.coinsLeft)}.</p>
       )}
       {handover.state === "done" && (
         <>
-          <p>Handed over on {moment(jar, handover.completedAt)}. The jar is the child's alone, and every adult's access has ended.</p>
+          <p>Handed over on {moment(jar, handover.completedAt)}. The jar is the beneficiary's alone, and every adult's access has ended.</p>
           {jar.roles.includes("holder") && <p>{NOBODY_CAN_RECOVER_HELD}</p>}
         </>
       )}
@@ -76,10 +76,10 @@ function NotYet(props: { jar: JarStatus }) {
   const link = `${window.location.origin}/jar/${jar.jarId}/set-up`;
   return (
     <>
-      <p>The jar unlocks on {moment(jar, jar.unlockAt)}. From then on, the child can take it over.</p>
+      <p>The jar unlocks on {moment(jar, jar.unlockAt)}. From then on, the beneficiary can take it over.</p>
       {familyAdult && (
         <>
-          <p>When it's time, send the child this link to open on their own phone:</p>
+          <p>When it's time, send the beneficiary this link to open on their own phone:</p>
           <p className="mono">{link}</p>
           <Copy text={link} label="Copy link" />
         </>
@@ -88,7 +88,7 @@ function NotYet(props: { jar: JarStatus }) {
   );
 }
 
-/** A guardian compares the code read from the chain with the child's phone, then confirms or cancels (stories 46–48). */
+/** A guardian compares the code read from the chain with the beneficiary's phone, then confirms or cancels (stories 46–48). */
 function GuardianCheck(props: { jarId: string; pausesAllowancesEarly: boolean; onSent: (sent: Sent) => Promise<unknown> }) {
   const sdk = useSdk();
   const [checked, setChecked] = useState<HandoverCheck | null>(null);
@@ -103,14 +103,14 @@ function GuardianCheck(props: { jarId: string; pausesAllowancesEarly: boolean; o
       <>
         <Refusal error={check.error} />
         <button type="button" disabled={check.isPending} onClick={() => check.mutate()}>
-          Check the child's code
+          Check the beneficiary's code
         </button>
       </>
     );
   }
   return (
     <>
-      <p>Ask the child to show you the code on their phone. Confirm only if every digit matches.</p>
+      <p>Ask the beneficiary to show you the code on their phone. Confirm only if every digit matches.</p>
       <p className="code">{checked.code}</p>
       {props.pausesAllowancesEarly && (
         <p>
@@ -129,7 +129,7 @@ function GuardianCheck(props: { jarId: string; pausesAllowancesEarly: boolean; o
   );
 }
 
-/** The child's phone shows its code to each guardian, and may cancel its own claim (stories 46, 48). */
+/** The beneficiary's phone shows its code to each guardian, and may cancel its own claim (stories 46, 48). */
 function ChildCode(props: { onCancel: () => void; cancelling: boolean }) {
   const sdk = useSdk();
   const code = useQuery({ queryKey: ["guardianCode"], queryFn: () => sdk.child.guardianCode() });

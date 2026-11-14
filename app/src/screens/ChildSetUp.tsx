@@ -7,11 +7,11 @@ import { Refusal } from "../ui/messages.tsx";
 import { PinGate } from "../ui/PinGate.tsx";
 import { RecoveryPhraseSetUp } from "../ui/RecoveryPhraseSetUp.tsx";
 
-/** The child's plain statement (story 54, #25). */
+/** The beneficiary's plain statement (story 54, #25). */
 export const NOBODY_CAN_RECOVER =
   "After handover, nobody, Sats Jar included, can recover your jar without this phone or your recovery phrase.";
 
-/** "/jar/:jarId/set-up": "Set up my jar" on the child's own phone, then the claim (stories 41–46). */
+/** "/jar/:jarId/set-up": "Set up my jar" on the beneficiary's own phone, then the claim (stories 41–46). */
 export function ChildSetUp() {
   const { state, changed } = useDevice();
   if (state === undefined) return null;
@@ -52,7 +52,7 @@ function Claim() {
     },
   });
   if (code.error instanceof SatsJarRefusal && code.error.code === "NO_RECOVERY_PHRASE") {
-    return <p className="panel">This device is set up for an adult. Open this link on the child's own phone.</p>;
+    return <p className="panel">This device is set up for an adult. Open this link on the beneficiary's own phone.</p>;
   }
   if (code.data === undefined || jar.data === undefined) return <Refusal error={code.error ?? jar.error} />;
   return (

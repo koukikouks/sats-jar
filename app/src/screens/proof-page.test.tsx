@@ -90,7 +90,7 @@ describe("the public record", () => {
     expect(within(theJar).getByText("Balance: 20,000 sats")).toBeTruthy();
     const address = within(theJar).getByRole("link", { name: /^Bitcoin address: tb1qjar0+ ↗$/ });
     expect(address.getAttribute("href")).toBe("https://mempool.space/testnet/address/tb1qjar");
-    expect(within(theJar).getByText("Child's address: tb1qchild0000000000000000000000000000000")).toBeTruthy();
+    expect(within(theJar).getByText("Beneficiary's address: tb1qchild0000000000000000000000000000000")).toBeTruthy();
     expect(within(theJar).getByText("Allowance: up to 2,500 sats every 10 minutes")).toBeTruthy();
     expect(within(theJar).getByText(/^Unlocks: /)).toBeTruthy();
     expect(within(theJar).getByText("Guardians: 2")).toBeTruthy();
@@ -143,8 +143,8 @@ describe("the public record", () => {
       "Create the jar by the giver",
       "Propose an emergency payment by a guardian",
       "Spend from the jar by someone else",
-      "Claim the jar by the child",
-      "Spend from the jar by the child",
+      "Claim the jar by the beneficiary",
+      "Spend from the jar by the beneficiary",
       "A request by someone else",
     ]);
     expect(within(rows[0]!).getByText("Done")).toBeTruthy();
@@ -194,13 +194,13 @@ describe("the public record", () => {
     expect(container.textContent).not.toMatch(/testnet|aaaaaaaa/);
   });
 
-  it("names the child's claim by the child, though the child holds the jar now", async () => {
+  it("names the beneficiary's claim by the beneficiary, though the beneficiary holds the jar now", async () => {
     const requests = [
       tx({ hash: "A", method: "claim_handover", signer: child, time: 1_760_001_000 }),
       tx({ hash: "B", method: "start_transfer", signer: child, time: 1_760_010_000 }),
     ];
     renderApp("/proof/7", record(jar({ holder: child, history: handedOver }), requests));
-    expect(await screen.findByText("Claim the jar by the child")).toBeTruthy();
+    expect(await screen.findByText("Claim the jar by the beneficiary")).toBeTruthy();
     expect(screen.getByText("Start a transfer by the holder")).toBeTruthy();
   });
 
