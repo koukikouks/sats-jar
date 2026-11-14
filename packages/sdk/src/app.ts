@@ -10,7 +10,7 @@ import { draftStore, invites } from "./invites.ts";
 import { jarReader } from "./jar-status.ts";
 import { near } from "./near.ts";
 import { tryIt } from "./try-it.ts";
-import { serial, writer } from "./writes.ts";
+import { serial, writer, type Serial } from "./writes.ts";
 
 /** The SDK over a given `fetch`; `createSatsJar` passes the browser's. */
 export function createApp(config: SatsJarConfig, http: typeof fetch): SatsJar {
@@ -18,12 +18,23 @@ export function createApp(config: SatsJarConfig, http: typeof fetch): SatsJar {
   const backend = backendClient(http, config.backendUrl);
   const drafts = draftStore(config.storage);
   const chain = near(http, config.contract);
-  // Every write this device makes, part 1's included, runs one at a time (no nonce races).
-  const run = serial();
-  const write = writer({ near: chain, keys, backend, storage: config.storage, contract: config.contract, run });
   const reader = jarReader({ http, near: chain, contract: config.contract, me: keys.accountId });
+  // Every write this device makes, part 1's included, runs one at a time (no nonce races); once
+  // it settles, the next read of any jar goes to the chain, so the screen shows the write.
+  const serialRun = serial();
+  const run: Serial = (task) =>
+    serialRun(task).finally(() => {
+      reader.forget();
+    });
+  const write = writer({ near: chain, keys, backend, storage: config.storage, contract: config.contract, run });
   const create = creator({ near: chain, backend, drafts, keys, contract: config.contract });
-  const jars: Jars = { create: (input) => run(() => create(input)), ...reader };
+  const jars: Jars = {
+    create: (input) => run(() => create(input)),
+    status: reader.status,
+    topUps: reader.topUps,
+    allowances: reader.allowances,
+    mine: reader.mine,
+  };
   const guardianInvites = invites(backend, drafts, keys);
   return {
     device: keys.device,

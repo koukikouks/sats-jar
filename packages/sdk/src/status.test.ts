@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { SatsJarRefusal } from "./api.ts";
 import { createApp } from "./app.ts";
 import { BACKEND, CONTRACT, fixture, memoryStorage, testNetwork, type Fixture, type TestNetwork } from "./test-network.ts";
@@ -98,7 +98,11 @@ describe("jar status", () => {
         handover: { claimed: { child_account: account, child_btc_pubkey: "02e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c319", claimed_at: "1794269000", lapses_at: "1794269420", confirmed_by: ["guardian-a.sats-jar-dev.testnet"] } },
       },
     };
+    // The next poll, 10 s on: a read under 5 s old would be shared (spec #58).
+    const nextPoll = Date.now() + 10_000;
+    vi.spyOn(Date, "now").mockReturnValue(nextPoll);
     const claimed = await someone.jars.status("1");
+    vi.restoreAllMocks();
     expect(claimed.roles).toEqual(["child"]);
     expect(claimed.handover).toMatchObject({ state: "claimed", claimedAt: 1794269000, lapsesAt: 1794269420, confirmations: 1, confirmedByMe: false });
   });
