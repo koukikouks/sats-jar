@@ -27,6 +27,10 @@ A jar is an NFT on NEAR that holds real Bitcoin for someone you love, the benefi
 </p>
 
 <p align="center">
+  Watch me walk through Sats Jar, step by step: <a href="https://www.youtube.com/watch?v=twsp2kqXIq8">the walkthrough on YouTube</a>
+</p>
+
+<p align="center">
   <img src="docs/readme/public-record.gif" alt="The landing page, then jar 1's public record on the locked contract: the jar, requests the rule refused in red, its Bitcoin payments, and buttons to try breaking the rule yourself" width="720">
 </p>
 
